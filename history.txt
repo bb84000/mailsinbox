@@ -1,0 +1,8 @@
+Version 0.1.0.0 - 14/12/2019
+- Will replace MailAtente. Developed on Lazarus-FPC
+- Menus replaced with a toolbar : large or small buttons
+- Search all mail clients and default one, add google.com and outlook.com web sites
+  also windows 10 mail, can choose between executable and url
+
+Version 0.5.0.0 - 03/01/2020
+- Pop3 individual mail checking implemented
