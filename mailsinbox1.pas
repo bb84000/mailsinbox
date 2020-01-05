@@ -4,14 +4,16 @@ unit mailsinbox1;
 
 interface
 
+
 uses
   {$IFDEF WINDOWS}
   Win32Proc,
   {$ENDIF} Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ExtCtrls,
   StdCtrls, Grids, ComCtrls, Buttons, Menus, IdPOP3, IdSSLOpenSSL,
-  IdExplicitTLSClientServerBase, IdMessage, accounts1, lazbbutils,
+  IdExplicitTLSClientServerBase, IdMessage, IdIMAP4, accounts1, lazbbutils,
   lazbbinifiles, lazbbosversion, LazUTF8, settings1, lazbbautostart, lazbbabout,
-  Registry, Impex1, mailclients1, uxtheme, Types, IdComponent;
+  Registry, Impex1, mailclients1, uxtheme, Types, IdComponent, fptimer,
+  IdMessageCollection;
 
 type
   TSaveMode = (None, Setting, All);
@@ -31,12 +33,15 @@ type
     BtnQuit: TSpeedButton;
     BtnSettings: TSpeedButton;
     GBInfos: TGroupBox;
+    IdIMAP4_1: TIdIMAP4;
     IdPOP3_1: TIdPOP3;
     ILMail: TImageList;
+    ILTray: TImageList;
     ImgAccounts: TImageList;
     LStatus: TLabel;
     ListBox1: TListBox;
     LVAccounts: TListView;
+    MnuInfos: TMenuItem;
     MInfos: TMemo;
     MnuMoveDown: TMenuItem;
     MnuMoveUp: TMenuItem;
@@ -50,10 +55,11 @@ type
     BtnLast: TSpeedButton;
     BtnImport: TSpeedButton;
     MnuAccount: TPopupMenu;
+    MnuMails: TPopupMenu;
     Splitter1: TSplitter;
     Splitter2: TSplitter;
     SGMails: TStringGrid;
-    TimerTray: TTimer;
+    TrayTimer: TTimer;
     TrayMail: TTrayIcon;
     procedure BtnAboutClick(Sender: TObject);
     procedure BtnDeleteClick(Sender: TObject);
@@ -73,6 +79,7 @@ type
     procedure BtnCloseClick(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure FormShow(Sender: TObject);
+    procedure IdIMAP4_1Disconnected(Sender: TObject);
     procedure IdPOP3_1Connected(Sender: TObject);
     procedure IdPOP3_1Disconnected(Sender: TObject);
     procedure IdPOP3_1Status(ASender: TObject; const AStatus: TIdStatus;
@@ -82,19 +89,26 @@ type
     procedure LVAccountsSelectItem(Sender: TObject; Item: TListItem;
       Selected: Boolean);
     procedure MnuAccountPopup(Sender: TObject);
+    procedure MnuInfosClick(Sender: TObject);
     procedure MnuMoveDownClick(Sender: TObject);
     procedure MnuMoveUpClick(Sender: TObject);
     procedure SGMailsBeforeSelection(Sender: TObject; aCol, aRow: Integer);
+    procedure SGMailsClick(Sender: TObject);
     procedure SGMailsDrawCell(Sender: TObject; aCol, aRow: Integer;
       aRect: TRect; aState: TGridDrawState);
     procedure SGMailsEnter(Sender: TObject);
     procedure SGMailsExit(Sender: TObject);
+    procedure SGMailsMouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure SGMailsMouseMove(Sender: TObject; Shift: TShiftState; X,
+      Y: Integer);
     procedure SGMailsPrepareCanvas(sender: TObject; aCol, aRow: Integer;
       aState: TGridDrawState);
     procedure SGMailsSelectCell(Sender: TObject; aCol, aRow: Integer;
       var CanSelect: Boolean);
     procedure SGMailsSelection(Sender: TObject; aCol, aRow: Integer);
-    procedure TimerTrayTimer(Sender: TObject);
+    procedure TrayTimerTimer(Sender: TObject);
+    procedure OnChkMailTimer(Sender: TObject);
   private
     First: boolean;
     OS, OSTarget, CRLF: string;
@@ -109,7 +123,7 @@ type
     SettingsChanged: boolean;
     AccountsChanged:Boolean;
     ConfigFile: string;
-    traycount: integer;
+    ChkMailTimerTick: integer;
     canCloseMsg: string;
     CanClose: boolean;
     AccountCaption, EmailCaption, LastCheckCaption, NextCheckCaption : string;
@@ -126,6 +140,9 @@ type
     SGHasFocus: boolean;
     DefCursor: TCursor;
     MsgFound, MsgsFound: string;
+    ChkMailTimer: TFPTimer;
+    TrayTimerTick: integer;
+    TrayTimerBmp: TBitmap;
     procedure LoadCfgFile(filename: string);
     procedure SettingsOnChange(Sender: TObject);
     procedure SettingsOnStateChange(Sender: TObject);
@@ -134,11 +151,14 @@ type
     procedure PopulateAccountsList;
     procedure ModLangue;
     procedure SetSmallBtns(small: boolean);
-    function GetPop3Mail(index: integer): boolean;
+    function GetPop3Mail(index: integer): integer;
+    function GetPendingMail(index: integer): integer;
     procedure PopulateMailsList(index: integer);
     procedure EnableControls(Enable: boolean);
     procedure UpdateInfos;
     procedure DrawTheIcon(Bmp: TBitmap; NewCount: integer; CircleColor: TColor);
+    function MailChecking(status: boolean): boolean;
+    procedure GetMailInfos(CurName: String; var Mail: TMail; IdMsg: TIdMessage; siz: Integer);
   public
     OsInfo: TOSInfo;
 
@@ -158,6 +178,16 @@ procedure TFMailsInBox.FormCreate(Sender: TObject);
 var
   s: string;
 begin
+  // Initialize timers stuff
+  ChkMailTimer:= TFPTimer.Create(self);
+  ChkMailTimer.Interval:= 100;
+  ChkMailTimer.UseTimerThread:= true;
+  ChkMailTimer.Enabled:= true;
+  ChkMailTimer.OnTimer:= @OnChkMailTimer;
+  ChkMailTimerTick:= 0;
+  //ChkMailTimer.StartTimer;
+  TrayTimerTick:=0;
+  TrayTimerBmp:= TBitmap.Create;
   First := True;
   CompileDateTime:= StringToDateTime({$I %DATE%}+' '+{$I %TIME%}, 'yyyy/mm/dd hh:nn:ss');
   OS := 'Unk';
@@ -250,7 +280,7 @@ begin
   FSettings.Settings.OnStateChange := @SettingsOnStateChange;
   FAccounts.Accounts.OnChange:= @AccountsOnChange;
   FSettings.LStatus.Caption := OsInfo.VerDetail;
-  traycount:= 0;
+
   //Save large buttons glyphs
   for i:=0 to length(BmpArray)-1 do
   begin
@@ -264,9 +294,9 @@ begin
   // Get default mail client and stores its name
   defmailcli:= FSettings.GetDefaultMailCllient;
   if length(FSettings.Settings.MailClient)=0 then  FSettings.Settings.MailClient:= defmailcli;
-  //DefMailClient:=TrimFileExt(ExtractFileName(FSettings.Settings.MailClient));
-  //if length(DefMailClient)>0 then DefMailClient[1]:= UpCase(DefMailClient[1]);
-  //ExecuteProcess(FSettings.Settings.MailClient, '', []);
+  // TStringgrid MousetoCell give cell nearest the mouse click if
+  // this property is true. To get -1 when mouse is outside a cell then
+  SGMails.AllowOutboundEvents:=false;
 end;
 
 procedure TFMailsInBox.ChangeBounds(Sender: TObject);
@@ -436,27 +466,41 @@ var
   Listitem: TlistItem;
   i: Integer;
   AccBmp:Tbitmap;
+  TrayBmp:TBitmap;
 Begin
   if FAccounts.Accounts.Count = 0 then exit;
   AccBmp:= TBitmap.create;
+  TrayBmp:= TBitmap.create;
   LVAccounts.Clear;
   if Assigned(LVAccounts.SmallImages) then LVAccounts.SmallImages.Clear;
+  ILTray.Clear;
+  TrayBmp.LoadFromResourceName(HInstance, 'TRAY');
+  ILTray.AddMasked(TrayBmp, $FF00FF); // default icon
   for i := 0 to FAccounts.Accounts.Count-1 do
   Try
     AccBmp.LoadFromResourceName(HInstance, 'ACCOUNT');
+    TrayBmp.LoadFromResourceName(HInstance, 'TRAY');
     ListItem := LVAccounts.items.add;  // prépare l'ajout
     if FAccounts.Accounts.GetItem(i).Mails.count > 0 then
+    begin
       DrawTheIcon(AccBmp, FAccounts.Accounts.GetItem(i).Mails.count ,
                   FAccounts.Accounts.GetItem(i).Color  );
+      DrawTheIcon(TrayBmp, FAccounts.Accounts.GetItem(i).Mails.count ,
+                  FAccounts.Accounts.GetItem(i).Color  );
+      ILTray.AddMasked(TrayBmp, $FF00FF);  // modified icon
+    end;
     LVAccounts.SmallImages.AddMasked(AccBmp,$FF00FF);
     ListItem.ImageIndex := i;
     Listitem.Caption :=  FAccounts.Accounts.GetItem(i).Name;    // ajoute le nom
+
   Except
     ShowMessage(inttostr(i));
   end;
   LVAccounts.ItemIndex:= 0;
   //LVAccounts.SetFocus;
   AccBmp.free;
+  TrayBmp.free;
+
 end;
 
 
@@ -484,7 +528,9 @@ end;
 procedure TFMailsInBox.BtnEditAccClick(Sender: TObject);
 var
   Account: TAccount;
+  ndx: integer;
 begin
+  ndx:= LVAccounts.ItemIndex;
   with FAccounts do
   begin
     if (TSpeedButton(Sender).Name='BtnAddAcc') then
@@ -492,9 +538,9 @@ begin
       Account:= Default(TAccount);
       Caption:= BtnAddAcc.Hint;
     end;
-    if (TSpeedButton(Sender).Name='BtnEditAcc') and  (LVAccounts.ItemIndex>=0) then
+    if (TSpeedButton(Sender).Name='BtnEditAcc') and  (ndx>=0) then
     begin
-      Account:= Accounts.GetItem(LVAccounts.ItemIndex);
+      Account:= Accounts.GetItem(ndx);
       Caption:= BtnEditAcc.Hint;
     end;
     EName.Text:= Account.Name;
@@ -529,10 +575,13 @@ begin
       Account.ReplyEmail:= EReplyEmail.Text;
       Account.Enabled:= CBEnabledAcc.Checked;
       Account.Color:= CBColorAcc.Selected;
-      if (TSpeedButton(Sender).Name='BtnEditAcc') and  (LVAccounts.ItemIndex>=0) then
-      Accounts.ModifyAccount(LVAccounts.ItemIndex, Account)
+      if (TSpeedButton(Sender).Name='BtnEditAcc') and  (ndx>=0) then
+      Accounts.ModifyAccount(ndx, Account)
       else Accounts.AddAccount(Account);
       PopulateAccountsList ();
+      if (TSpeedButton(Sender).Name='BtnEditAcc') then LVAccounts.ItemIndex:= ndx
+      else LVAccounts.ItemIndex:= LVAccounts.Items.count-1 ;
+
 
     end;
 
@@ -548,14 +597,20 @@ procedure TFMailsInBox.FormDestroy(Sender: TObject);
 var
   i: integer;
 begin
+  if Assigned(TrayTimerBmp) then TrayTimerBmp.free;
   if Assigned(LangNums) then LangNums.free;
   if Assigned(LangFile) then LangFile.free;
   for i:=0 to length(BmpArray)-1 do
-    if Assigned(BmpArray[i]) then BmpArray[i].free;
-
+  if Assigned(BmpArray[i]) then BmpArray[i].free;
+  if Assigned(ChkMailTimer) then ChkMailTimer.Destroy;
 end;
 
 procedure TFMailsInBox.FormShow(Sender: TObject);
+begin
+
+end;
+
+procedure TFMailsInBox.IdIMAP4_1Disconnected(Sender: TObject);
 begin
 
 end;
@@ -598,6 +653,7 @@ begin
   j:= LVAccounts.Items.count;
   if i >= 0 then
   begin
+    LVAccounts.PopupMenu:= MnuAccount;
     s:= FAccounts.Accounts.GetItem(i).Name;
     BtnLog.Hint:= Format(BtnLogHint, [s]);
     BtnGetAccMail.Hint:= Format(BtnGetAccMailHint, [s]);
@@ -608,8 +664,7 @@ begin
     BtnLast.Enabled:= not(i=j-1);
     BtnNext.Enabled:= BtnLast.Enabled;
     UpdateInfos;
-
-  end;
+   end else LVAccounts.PopupMenu:= nil;
   PopulateMailsList(i);
 
 
@@ -659,8 +714,22 @@ end;
 
 procedure TFMailsInBox.MnuAccountPopup(Sender: TObject);
 begin
+
   MnuMoveUp.Enabled:= not (LVAccounts.ItemIndex=0);
   MnuMoveDown.Enabled:= not (LVAccounts.ItemIndex=LVAccounts.Items.count-1);
+end;
+
+procedure TFMailsInBox.MnuInfosClick(Sender: TObject);
+var
+  andx: integer;
+  mndx: integer;
+  Mail: Tmail;
+begin
+  andx:= LVAccounts.ItemIndex;
+  if andx <0 then exit;
+  mndx:= SGMails.row;
+  mail:= FAccounts.Accounts.GetItem(andx).Mails.GetItem(mndx);
+
 end;
 
 procedure TFMailsInBox.MnuMoveDownClick(Sender: TObject);
@@ -700,6 +769,11 @@ procedure TFMailsInBox.SGMailsBeforeSelection(Sender: TObject; aCol,
   aRow: Integer);
 begin
   SGMails.Invalidate;
+end;
+
+procedure TFMailsInBox.SGMailsClick(Sender: TObject);
+begin
+  ShowMessage('Test');
 end;
 
 procedure TFMailsInBox.SGMailsDrawCell(Sender: TObject; aCol, aRow: Integer;
@@ -754,6 +828,37 @@ begin
   //SGMails.Invalidate;
 end;
 
+procedure TFMailsInBox.SGMailsMouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+var
+  pf: TPoint;
+  col1, row1: integer;
+begin
+  if Button = TMouseButton.mbRight then
+  begin
+    if SGMails.RowCount<2 then exit;
+    SGMails.SetFocus;
+    SGMails.MouseToCell(X, Y, Col1, Row1);
+    pf := SGMails.ClientToScreen(Point(X, Y));
+    if row1>0 then
+    begin
+      SGMails.Row:= (row1);
+      // Do not use the grids PopupMenu property, it
+      // prevents this event handler comletely.
+      // Instead, activate the menu manually here.
+      MnuMails.Popup(pf.X, pf.Y);
+    end;
+  end;
+end;
+
+procedure TFMailsInBox.SGMailsMouseMove(Sender: TObject; Shift: TShiftState; X,
+  Y: Integer);
+var
+  col1, row1: integer;
+begin
+  SGMails.MouseToCell(X, Y, Col1, Row1);
+end;
+
 procedure TFMailsInBox.SGMailsPrepareCanvas(sender: TObject; aCol,
   aRow: Integer; aState: TGridDrawState);
 begin
@@ -769,6 +874,18 @@ end;
 procedure TFMailsInBox.SGMailsSelection(Sender: TObject; aCol, aRow: Integer);
 begin
 
+end;
+
+procedure TFMailsInBox.TrayTimerTimer(Sender: TObject);
+var
+  i: integer;
+begin
+  if not CheckingMail then
+  begin
+    ILTray.GetBitmap(TrayTimerTick, TrayTimerBmp);
+    TrayMail.Icon.Assign(TrayTimerbmp);
+    if TrayTimerTick<ILtray.count-1 then inc (TrayTimerTick) else TrayTimerTick:= 0;
+  end;
 end;
 
 procedure TFMailsInBox.BtnSettingsClick(Sender: TObject);
@@ -842,11 +959,27 @@ begin
 end;
 
 procedure TFMailsInBox.BtnGetAllMailClick(Sender: TObject);
+var
+  i: integer;
+  ndx: Integer;
 begin
-  EnableControls(false);
+  if FAccounts.Accounts.count = 0 then exit;
+  ndx:= LVAccounts.ItemIndex;   // Current selected account
+  MailChecking(true);
+  //EnableControls(false);
   Application.ProcessMessages;
-  ShowMessage('Todo: Get all accounts mails');
-  EnableControls(true);
+  for i:= 0 to FAccounts.Accounts.count-1 do
+  begin
+    //if FAccounts.Accounts.GetItem(i).Protocol=ptcPOP3 then
+      //GetPop3Mail(i) ;
+    //if FAccounts.Accounts.GetItem(i).Protocol=ptcIMAP then
+      GetPendingMail(i) ;
+  end;
+  //EnableControls(true);
+  MailChecking(false);
+  PopulateAccountsList;
+  LVAccounts.ItemIndex:=ndx;
+  LVAccounts.SetFocus;
 end;
 
 
@@ -854,24 +987,49 @@ procedure TFMailsInBox.BtnGetAccMailClick(Sender: TObject);
 var
   ndx: integer;
 begin
-  EnableControls(false);
-  Application.ProcessMessages;
   ndx:= LVAccounts.ItemIndex;   // Current selected account
   if (ndx>=0) and not CheckingMail then
   begin
-    if FAccounts.Accounts.GetItem(ndx).Protocol=ptcPOP3 then
-    GetPop3Mail(ndx) ;
+    MailChecking(true);
+    //EnableControls(false);
+    Application.ProcessMessages;
+    GetPendingMail(ndx);
     PopulateMailsList(ndx);
-    //UpdateInfos;
+    //EnableControls(true);
+    MailChecking(false);
+    PopulateAccountsList;
+    LVAccounts.ItemIndex:=ndx;
+    LVAccounts.SetFocus;
   end;
-  EnableControls(true);
-  PopulateAccountsList;
-  LVAccounts.ItemIndex:=ndx;
+end;
+
+// During mail checking
+
+function TFMailsInBox.MailChecking(status: boolean): boolean;
+var
+  curs: TCursor;
+begin
+  CheckingMail:= status;
+  if status then
+  begin
+    ChkMailTimerTick:= 0;
+    ChkMailTimer.StartTimer;
+    Screen.Cursor:= crHourGlass;
+  end else
+  begin
+    ChkMailTimer.StopTimer;
+    TrayTimerTick:= 0;
+    ILTray.GetBitmap(TrayTimerTick, TrayTimerBmp);
+    TrayMail.Icon.Assign(TrayTimerbmp);
+    Screen.Cursor:= DefCursor;
+  end;
+
+  result:= status;
 end;
 
 // retreive pop3 mail
 
-function TFMailsInBox.GetPop3Mail(index: integer): boolean;
+function TFMailsInBox.GetPop3Mail(index: integer): integer;
 var
   msgs : Integer;
   idMsg: TIdMessage;
@@ -881,32 +1039,40 @@ var
   mail: TMail;
   mails: TMailsList;
   min: TTime;
+  HeaderOK: boolean;
+  CurAcc: TAccount;
 begin
-  CheckingMail:= true;
+  result:= 0;
   mails:= TMailsList.create;
-  IdPOP3_1.Host:= FAccounts.Accounts.GetItem(index).Server;
-  IdPOP3_1.Port:= FAccounts.Accounts.GetItem(index).Port;
-  IdPOP3_1.Username:= FAccounts.Accounts.GetItem(index).UserName;
-  IdPOP3_1.Password:= FAccounts.Accounts.GetItem(index).Password;
-  sto:= FAccounts.Accounts.GetItem(index).Name;
+  CurAcc:= FAccounts.Accounts.GetItem(index);
+  IdPOP3_1.Host:= CurAcc.Server;
+  IdPOP3_1.Port:= CurAcc.Port;
+  IdPOP3_1.Username:= CurAcc.UserName;
+  IdPOP3_1.Password:= CurAcc.Password;
+  // Authentication method
+  if Curacc.SecureAuth then IdPOP3_1.AuthType:= patSASL
+  else IdPOP3_1.AuthType:= patUserPass;
+  sto:= CurAcc.Name;
   try
     LStatus.Caption:= 'Connexion au serveur '+IdPOP3_1.Host;
     idMsg:= TIdMessage.Create(self);
     IdPop3_1.IOHandler := TIdSSLIOHandlerSocketOpenSSL.Create(idPop3_1);
-    IdPop3_1.UseTLS := TIdUseTLS(FAccounts.Accounts.GetItem(index).SSL);
+    IdPop3_1.UseTLS := TIdUseTLS(CurAcc.SSL);
     IdPOP3_1.Connect;
     Application.ProcessMessages;
     msgs := IdPop3_1.CheckMessages;
-
     if msgs > 0 then
     begin
       //TAccount(FAccounts.Accounts.Items[index]^).Mails.Reset;
       //SGMails.RowCount:= msgs;
       for i:= 1 to msgs do
       begin
-        if IdPop3_1.RetrieveHeader(i, idMsg) then
+        HeaderOK:= IdPop3_1.RetrieveHeader(i, idMsg);
+        if HeaderOK then
         begin
+
           siz:= IdPop3_1.RetrieveMsgSize(i);
+          Application.ProcessMessages;
           sfrom:= idMsg.From.Name;
           if length(sfrom)=0 then sfrom:= idMsg.From.Address;
           Mail.AccountName:= sto;
@@ -918,15 +1084,16 @@ begin
           Mail.MessageDate:= idMsg.Date;
           Mail.MessageSize:= siz;
           Mail.MessageContentType:=  IdMsg.ContentType ;
-          if TAccount(FAccounts.Accounts.Items[index]^).Mails.FindUIDL(Mail.MessageUIDL)>=0 then
-             Mail.MessageNew:= false else Mail.MessageNew:= true;
+          //if TAccount(FAccounts.Accounts.Items[index]^).Mails.FindUIDL(Mail.MessageUIDL)>=0 then
+          if CurAcc.Mails.FindUIDL(Mail.MessageUIDL)>=0 then
+          Mail.MessageNew:= false else Mail.MessageNew:= true;
           Mails.AddMail(Mail);
         end;
       end;
     end;
     LStatus.Caption:= 'Déconnexion du serveur';
     idPop3_1.Disconnect;
-
+    Application.ProcessMessages;
     // log...
   except
     on E: Exception do
@@ -938,19 +1105,175 @@ begin
   else LStatus.Caption:= sto+' : '+Format(MsgFound, [msgs]) ;
   // Update account checkmail dates
   FAccounts.Accounts.ModifyField(index, 'LASTFIRE', now);
+  Application.ProcessMessages;
   min:= EncodeTime(0,FAccounts.Accounts.GetItem(index).interval,0,0);
   FAccounts.Accounts.ModifyField(index, 'NEXTFIRE', now+min);
   TAccount(FAccounts.Accounts.Items[index]^).Mails.Reset;
   if Mails.count > 0 then
     for i:=0 to Mails.count-1 do
+    begin
      TAccount(FAccounts.Accounts.Items[index]^).Mails.AddMail(Mails.GetItem(i));
+     Application.ProcessMessages;
+    end;
   if assigned (Mails) then Mails.free;
-  UpdateInfos;
-  CheckingMail:= false;
+  result:= msgs;
 end;
 
+// retreive imap mail
 
+function TFMailsInBox.GetPendingMail(index: integer): Integer;
+var
+  msgs : Integer;
+  idMsg: TIdMessage;
+  i, siz: integer;
+  sfrom: string;
+  CurName: string;
+  mail: TMail;
+  mails: TMailsList;
+  min: TTime;
+  HeaderOK: boolean;
+  CurAcc: TAccount;
+  CurServer: String;
+  idMsgList: TIdMessageCollection;
+  AMailBoxList: TStringList;
+begin
+  result:= 0;
+  msgs:= 0;
+  mails:= TMailsList.create;
+  idMsgList:= TIdMessageCollection.create;
+  AMailBoxList:= TStringList.Create;
+  CurAcc:= FAccounts.Accounts.GetItem(index);
+  CurName:= CurAcc.Name;
+  Case Curacc.Protocol of
+    ptcPOP3:
+      begin
+        IdPOP3_1.Host:= CurAcc.Server;
+        IdPOP3_1.Port:= CurAcc.Port;
+        IdPOP3_1.Username:= CurAcc.UserName;
+        IdPOP3_1.Password:= CurAcc.Password;
+        // Authentication method
+        if Curacc.SecureAuth then IdPOP3_1.AuthType:= patSASL
+        else IdPOP3_1.AuthType:= patUserPass;
+      end;
+    ptcIMAP:
+      begin
+        IdIMAP4_1.Host:= CurAcc.Server;
+        IdIMAP4_1.Port:= CurAcc.Port;
+        IdIMAP4_1.Username:= CurAcc.UserName;
+        IdIMAP4_1.Password:= CurAcc.Password;
+        // Authentication method
+        if Curacc.SecureAuth then IdIMAP4_1.AuthType:= iatSASL
+        else IdIMAP4_1.AuthType:= iatUserPass;
+      end;
+  end;
+  try
+    LStatus.Caption:= 'Connexion au serveur '+CurAcc.Server;
+    Application.ProcessMessages;
+    idMsg:= TIdMessage.Create(self);
+    idMsgList:= TIdMessageCollection.Create;
+    Case Curacc.Protocol of
+      ptcPOP3:
+        begin
+          IdPop3_1.IOHandler := TIdSSLIOHandlerSocketOpenSSL.Create(idPop3_1);
+          IdPop3_1.UseTLS := TIdUseTLS(CurAcc.SSL);
+          try
+            IdPOP3_1.Connect;
+            Application.ProcessMessages;
+            msgs := IdPop3_1.CheckMessages;
+          except
+            on E: Exception do LStatus.Caption:= E.Message;
+          end;
+       end;
+      ptcIMAP:
+        begin
+          IdIMAP4_1.IOHandler := TIdSSLIOHandlerSocketOpenSSL.Create(IdIMAP4_1);
+          IdIMAP4_1.UseTLS := TIdUseTLS(CurAcc.SSL);
+          try
+            if IdIMAP4_1.Connect then
+            IdIMAP4_1.ListSubscribedMailBoxes(AMailBoxList);
+            Application.ProcessMessages;
+            if not IdIMAP4_1.SelectMailBox('Inbox') then      // select proper mailbox
+            begin
+              // todo select proper mailbox
+            end;
+            msgs:= IdIMAP4_1.MailBox.TotalMsgs;
+            //IdIMAP4_1.UIDRetrieveAllEnvelopes(idMsgList);
+            //msgs:= idMsgList.Count;
+          except
+            on E: Exception do ShowMessage(E.Message);
+          end;
+        end;
+    end;
+    if msgs > 0 then
+    begin
+      for i:= 1 to msgs do
+      begin
+        Case Curacc.Protocol of
+          ptcPOP3:
+            try
+              HeaderOK:= IdPop3_1.RetrieveHeader(i, idMsg);
+              if HeaderOK then siz:= IdPop3_1.RetrieveMsgSize(i) else exit;
+            except
+              on E: Exception do LStatus.Caption:= E.Message;
+            end;
 
+          ptcIMAP:
+            try
+              siz:= IdIMAP4_1.RetrieveMsgSize(i);
+              IdIMAP4_1.RetrieveHeader(i, idMsg);
+              siz:= siz+length(idMsg.Headers.Text) ;
+            except
+              on E: Exception do LStatus.Caption:= E.Message;
+            end;
+        end;
+        Application.ProcessMessages;
+        GetMailInfos(CurName, Mail, IdMsg, siz);
+        if CurAcc.Mails.FindUIDL(Mail.MessageUIDL)>=0 then
+         Mail.MessageNew:= false else Mail.MessageNew:= true;
+         Mails.AddMail(Mail);        end;
+      end;
+  except
+    on E: Exception do LStatus.Caption:= E.Message;
+  end;
+  if msgs>1 then LStatus.Caption:= CurName+' : '+Format(MsgsFound, [msgs])
+  else LStatus.Caption:= CurName+' : '+Format(MsgFound, [msgs]) ;
+  // Update account checkmail dates
+  FAccounts.Accounts.ModifyField(index, 'LASTFIRE', now);
+  Application.ProcessMessages;
+  min:= EncodeTime(0,FAccounts.Accounts.GetItem(index).interval,0,0);
+  FAccounts.Accounts.ModifyField(index, 'NEXTFIRE', now+min);
+  TAccount(FAccounts.Accounts.Items[index]^).Mails.Reset;
+  if Mails.count > 0 then
+    for i:=0 to Mails.count-1 do
+    begin
+     TAccount(FAccounts.Accounts.Items[index]^).Mails.AddMail(Mails.GetItem(i));
+     Application.ProcessMessages;
+    end;
+  if assigned (Mails) then Mails.free;
+  if assigned(idMsgList) then idMsgList.free;
+  result:= msgs;
+end;
+
+procedure TFMailsInBox.GetMailInfos(CurName: String; var Mail: TMail; IdMsg: TIdMessage; siz: Integer);
+var
+  sfrom: string;
+begin
+  try
+  sfrom:= IdMsg.From.Name;
+  if length(sfrom)=0 then sfrom:= idMsg.From.Address;
+  Mail.AccountName:= Name;
+  Mail.MessageFrom:= sfrom;
+  Mail.FromAddress:= idMsg.From.Address;
+  Mail.MessageUIDL:= idMsg.UID;
+  Mail.MessageSubject:= idMsg.Subject;
+  Mail.MessageTo:= idMsg.Recipients[0].Address;
+  Mail.MessageDate:= idMsg.Date;
+  Mail.MessageSize:= siz;
+  Mail.MessageContentType:=  IdMsg.ContentType ;
+  except
+    on E: Exception do LStatus.Caption:= E.Message;
+  end;
+end;
 
 // Import external accounts
 // Currently : complete mailattente accounts
@@ -1063,7 +1386,7 @@ begin
     Pen.Color := Brush.Color;
     Pen.Width:= 2;
     if NewCount > 9 then Rectangle(3,1,15,12)
-    else Ellipse(3,4,15,16);
+    else Ellipse(0,1,12,13);
     // font
     Font.Name := 'Arial';
     Font.Style := [fsBold];
@@ -1086,22 +1409,19 @@ begin
       else s:= IntToStr(NewCount);
     end;
     i := TextWidth(s) div 2;
-    TextOut(9-i,4,s);
+    TextOut(6-i,1,s);
   end;
 end;
 
 // Animate tray icon
 
-procedure TFMailsInBox.TimerTrayTimer(Sender: TObject);
+procedure TFMailsInBox.OnChkMailTimer(Sender: TObject);
 begin
   if CheckingMail then
   begin;
-    TrayMail.Icon.LoadFromResourceName(HINSTANCE, 'XATT'+(InttoStr(traycount)));
-    inc (traycount);
-    if traycount > 5 then traycount:=0;
-  end else
-  begin
-    TrayMail.Icon.LoadFromResourceName(HINSTANCE, 'TRAYICON');
+    TrayMail.Icon.LoadFromResourceName(HINSTANCE, 'XATT'+(InttoStr(ChkMailTimerTick)));
+    inc (ChkMailTimerTick);
+    if ChkMailTimerTick > 5 then ChkMailTimerTick:=0;
   end;
 end;
 

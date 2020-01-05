@@ -18,7 +18,8 @@
     <VersionInfo>
       <UseVersionInfo Value="True"/>
       <MinorVersionNr Value="5"/>
-      <StringTable Comments="www.sdtp.com" CompanyName="sdtp" FileDescription="Courrier en attente - Mails in Box" InternalName="mailsinbox" LegalCopyright="sdtp - bb - january 2020" LegalTrademarks="sdtp - bb - january 2020" OriginalFilename="mailsinbox" ProductName="MailsInBox" ProductVersion="0.5.0.0"/>
+      <BuildNr Value="1"/>
+      <StringTable Comments="www.sdtp.com" CompanyName="sdtp" FileDescription="Courrier en attente - Mails in Box" InternalName="mailsinbox" LegalCopyright="sdtp - bb - january 2020" LegalTrademarks="sdtp - bb - january 2020" OriginalFilename="mailsinbox" ProductName="MailsInBox" ProductVersion="0.5.0.1"/>
     </VersionInfo>
     <BuildModes Count="1">
       <Item1 Name="Default" Default="True"/>
@@ -39,7 +40,7 @@
         <PackageName Value="LCL"/>
       </Item2>
     </RequiredPackages>
-    <Units Count="8">
+    <Units Count="9">
       <Unit0>
         <Filename Value="mailsinbox.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -87,6 +88,11 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
       </Unit7>
+      <Unit8>
+        <Filename Value="uthreadtimer.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="uThreadTimer"/>
+      </Unit8>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

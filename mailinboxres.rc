@@ -11,6 +11,7 @@ XATT5         ICON "images\\getmail5.ico"
 
 // Bitmaps
 ACCOUNT       BITMAP "images\\account16.bmp"
+TRAY          BITMAP "images\\trayicon.bmp"
 
 // Small buttons glyphs (same name as buttons suffix)
 IMPORT16      RCDATA "images\\importaccounts216.png"

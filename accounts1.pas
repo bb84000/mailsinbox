@@ -633,7 +633,7 @@ begin
        ContNode.AppendChild(SaveItem(ContNode, 'port', IntToStr(GetItem(i).Port)));
        ContNode.AppendChild(SaveItem(ContNode, 'username', GetItem(i).UserName));
        ContNode.AppendChild(SaveItem(ContNode, 'password', StringEncrypt(GetItem(i).Password, key)));
-       ContNode.AppendChild(SaveItem(ContNode, 'secureauth', BoolToString(GetItem(i).Enabled)));
+       ContNode.AppendChild(SaveItem(ContNode, 'secureauth', BoolToString(GetItem(i).SecureAuth)));
        ContNode.AppendChild(SaveItem(ContNode, 'color', IntToHex(GetItem(i).Color, 8)));
        ContNode.AppendChild(SaveItem(ContNode, 'mailclient', GetItem(i).MailClient));
        ContNode.AppendChild(SaveItem(ContNode, 'soundfile', GetItem(i).SoundFile));

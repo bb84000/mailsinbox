@@ -1,12 +1,12 @@
 object FAccounts: TFAccounts
   Left = 1039
-  Height = 275
+  Height = 272
   Top = 345
   Width = 539
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'FAccounts'
-  ClientHeight = 275
+  ClientHeight = 272
   ClientWidth = 539
   OnCreate = FormCreate
   OnDestroy = FormDestroy
@@ -15,7 +15,7 @@ object FAccounts: TFAccounts
   object PnlAccButtons: TPanel
     Left = 0
     Height = 43
-    Top = 232
+    Top = 229
     Width = 539
     Align = alBottom
     BevelInner = bvLowered

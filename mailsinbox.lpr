@@ -8,8 +8,7 @@ uses
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
   Forms, indylaz, mailsinbox1, accounts1, settings1, lazbbabout, lazbbalert,
-  impex1, mailclients1
-  { you can add units after this };
+  impex1, mailclients1;
 
 {$R *.res}
 {$R mailinboxres.rc}
