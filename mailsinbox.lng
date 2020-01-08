@@ -13,15 +13,13 @@
 [en]
 ;General
 Language=English
+
+;main form
 Caption=Mails in Box
 OKBtn=OK
 YesBtn=Yes
 NoBtn=No
 CancelBtn=Cancel
-;BtnFirst.Hint=First account
-BtnPrev.Hint=Previous account
-BtnNext.Hint=Next accout
-BtnLast.Hint=Last account
 BtnLogHint=%s Account log
 BtnGetAllMail.Hint=Check all accounts
 BtnGetAccMailHint=Check account %s
@@ -40,7 +38,17 @@ NextCheckCaption=Next check: %s
 AccImportd=%d %s account imported
 AccImportds=%d %s accounts imported
 MsgFound=%d mail found
-MsgsFound=%d mails foundtrouvés
+MsgsFound=%d mails found
+LStatusCaption=%s on account %s on %s
+ConnectToServer=%s: Connection on server %s
+ConnectedToServer=%s: Connected on server %s
+ConnectErrorMsg=%s: Connection error: %s
+DisconnectServer=%s: Disconnection from server %s
+DisconnectedServer=%s: Disconnected from server %s
+AccountChanged=Account %s has been changed
+AccountAdded=Account %s has been added
+AccountDisabled=Account %s disabled
+AccountEnabled=Account %s enabled
 
 ;About
 Aboutbox.Caption=About Mails In Box
@@ -116,11 +124,8 @@ OKBtn=OK
 YesBtn=Oui
 NoBtn=Non
 CancelBtn=Annuler
+
 ;Main form
-BtnFirst.Hint=Premier compte
-BtnPrev.Hint=Compte précédent
-BtnNext.Hint=Compte suivant
-BtnLast.Hint=Detrnier compte
 BtnLogHint=Journal du compte %s
 BtnGetAllMail.Hint=Vérifier tous les comptes
 BtnGetAccMailHint=Vérifier le compte %s
@@ -132,14 +137,24 @@ BtnSettings.Hint=Options générales
 BtnAbout.Hint=A propos de Courrier en attente
 BtnClose.Hint=Ferme Courrier en attente
 BtnQuit.Hint=Quitte Courrier en attente
-AccountCaption=Compte: %s
-EmailCaption=Courriel: %s
-LastCheckCaption=Dernière vérification: %s
-NextCheckCaption=Prochaine vérification: %s
+AccountCaption=Compte : %s
+EmailCaption=Courriel : %s
+LastCheckCaption=Dernière vérification : %s
+NextCheckCaption=Prochaine vérification : %s
 AccImportd=%d compte %s importé
 AccImportds=%d comptes %s importés
 MsgFound=%d courriel trouvé
 MsgsFound=%d courriels trouvés
+LStatusCaption=%s sur le compte %s le %s
+ConnectToServer=%s : Connexion au serveur %s
+ConnectedToServer=%s : Connecté au serveur %s
+ConnectErrorMsg=%s : Erreur de connexion : %s
+DisconnectServer=%s : Déconnexion du serveur %s
+DisconnectedServer=%s : Déconnecté du serveur %s
+AccountChanged=Le compte %s a été modifié
+AccountAdded=Le compte %s a été ajouté
+AccountDisabled=Compte %s désactivé
+AccountEnabled=Compte %s activé
 
 
 ;About
@@ -170,7 +185,7 @@ FAccounts.CBSecureAuth.Caption=Authentification sécurisée
 FAccounts.LInterval.Caption=Intervalle
 FAccounts.CBShowPass.Caption=Montre le mot de passe
 FAccounts.LReply.Caption=Adresse de réponse
-FAccounts.CBEnabledAcc.Caption=Compte actif;
+FAccounts.CBEnabledAcc.Caption=Compte actif
 FAccounts.BtnMailClient.Hint=Cliquer pour sélectionner un client courriel
 FAccounts.LSoundFile.Caption=Fichier son
 FAccounts.BtnPlaySound.Hint=Ecouter le son sélectionné

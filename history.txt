@@ -11,3 +11,10 @@ Version 0.5.0.1 - 05/01/2020
 - Implemented Get all accounts mails
 - Imap mail checking implemented
 
+Version 0.5.0.2 - 08/01/2020
+- Navigation buttons removed
+- Tray notifications can be disabled
+- Accounts Logs and program log implemented
+- Set base config on first launch
+
+

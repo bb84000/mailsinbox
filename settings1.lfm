@@ -1,12 +1,12 @@
 object FSettings: TFSettings
   Left = 907
-  Height = 262
+  Height = 287
   Top = 277
   Width = 537
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'Préférences de MailsInBox'
-  ClientHeight = 262
+  ClientHeight = 287
   ClientWidth = 537
   OnActivate = FormActivate
   OnCreate = FormCreate
@@ -16,7 +16,7 @@ object FSettings: TFSettings
   object PnlStatus: TPanel
     Left = 0
     Height = 31
-    Top = 231
+    Top = 256
     Width = 537
     Align = alBottom
     BevelInner = bvLowered
@@ -36,7 +36,7 @@ object FSettings: TFSettings
   object PnlButtons: TPanel
     Left = 0
     Height = 42
-    Top = 189
+    Top = 214
     Width = 537
     Align = alBottom
     BevelInner = bvLowered
@@ -71,19 +71,19 @@ object FSettings: TFSettings
   end
   object GBSystem: TGroupBox
     Left = 0
-    Height = 189
+    Height = 214
     Top = 0
     Width = 537
     Align = alClient
     Caption = 'Système'
-    ClientHeight = 169
+    ClientHeight = 194
     ClientWidth = 533
     TabOrder = 2
     object LMailClient: TLabel
       Left = 8
       Height = 15
-      Top = 114
-      Width = 120
+      Top = 138
+      Width = 112
       AutoSize = False
       Caption = 'Client courrier'
       ParentColor = False
@@ -126,9 +126,9 @@ object FSettings: TFSettings
       TabOrder = 3
     end
     object LLangue: TLabel
-      Left = 275
+      Left = 8
       Height = 15
-      Top = 90
+      Top = 114
       Width = 39
       Caption = 'Langue'
       ParentColor = False
@@ -173,7 +173,7 @@ object FSettings: TFSettings
       Left = 490
       Height = 22
       Hint = 'Cliquer pour sélectionner un client courriel'
-      Top = 113
+      Top = 136
       Width = 25
       Glyph.Data = {
         36040000424D3604000000000000360000002800000010000000100000000100
@@ -219,8 +219,8 @@ object FSettings: TFSettings
     object LSoundFile: TLabel
       Left = 8
       Height = 15
-      Top = 138
-      Width = 120
+      Top = 162
+      Width = 112
       AutoSize = False
       Caption = 'Fichier son'
       ParentColor = False
@@ -228,7 +228,7 @@ object FSettings: TFSettings
     object ESoundFile: TEdit
       Left = 120
       Height = 21
-      Top = 136
+      Top = 160
       Width = 342
       AutoSize = False
       OnChange = ESoundFileChange
@@ -240,7 +240,7 @@ object FSettings: TFSettings
       Left = 490
       Height = 22
       Hint = 'Cliquer pour sélectionner un fichier son'
-      Top = 136
+      Top = 160
       Width = 25
       Glyph.Data = {
         36060000424D3606000000000000360000002800000020000000100000000100
@@ -300,10 +300,10 @@ object FSettings: TFSettings
       ParentShowHint = False
     end
     object CBLangue: TComboBox
-      Left = 368
+      Left = 120
       Height = 21
-      Top = 88
-      Width = 147
+      Top = 112
+      Width = 288
       AutoSelect = False
       AutoSize = False
       Constraints.MaxHeight = 21
@@ -315,7 +315,7 @@ object FSettings: TFSettings
       Left = 464
       Height = 22
       Hint = 'Ecouter le son sélectionné'
-      Top = 136
+      Top = 160
       Width = 23
       Glyph.Data = {
         76010000424D7601000000000000760000002800000020000000100000000100
@@ -341,13 +341,13 @@ object FSettings: TFSettings
       Top = 88
       Width = 250
       AutoSize = False
-      Caption = 'Petits boutons (redémarrage nécessaire)'
+      Caption = 'Petits boutons'
       TabOrder = 10
     end
     object CBMailClient: TComboBox
       Left = 120
       Height = 21
-      Top = 113
+      Top = 136
       Width = 288
       AutoSelect = False
       AutoSize = False
@@ -362,13 +362,22 @@ object FSettings: TFSettings
       Left = 418
       Height = 19
       Hint = 'Cocher s''il s''agit d''une adresse Web'
-      Top = 114
+      Top = 138
       Width = 62
       AutoSize = False
       Caption = 'URL'
       ParentShowHint = False
       ShowHint = True
       TabOrder = 12
+    end
+    object CBNotifications: TCheckBox
+      Left = 275
+      Height = 19
+      Top = 88
+      Width = 250
+      AutoSize = False
+      Caption = 'Notifications activées'
+      TabOrder = 13
     end
   end
 end

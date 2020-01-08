@@ -1,5 +1,5 @@
 {****************************************************************************** }
-{ settings1 - Modify settings form and record                                                }
+{ settings1 - Modify settings form and record                                   }
 { bb - sdtp - november 2019                                                     }
 {*******************************************************************************}
 
@@ -43,6 +43,7 @@ type
     FSaveLogs: Boolean;
     FStartupCheck: Boolean;
     FSmallBtns: Boolean;
+    FNotifications: Boolean;
     FSoundFile: String;
     FLangStr: String;
     FMailClient: String;
@@ -65,6 +66,7 @@ type
     procedure SetSaveLogs(b: boolean);
     procedure SetStartupCheck(b: boolean);
     procedure SetSmallBtns(b: boolean);
+    procedure SetNotifications(b: boolean);
     procedure SetSoundFile(s: string);
     procedure SetLangStr (s: string);
     procedure SetMailClient(s: string);
@@ -89,6 +91,7 @@ type
     property SaveLogs: Boolean read FSaveLogs write SetSaveLogs;
     property StartupCheck: boolean read FStartupCheck write SetStartupCheck;
     property SmallBtns: boolean read FSmallBtns write SetSmallBtns;
+    property Notifications: boolean read FNotifications write SetNotifications;
     property SoundFile: string read FSoundFile write SetSoundFile;
     property LangStr: String read FLangStr write SetLangStr;
     property MailClient: string read FMailClient write SetMailClient;
@@ -110,6 +113,7 @@ end;
     CBMailClientMini: TCheckBox;
     CBSmallBtns: TCheckBox;
     CBSaveLogs: TCheckBox;
+    CBNotifications: TCheckBox;
     CBStartupCheck: TCheckBox;
     CBSavSizePos: TCheckBox;
     CBRestNewMsg: TCheckBox;
@@ -274,6 +278,15 @@ begin
   end;
 end;
 
+procedure TConfig.SetNotifications(b: boolean);
+begin
+  if FNotifications <> b then
+  begin
+    FNotifications:= b;
+    if Assigned(FOnChange) then FOnChange(Self);
+  end;
+end;
+
 procedure TConfig.SetSoundFile (s: string);
 begin
   if FSoundFile <> s then
@@ -345,6 +358,7 @@ begin
     TDOMElement(iNode).SetAttribute ('savelogs',BoolToString(FSaveLogs));
     TDOMElement(iNode).SetAttribute ('startupcheck',BoolToString(FStartupCheck));
     TDOMElement(iNode).SetAttribute ('smallbtns',BoolToString(FSmallBtns));
+    TDOMElement(iNode).SetAttribute ('notifications',BoolToString(FNotifications));
     TDOMElement(iNode).SetAttribute ('soundfile', FSoundFile);
     TDOMElement(iNode).SetAttribute ('langstr', FLangStr);
     TDOMElement(iNode).SetAttribute ('mailclient', FMailClient);
@@ -405,6 +419,7 @@ begin
     if UpCaseAttrib='SAVELOGS' then FSaveLogs:= StringToBool(iNode.Attributes.Item[i].NodeValue);
     if UpCaseAttrib='STARTUPCHECK' then FStartupCheck:= StringToBool(iNode.Attributes.Item[i].NodeValue);
     if UpCaseAttrib='SMALLBTNS' then FSmallBtns:= StringToBool(iNode.Attributes.Item[i].NodeValue);
+    if UpCaseAttrib='NOTIFICATIONS' then FNotifications:= StringToBool(iNode.Attributes.Item[i].NodeValue); ;
     if UpCaseAttrib='SOUNDFILE' then FSoundFile:= iNode.Attributes.Item[i].NodeValue;
     if UpCaseAttrib='LANGSTR' then FLangStr:= iNode.Attributes.Item[i].NodeValue;
     if UpCaseAttrib='MAILCLIENT' then FMailClient:= iNode.Attributes.Item[i].NodeValue;
@@ -547,9 +562,11 @@ var
   Reg: Tregistry;
   MailKey, DefMailName, DefMailSubkey: string;
   MailSubkey: string;
-  A:TStringArray;
-  HomeDir: string;
-  AppListArr : array of string;
+  {$IFDEF Linux}
+    A:TStringArray;
+    HomeDir: string;
+    AppListArr : array of string;
+  {$ENDIF}
   SubKeyNames: TStringList;
   i: integer;
   FixedCount, clicount: integer;

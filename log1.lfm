@@ -1,0 +1,64 @@
+object FLog: TFLog
+  Left = 852
+  Height = 540
+  Top = 218
+  Width = 539
+  Caption = 'Journal'
+  ClientHeight = 540
+  ClientWidth = 539
+  LCLVersion = '2.0.6.0'
+  object PnlButtons: TPanel
+    Left = 0
+    Height = 50
+    Top = 490
+    Width = 539
+    Align = alBottom
+    BevelInner = bvLowered
+    ClientHeight = 50
+    ClientWidth = 539
+    TabOrder = 0
+    object BtnOK: TBitBtn
+      Left = 224
+      Height = 30
+      Top = 8
+      Width = 75
+      Anchors = [akTop]
+      Default = True
+      DefaultCaption = True
+      Kind = bkOK
+      ModalResult = 1
+      TabOrder = 0
+    end
+  end
+  object RMLog: TRichMemo
+    Left = 0
+    Height = 490
+    Top = 0
+    Width = 539
+    Align = alClient
+    HideSelection = False
+    Lines.Strings = (
+      'RMLog'
+    )
+    PopupMenu = MnuCopy
+    ScrollBars = ssAutoBoth
+    TabOrder = 1
+    ZoomFactor = 1
+  end
+  object MnuCopy: TPopupMenu
+    left = 247
+    top = 200
+    object MnuCopySel: TMenuItem
+      Caption = 'Copie le texte sélectionné'
+      OnClick = MnuCopySelClick
+    end
+    object MnuCopyAll: TMenuItem
+      Caption = 'Copie le journal'
+      OnClick = MnuCopyAllClick
+    end
+    object MnuCopyLine: TMenuItem
+      Caption = 'Copie la ligne au curseur'
+      OnClick = MnuCopyLineClick
+    end
+  end
+end

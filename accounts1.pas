@@ -92,6 +92,7 @@ type
      Error: Boolean;
      Checking: Boolean;
      Tag: Boolean;
+     UID: Integer;
   end;
 
   // Accounts list
@@ -123,6 +124,7 @@ type
     function SaveToXMLfile(filename: string; typ: TSaveType= all): Boolean;
     function ImportOldXML(filename: string): Boolean;
     procedure DoSort;
+    function charsum(s: string): integer;
     property OnChange: TNotifyEvent read FOnChange write FOnChange;
     Property SortType : TChampsCompare read FSortType write SetSortType default cdcNone;
     property AppName: string read FAppName write FAppName;
@@ -369,13 +371,21 @@ begin
  Clear;
 end;
 
+function TAccountsList.charsum(s: string): integer;
+var
+ i: integer;
+begin
+  result:=0;
+  for i:=1 to length(s) do result:=result+ord(s[i]);
+
+end;
+
 procedure TAccountsList.AddAccount(Account : TAccount);
 var
  K: PAccount;
- n: integer;
 begin
-  n:= count;
   new(K);
+  if Account.UID=0 then Account.UID:= charsum(Account.Name+Account.Password);
   K^:= Account;
   // we create the mails list if not already created
   if not assigned(K^.Mails) then K^.Mails:= TMailsList.Create;
@@ -435,6 +445,7 @@ begin
   if field = 'ERROR' then TAccount(Items[i]^).Error:= value;
   if field = 'CHECKING' then TAccount(Items[i]^).Checking:= value;
   if field = 'TAG' then TAccount(Items[i]^).Tag:= value;
+  if field = 'UID' then TAccount(Items[i]^).UID:= value;
   DoSort;
   if Assigned(FOnChange) then FOnChange(Self);
 end;
@@ -475,7 +486,6 @@ var
   subNode: TDOMNode;
   s: string;
   upNodeName: string;
-  n: integer;
   A: TAccount;
 const
   key=14236;
@@ -485,7 +495,7 @@ begin
   while (chNode <> nil) and (UpperCase(chnode.NodeName)='ACCOUNT')  do
   begin
     Try
-      n:= count;
+      A:= Default(TAccount);
       subNode:= chNode.FirstChild;
       while subNode <> nil do
       try
@@ -510,6 +520,7 @@ begin
         if upNodeName = 'LASTFIRE' then A.LastFire:= StringToDateTime(s, 'dd/mm/yyyy hh:nn:ss');
         if upNodeName = 'NEXTFIRE' then A.NextFire:= StringToDateTime(s, 'dd/mm/yyyy hh:nn:ss');
         if upNodeName = 'TAG' then A.Tag:= StringToBool(s);
+        if upNodeName = 'UID' then A.UID:= StringToInt(s);
       finally
         subnode:= subnode.NextSibling;
       end;
@@ -643,6 +654,7 @@ begin
        ContNode.AppendChild(SaveItem(ContNode, 'lastfire', DateTimeToString(GetItem(i).LastFire, 'dd/mm/yyyy hh:nn:ss')));
        ContNode.AppendChild(SaveItem(ContNode, 'nextfire', DateTimeToString(GetItem(i).NextFire, 'dd/mm/yyyy hh:nn:ss')));
        ContNode.AppendChild(SaveItem(ContNode, 'tag', BoolToString(GetItem(i).Tag)));
+       ContNode.AppendChild(SaveItem(ContNode, 'uid', IntToStr(GetItem(i).UID)));
      except
        Result:= False;
      end;

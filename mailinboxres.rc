@@ -11,7 +11,10 @@ XATT5         ICON "images\\getmail5.ico"
 
 // Bitmaps
 ACCOUNT       BITMAP "images\\account16.bmp"
+ACCOUNTD      BITMAP "images\\account16d.bmp"
 TRAY          BITMAP "images\\trayicon.bmp"
+
+ACCOUNT16     RCDATA "images\\account16.png"
 
 // Small buttons glyphs (same name as buttons suffix)
 IMPORT16      RCDATA "images\\importaccounts216.png"
@@ -19,7 +22,7 @@ FIRST16       RCDATA "images\\arrowfirst216.png"
 PREV16        RCDATA "images\\arrowprev216.png"
 NEXT16        RCDATA "images\\arrownext216.png"
 LAST16        RCDATA "images\\arrowlast216.png"
-LOG16         RCDATA "images\\log216.png"
+ACCOUNTLOG16         RCDATA "images\\accountlog216.png"
 GETALLMAIL16  RCDATA "images\\getallmail216.png"
 GETACCMAIL16  RCDATA "images\\getaccmail216.png"
 LAUNCHCLIENT16  RCDATA "images\\launchclient216.png"
@@ -27,6 +30,7 @@ DELETE16      RCDATA "images\\deleteaccount216.png"
 ADDACC16      RCDATA "images\\addaccount216.png"
 EDITACC16     RCDATA "images\\editaccount216.png"
 SETTINGS16    RCDATA "images\\settings216.png"
+LOG16         RCDATA"images\\log216.png"
 ABOUT16       RCDATA "images\\help216.png"
 CLOSE16       RCDATA "images\\close216.png"
 QUIT16        RCDATA "images\\quit216.png"
