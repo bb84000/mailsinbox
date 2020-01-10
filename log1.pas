@@ -39,7 +39,6 @@ implementation
 { TFLog }
 
 
-
 procedure TFLog.MnuCopySelClick(Sender: TObject);
 begin
   Clipboard.AsText := RMLog.SelText;

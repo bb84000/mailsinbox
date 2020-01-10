@@ -1,7 +1,7 @@
 object FLog: TFLog
-  Left = 852
+  Left = 825
   Height = 540
-  Top = 218
+  Top = 268
   Width = 539
   Caption = 'Journal'
   ClientHeight = 540

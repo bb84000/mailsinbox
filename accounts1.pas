@@ -14,7 +14,7 @@ interface
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ExtCtrls, ComCtrls,
   StdCtrls, ColorBox, Spin, Buttons, laz2_DOM , laz2_XMLRead, laz2_XMLWrite,
-  lazbbutils, base64;
+  lazbbutils;
 
 type
   TChampsCompare = (cdcNone, cdcName, cdcIndex, cdcMessageNum, cdcMessageSize, cdcMessageUIDL,
@@ -38,6 +38,7 @@ type
     MessageFrom : String;
     FromAddress : String;
     MessageTo : String;
+    ToAddress: String;
     MessageSubject : String;
     MessageDate : TDateTime;
     MessageContentType: String;
@@ -275,6 +276,7 @@ begin
   K^.MessageFrom := Mail.MessageFrom;
   K^.FromAddress := Mail.FromAddress;
   K^.MessageTo   := Mail.MessageTo;
+  K^.ToAddress   := Mail.ToAddress;
   K^.MessageSubject := Mail.MessageSubject;
   K^.Messagedate := Mail.Messagedate;
   K^.MessageContentType:= Mail.MessageContentType;
@@ -295,6 +297,7 @@ begin
   TMail(Items[i]^).MessageFrom := Mail.MessageFrom;
   TMail(Items[i]^).FromAddress := Mail.FromAddress;
   TMail(Items[i]^).MessageTo   := Mail.MessageTo;
+  TMail(Items[i]^).ToAddress   := Mail.ToAddress;
   TMail(Items[i]^).MessageSubject := Mail.MessageSubject;
   TMail(Items[i]^).Messagedate := Mail.Messagedate;
   TMail(Items[i]^).MessageContentType:= Mail.MessageContentType;

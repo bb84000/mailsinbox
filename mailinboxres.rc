@@ -35,11 +35,3 @@ ABOUT16       RCDATA "images\\help216.png"
 CLOSE16       RCDATA "images\\close216.png"
 QUIT16        RCDATA "images\\quit216.png"
 
-
-//MAIL        BITMAP "images\mail.bmp"
-//MAILNEW     BITMAP "images\mailnew.bmp"
-//MAILATT     BITMAP "images\mailatt.bmp"
-//MAILNEWATT  BITMAP "images\mailnewatt.bmp"
-//MAIN        RCDATA "images\mainicon.png"
-//USER        BITMAP "images\\user.bmp"
-//MAILDEL     BITMAP "images\maildel.bmp"

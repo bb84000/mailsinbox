@@ -17,4 +17,11 @@ Version 0.5.0.2 - 08/01/2020
 - Accounts Logs and program log implemented
 - Set base config on first launch
 
+Version 0.5.1.0 - 09/01/2020
+- Added hide icon in taskbar in settings dialog
+- Enabled startmini option
+- Better notification and hint on tray icon
+- Optional alert when close (background operation) or quit the program
+- Implemented launch mail client function
+
 

@@ -18,8 +18,8 @@
     <VersionInfo>
       <UseVersionInfo Value="True"/>
       <MinorVersionNr Value="5"/>
-      <BuildNr Value="2"/>
-      <StringTable Comments="www.sdtp.com" CompanyName="sdtp" FileDescription="Courrier en attente - Mails in Box" InternalName="mailsinbox" LegalCopyright="sdtp - bb - january 2020" LegalTrademarks="sdtp - bb - january 2020" OriginalFilename="mailsinbox" ProductName="MailsInBox" ProductVersion="0.5.0.2"/>
+      <RevisionNr Value="1"/>
+      <StringTable Comments="www.sdtp.com" CompanyName="sdtp" FileDescription="Courrier en attente - Mails in Box" InternalName="mailsinbox" LegalCopyright="sdtp - bb - january 2020" LegalTrademarks="sdtp - bb - january 2020" OriginalFilename="mailsinbox" ProductName="MailsInBox" ProductVersion="0.5.1.0"/>
     </VersionInfo>
     <BuildModes Count="1">
       <Item1 Name="Default" Default="True"/>
@@ -32,16 +32,19 @@
       <FormatVersion Value="2"/>
       <Modes Count="0"/>
     </RunParams>
-    <RequiredPackages Count="3">
+    <RequiredPackages Count="4">
       <Item1>
-        <PackageName Value="richmemopackage"/>
+        <PackageName Value="uniqueinstance_package"/>
       </Item1>
       <Item2>
-        <PackageName Value="indylaz"/>
+        <PackageName Value="richmemopackage"/>
       </Item2>
       <Item3>
-        <PackageName Value="LCL"/>
+        <PackageName Value="indylaz"/>
       </Item3>
+      <Item4>
+        <PackageName Value="LCL"/>
+      </Item4>
     </RequiredPackages>
     <Units Count="11">
       <Unit0>

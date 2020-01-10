@@ -39,11 +39,13 @@ type
     FStartup: Boolean;
     FStartMini: Boolean;
     FMailClientMini: Boolean;
+    FHideInTaskbar: Boolean;
     FRestNewMsg: Boolean;
     FSaveLogs: Boolean;
     FStartupCheck: Boolean;
     FSmallBtns: Boolean;
     FNotifications: Boolean;
+    FNoCloseAlert: Boolean;
     FSoundFile: String;
     FLangStr: String;
     FMailClient: String;
@@ -62,11 +64,13 @@ type
     procedure SetStartup (b: Boolean);
     procedure SetStartmini (b: Boolean);
     procedure SetMailClientMini(b: boolean);
+    procedure SetHideInTaskbar(b: boolean);
     procedure SetRestNewMsg(b: boolean);
     procedure SetSaveLogs(b: boolean);
     procedure SetStartupCheck(b: boolean);
     procedure SetSmallBtns(b: boolean);
     procedure SetNotifications(b: boolean);
+    procedure SetNoCloseAlert(b: boolean);
     procedure SetSoundFile(s: string);
     procedure SetLangStr (s: string);
     procedure SetMailClient(s: string);
@@ -87,11 +91,13 @@ type
     property Startup: Boolean read FStartup write SetStartup;
     property StartMini: Boolean read FStartMini write SetStartMini;
     property MailClientMini: Boolean read FMailClientMini write SetMailClientMini;
+    property HideInTaskbar: Boolean read FHideInTaskbar write SetHideInTaskbar;
     property RestNewMsg: Boolean read FRestNewMsg write SetRestNewMsg;
     property SaveLogs: Boolean read FSaveLogs write SetSaveLogs;
     property StartupCheck: boolean read FStartupCheck write SetStartupCheck;
     property SmallBtns: boolean read FSmallBtns write SetSmallBtns;
     property Notifications: boolean read FNotifications write SetNotifications;
+    property NoCloseAlert: boolean read FNoCloseAlert write SetNoCloseAlert;
     property SoundFile: string read FSoundFile write SetSoundFile;
     property LangStr: String read FLangStr write SetLangStr;
     property MailClient: string read FMailClient write SetMailClient;
@@ -111,6 +117,8 @@ end;
     BtnOK: TBitBtn;
     CBMailClient: TComboBox;
     CBMailClientMini: TCheckBox;
+    CBHideInTaskBar: TCheckBox;
+    CBNoCloseAlert: TCheckBox;
     CBSmallBtns: TCheckBox;
     CBSaveLogs: TCheckBox;
     CBNotifications: TCheckBox;
@@ -142,6 +150,8 @@ end;
     procedure FormActivate(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
+    procedure FormWindowStateChange(Sender: TObject);
+    procedure LLangueClick(Sender: TObject);
     procedure Timer1Timer(Sender: TObject);
   private
     first: boolean;
@@ -242,6 +252,15 @@ begin
    end;
 end;
 
+procedure TConfig.SetHideInTaskbar (b: Boolean);
+begin
+   if FHideInTaskbar <> b then
+   begin
+     FHideInTaskbar := b;
+     if Assigned(FOnChange) then FOnChange(Self);
+   end;
+end;
+
 procedure TConfig.SetRestNewMsg (b: Boolean);
 begin
    if FRestNewMsg <> b then
@@ -283,6 +302,15 @@ begin
   if FNotifications <> b then
   begin
     FNotifications:= b;
+    if Assigned(FOnChange) then FOnChange(Self);
+  end;
+end;
+
+procedure TConfig.SetNoCloseAlert(b: boolean);
+begin
+  if FNoCloseAlert <> b then
+  begin
+    FNoCloseAlert:= b;
     if Assigned(FOnChange) then FOnChange(Self);
   end;
 end;
@@ -354,11 +382,13 @@ begin
     TDOMElement(iNode).SetAttribute ('startup', BoolToString(FStartup));
     TDOMElement(iNode).SetAttribute ('startmini',BoolToString(FStartMini));
     TDOMElement(iNode).SetAttribute ('mailclientmini',BoolToString(FMailClientMini));
+    TDOMElement(iNode).SetAttribute ('hideintaskbar',BoolToString(FHideInTaskbar));
     TDOMElement(iNode).SetAttribute ('restnewmsg',BoolToString(FRestNewMsg));
     TDOMElement(iNode).SetAttribute ('savelogs',BoolToString(FSaveLogs));
     TDOMElement(iNode).SetAttribute ('startupcheck',BoolToString(FStartupCheck));
     TDOMElement(iNode).SetAttribute ('smallbtns',BoolToString(FSmallBtns));
     TDOMElement(iNode).SetAttribute ('notifications',BoolToString(FNotifications));
+    TDOMElement(iNode).SetAttribute ('noclosealert', BoolToString(FNoCloseAlert));
     TDOMElement(iNode).SetAttribute ('soundfile', FSoundFile);
     TDOMElement(iNode).SetAttribute ('langstr', FLangStr);
     TDOMElement(iNode).SetAttribute ('mailclient', FMailClient);
@@ -415,11 +445,13 @@ begin
     if UpCaseAttrib='STARTUP' then FStartup:= StringToBool(iNode.Attributes.Item[i].NodeValue);
     if UpCaseAttrib='STARTMINI' then FStartMini:= StringToBool(iNode.Attributes.Item[i].NodeValue);
     if UpCaseAttrib='MAILCLIENTMINI' then FMailClientMini:= StringToBool(iNode.Attributes.Item[i].NodeValue);
+    if UpCaseAttrib='HIDEINTASKBAR' then FHideInTaskbar:= StringToBool(iNode.Attributes.Item[i].NodeValue);
     if UpCaseAttrib='RESTNEWMSG' then FRestNewMsg:= StringToBool(iNode.Attributes.Item[i].NodeValue);
     if UpCaseAttrib='SAVELOGS' then FSaveLogs:= StringToBool(iNode.Attributes.Item[i].NodeValue);
     if UpCaseAttrib='STARTUPCHECK' then FStartupCheck:= StringToBool(iNode.Attributes.Item[i].NodeValue);
     if UpCaseAttrib='SMALLBTNS' then FSmallBtns:= StringToBool(iNode.Attributes.Item[i].NodeValue);
-    if UpCaseAttrib='NOTIFICATIONS' then FNotifications:= StringToBool(iNode.Attributes.Item[i].NodeValue); ;
+    if UpCaseAttrib='NOTIFICATIONS' then FNotifications:= StringToBool(iNode.Attributes.Item[i].NodeValue);
+    if UpCaseAttrib='NOCLOSEALERT' then FNoCloseAlert:= StringToBool(iNode.Attributes.Item[i].NodeValue);
     if UpCaseAttrib='SOUNDFILE' then FSoundFile:= iNode.Attributes.Item[i].NodeValue;
     if UpCaseAttrib='LANGSTR' then FLangStr:= iNode.Attributes.Item[i].NodeValue;
     if UpCaseAttrib='MAILCLIENT' then FMailClient:= iNode.Attributes.Item[i].NodeValue;
@@ -472,6 +504,15 @@ end;
 procedure TFSettings.FormDestroy(Sender: TObject);
 begin
   if assigned (Settings) then Settings.free;
+end;
+
+procedure TFSettings.FormWindowStateChange(Sender: TObject);
+begin
+  end;
+
+procedure TFSettings.LLangueClick(Sender: TObject);
+begin
+
 end;
 
 // Read only until last item (user item)
