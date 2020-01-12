@@ -116,16 +116,24 @@ Section "" ;No components page, name is not important
      !getdllversion  "${source_dir}\mailsinboxwin64.exe" expv_
      StrCpy "$prg_to_inst" "$INSTDIR\mailsinboxwin64.exe"
      StrCpy "$prg_to_del" "$INSTDIR\mailsinboxwin32.exe"
+    ; Dont install ssl libs if it is aready in the system32 folder
+     IfFileExists '$SYSDIR\libeay32.dll' 0
+     goto okssl64
      File "${lazarus_dir}\openssl\win64\libeay32.dll"
      File "${lazarus_dir}\openssl\win64\ssleay32.dll"
+     File "${lazarus_dir}\openssl\OpenSSL License.txt"
+     okssl64:
   ${Else}
      !getdllversion  "${source_dir}\mailsinboxwin32.exe" expv_
      StrCpy "$prg_to_inst" "$INSTDIR\mailsinboxwin32.exe"
      StrCpy "$prg_to_del" "$INSTDIR\mailsinboxwin64.exe"
+     IfFileExists '$SYSDIR\libeay32.dll' 0
+     goto okssl32
      File "${lazarus_dir}\openssl\win32\libeay32.dll"
      File "${lazarus_dir}\openssl\win32\ssleay32.dll"
+     File "${lazarus_dir}\openssl\OpenSSL License.txt"
+     okssl32:
    ${EndIf}
-   File "${lazarus_dir}\openssl\OpenSSL License.txt"
   ; Dans le cas ou on n'aurait pas pu fermer l'application
   Delete /REBOOTOK "$INSTDIR\mailsinbox.exe"
   File "${source_dir}\mailsinboxwin64.exe"
@@ -141,7 +149,6 @@ Section "" ;No components page, name is not important
 
   ; write out uninstaller
   WriteUninstaller "$INSTDIR\uninst.exe"
-  
   ; Get install folder size
   ${GetSize} "$INSTDIR" "/S=0K" $0 $1 $2
 
@@ -173,6 +180,9 @@ SectionEnd
 
 Section Uninstall
 SetShellVarContext all
+${If} ${RunningX64}
+  SetRegView 64    ; change registry entries and install dir for 64 bit
+${EndIf}
 ; add delete commands to delete whatever files/registry keys/etc you installed here.
 Delete /REBOOTOK "$INSTDIR\mailsinbox.exe"
 Delete "$INSTDIR\history.txt"
@@ -197,7 +207,7 @@ Delete "$INSTDIR\uninst.exe"
   RMDir "$INSTDIR"
 
 DeleteRegKey HKCU "Software\SDTP\mailsinbox"
-DeleteRegKey HKEY_LOCAL_MACHINE "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\mailsinbox"
+DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\mailsinbox"
 
 SectionEnd ; end of uninstall section
 

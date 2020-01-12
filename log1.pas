@@ -10,9 +10,9 @@ uses
 
 type
 
-  { TFLog }
+  { TFLogView }
 
-  TFLog = class(TForm)
+  TFLogView = class(TForm)
     BtnOK: TBitBtn;
     MnuCopyLine: TMenuItem;
     MnuCopyAll: TMenuItem;
@@ -20,6 +20,7 @@ type
     PnlButtons: TPanel;
     MnuCopy: TPopupMenu;
     RMLog: TRichMemo;
+    procedure FormChangeBounds(Sender: TObject);
     procedure MnuCopyAllClick(Sender: TObject);
     procedure MnuCopyLineClick(Sender: TObject);
     procedure MnuCopySelClick(Sender: TObject);
@@ -30,23 +31,25 @@ type
   end;
 
 var
-  FLog: TFLog;
+  FLogView: TFLogView;
 
 implementation
 
 {$R *.lfm}
 
-{ TFLog }
+uses mailsinbox1;
+
+{ TFLogView }
 
 
-procedure TFLog.MnuCopySelClick(Sender: TObject);
+procedure TFLogView.MnuCopySelClick(Sender: TObject);
 begin
   Clipboard.AsText := RMLog.SelText;
 
 end;
 
 
-procedure TFLog.MnuCopyLineClick(Sender: TObject);
+procedure TFLogView.MnuCopyLineClick(Sender: TObject);
 var
   selbeg: integer;
   linebeg, linelength: integer;
@@ -70,11 +73,16 @@ end;
 
 
 
-procedure TFLog.MnuCopyAllClick(Sender: TObject);
+procedure TFLogView.MnuCopyAllClick(Sender: TObject);
 begin
   RMLog.SelStart:=0;
   RMlog.SelLength:= length(RMLog.text);
   Clipboard.AsText:= RMLog.Text;
+end;
+
+procedure TFLogView.FormChangeBounds(Sender: TObject);
+begin
+  FMailsInBox.OnChangeBounds(sender);
 end;
 
 

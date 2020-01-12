@@ -1,4 +1,4 @@
-object FLog: TFLog
+object FLogView: TFLogView
   Left = 825
   Height = 540
   Top = 268
@@ -6,6 +6,7 @@ object FLog: TFLog
   Caption = 'Journal'
   ClientHeight = 540
   ClientWidth = 539
+  OnChangeBounds = FormChangeBounds
   LCLVersion = '2.0.6.0'
   object PnlButtons: TPanel
     Left = 0

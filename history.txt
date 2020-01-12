@@ -24,4 +24,10 @@ Version 0.5.1.0 - 09/01/2020
 - Optional alert when close (background operation) or quit the program
 - Implemented launch mail client function
 
+Version 0.5.1.1 - 12/01/2020
+- Changed saved settings in config file (child nodes instead attributes
+- Updated installer to install ssl libraries only if they are not already
+  present on the system
+- Automatic restart if the program is active on system shutdown
+
 

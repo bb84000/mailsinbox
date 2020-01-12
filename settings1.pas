@@ -51,9 +51,10 @@ type
     FMailClient: String;
     FMailClientName: string;
     FMailClientIsUrl: boolean;
+    FRestart: Boolean;
     FAppName: String;
     FVersion: String;
-
+    function SaveItem(iNode: TDOMNode; sname, svalue: string): TDOMNode;
   public
 
     constructor Create (AppName: string);
@@ -77,6 +78,7 @@ type
     procedure SetMailClientName(s: string);
     procedure SetMailClientIsUrl(b: boolean);
     procedure SetVersion(s: string);
+    procedure SetRestart(b: boolean);
     function SaveXMLnode(iNode: TDOMNode): Boolean;
     function SaveToXMLfile(filename: string): Boolean;
     function LoadXMLNode(iNode: TDOMNode): Boolean;
@@ -105,6 +107,7 @@ type
     property MailClientIsUrl: boolean read FMailClientIsUrl write SetMailClientIsUrl;
     property AppName: string read FAppName write FAppName;
     property Version: string read FVersion write SetVersion;
+    property Restart: boolean read FRestart write SetRestart;
 end;
 
 
@@ -369,34 +372,48 @@ begin
   end;
 end;
 
+procedure TConfig.SetRestart(b:boolean);
+begin
+  if FRestart <> b then
+  begin
+    FRestart:= b;
+    if Assigned(FOnChange) then FOnChange(Self);
+  end;
+end;
 
+function TConfig.SaveItem(iNode: TDOMNode; sname, svalue: string): TDOMNode;
+begin
+  result:= iNode.OwnerDocument.CreateElement(sname);
+  result.TextContent:= svalue;
+end;
 
 function TConfig.SaveXMLnode(iNode: TDOMNode): Boolean;
 begin
   Try
     TDOMElement(iNode).SetAttribute ('version', FVersion);
-    TDOMElement(iNode).SetAttribute ('savsizepos', BoolToString(FSavSizePos));
-    TDOMElement(iNode).SetAttribute ('wstate', FWState);
-    TDOMElement(iNode).SetAttribute ('lastupdchk', DateTimeToString(FLastUpdChk));
-    TDOMElement(iNode).SetAttribute ('nochknewver', BoolToString(FNoChkNewVer));
-    TDOMElement(iNode).SetAttribute ('startup', BoolToString(FStartup));
-    TDOMElement(iNode).SetAttribute ('startmini',BoolToString(FStartMini));
-    TDOMElement(iNode).SetAttribute ('mailclientmini',BoolToString(FMailClientMini));
-    TDOMElement(iNode).SetAttribute ('hideintaskbar',BoolToString(FHideInTaskbar));
-    TDOMElement(iNode).SetAttribute ('restnewmsg',BoolToString(FRestNewMsg));
-    TDOMElement(iNode).SetAttribute ('savelogs',BoolToString(FSaveLogs));
-    TDOMElement(iNode).SetAttribute ('startupcheck',BoolToString(FStartupCheck));
-    TDOMElement(iNode).SetAttribute ('smallbtns',BoolToString(FSmallBtns));
-    TDOMElement(iNode).SetAttribute ('notifications',BoolToString(FNotifications));
-    TDOMElement(iNode).SetAttribute ('noclosealert', BoolToString(FNoCloseAlert));
-    TDOMElement(iNode).SetAttribute ('soundfile', FSoundFile);
-    TDOMElement(iNode).SetAttribute ('langstr', FLangStr);
-    TDOMElement(iNode).SetAttribute ('mailclient', FMailClient);
-    TDOMElement(iNode).SetAttribute ('mailclientname', FMailClientName);
-    TDOMElement(iNode).SetAttribute ('mailclientisurl', BoolToString(FMailClientIsUrl));
-    Result:= True;
+    iNode.AppendChild(SaveItem(iNode, 'savsizepos', BoolToString(FSavSizePos)));
+    iNode.AppendChild(SaveItem(iNode, 'wstate', FWState));
+    iNode.AppendChild(SaveItem(iNode, 'lastupdchk', DateTimeToString(FLastUpdChk)));
+    iNode.AppendChild(SaveItem(iNode, 'nochknewver', BoolToString(FNoChkNewVer)));
+    iNode.AppendChild(SaveItem(iNode, 'startup', BoolToString(FStartup)));
+    iNode.AppendChild(SaveItem(iNode, 'startmini',BoolToString(FStartMini)));
+    iNode.AppendChild(SaveItem(iNode, 'mailclientmini',BoolToString(FMailClientMini)));
+    iNode.AppendChild(SaveItem(iNode, 'hideintaskbar',BoolToString(FHideInTaskbar)));
+    iNode.AppendChild(SaveItem(iNode, 'restnewmsg',BoolToString(FRestNewMsg)));
+    iNode.AppendChild(SaveItem(iNode, 'savelogs',BoolToString(FSaveLogs)));
+    iNode.AppendChild(SaveItem(iNode, 'startupcheck',BoolToString(FStartupCheck)));
+    iNode.AppendChild(SaveItem(iNode, 'smallbtns',BoolToString(FSmallBtns)));
+    iNode.AppendChild(SaveItem(iNode, 'notifications',BoolToString(FNotifications)));
+    iNode.AppendChild(SaveItem(iNode, 'noclosealert', BoolToString(FNoCloseAlert)));
+    iNode.AppendChild(SaveItem(iNode, 'soundfile', FSoundFile));
+    iNode.AppendChild(SaveItem(iNode, 'langstr', FLangStr));
+    iNode.AppendChild(SaveItem(iNode, 'mailclient', FMailClient));
+    iNode.AppendChild(SaveItem(iNode, 'mailclientname', FMailClientName));
+    iNode.AppendChild(SaveItem(iNode, 'mailclientisurl', BoolToString(FMailClientIsUrl)));
+    iNode.AppendChild(SaveItem(iNode, 'restart', BoolToString(FRestart)));
+    Result:= true;
   except
-    result:= False;
+    Result:= false;
   end;
 end;
 
@@ -428,38 +445,46 @@ end;
 
 function TConfig.LoadXMLNode(iNode: TDOMNode): Boolean;
 var
-  i: integer;
-  UpCaseAttrib: string;
+  UpCaseSetting: string;
+  subNode: TDOMNode;
+  s:string;
 begin
   Result := false;
-  if (iNode = nil) or (iNode.Attributes = nil) then exit;
-  // Browse settings attributes
-  for i:= 0 to iNode.Attributes.Length-1 do
+  if (iNode = nil) then exit;
   try
-    UpCaseAttrib:=UpperCase(iNode.Attributes.Item[i].NodeName);
-    if UpCaseAttrib='VERSION' then FVersion:= iNode.Attributes.Item[i].NodeValue;
-    if UpCaseAttrib='SAVSIZEPOS' then FSavSizePos:= StringToBool(iNode.Attributes.Item[i].NodeValue);
-    if UpCaseAttrib='WSTATE' then  FWState:= iNode.Attributes.Item[i].NodeValue;
-    if UpCaseAttrib='LASTUPDCHK' then FLastUpdChk:= StringToDateTime(iNode.Attributes.Item[i].NodeValue,'dd/mm/yyyy hh:nn:ss');
-    if UpCaseAttrib='NOCHKNEWVER' then FNoChkNewVer:= StringToBool(iNode.Attributes.Item[i].NodeValue);
-    if UpCaseAttrib='STARTUP' then FStartup:= StringToBool(iNode.Attributes.Item[i].NodeValue);
-    if UpCaseAttrib='STARTMINI' then FStartMini:= StringToBool(iNode.Attributes.Item[i].NodeValue);
-    if UpCaseAttrib='MAILCLIENTMINI' then FMailClientMini:= StringToBool(iNode.Attributes.Item[i].NodeValue);
-    if UpCaseAttrib='HIDEINTASKBAR' then FHideInTaskbar:= StringToBool(iNode.Attributes.Item[i].NodeValue);
-    if UpCaseAttrib='RESTNEWMSG' then FRestNewMsg:= StringToBool(iNode.Attributes.Item[i].NodeValue);
-    if UpCaseAttrib='SAVELOGS' then FSaveLogs:= StringToBool(iNode.Attributes.Item[i].NodeValue);
-    if UpCaseAttrib='STARTUPCHECK' then FStartupCheck:= StringToBool(iNode.Attributes.Item[i].NodeValue);
-    if UpCaseAttrib='SMALLBTNS' then FSmallBtns:= StringToBool(iNode.Attributes.Item[i].NodeValue);
-    if UpCaseAttrib='NOTIFICATIONS' then FNotifications:= StringToBool(iNode.Attributes.Item[i].NodeValue);
-    if UpCaseAttrib='NOCLOSEALERT' then FNoCloseAlert:= StringToBool(iNode.Attributes.Item[i].NodeValue);
-    if UpCaseAttrib='SOUNDFILE' then FSoundFile:= iNode.Attributes.Item[i].NodeValue;
-    if UpCaseAttrib='LANGSTR' then FLangStr:= iNode.Attributes.Item[i].NodeValue;
-    if UpCaseAttrib='MAILCLIENT' then FMailClient:= iNode.Attributes.Item[i].NodeValue;
-    if UpCaseAttrib='MAILCLIENTNAME' then FMailClientName:= iNode.Attributes.Item[i].NodeValue;
-    if UpCaseAttrib='MAILCLIENTISURL' then FMailClientIsUrl:= StringToBool(iNode.Attributes.Item[i].NodeValue);
+    UpCaseSetting:=UpperCase(iNode.Attributes.Item[0].NodeName);
+    if UpCaseSetting='VERSION' then FVersion:= iNode.Attributes.Item[0].NodeValue;
+    subNode := iNode.FirstChild;
+    while subNode <> nil do
+    try
+      upCaseSetting:= UpperCase(subNode.NodeName);
+      s:= subNode.TextContent;
+      if upCaseSetting = 'SAVSIZEPOS' then FSavSizePos:= StringToBool(s);
+      if upCaseSetting = 'WSTATE' then  FWState:= s;
+      if upCaseSetting = 'LASTUPDCHK' then FLastUpdChk:= StringToDateTime(s);
+      if upCaseSetting = 'NOCHKNEWVER' then FNoChkNewVer:= StringToBool(s);
+      if upCaseSetting = 'STARTUP' then FStartup:= StringToBool(s);
+      if upCaseSetting = 'STARTMINI' then FStartMini:= StringToBool(s);
+      if upCaseSetting = 'MAILCLIENTMINI' then FMailClientMini:= StringToBool(s);
+      if upCaseSetting = 'HIDEINTASKBAR' then FHideInTaskbar:= StringToBool(s);
+      if upCaseSetting = 'RESTNEWMSG' then FRestNewMsg:= StringToBool(s);
+      if upCaseSetting = 'SAVELOGS' then FSaveLogs:= StringToBool(s);
+      if upCaseSetting = 'STARTUPCHECK' then FStartupCheck:= StringToBool(s);
+      if upCaseSetting = 'SMALLBTNS' then FSmallBtns:= StringToBool(s);
+      if upCaseSetting = 'NOTIFICATIONS' then FNotifications:= StringToBool(s);
+      if upCaseSetting = 'NOCLOSEALERT' then FNoCloseAlert:= StringToBool(s);
+      if upCaseSetting = 'SOUNDFILE' then FSoundFile:= s;
+      if upCaseSetting = 'LANGSTR' then FLangStr:= s;
+      if upCaseSetting = 'MAILCLIENT' then FMailClient:= s;
+      if upCaseSetting = 'MAILCLIENTNAME' then FMailClientName:= s;
+      if upCaseSetting = 'MAILCLIENTISURL' then FMailClientIsUrl:= StringToBool(s);
+      if upCaseSetting = 'RESTART' then FRestart:= StringToBool(s);
+    finally
+        subnode:= subnode.NextSibling;
+    end;
     result:= true;
   except
-    Result:= False;
+    result:= false;
   end;
 end;
 

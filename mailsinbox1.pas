@@ -1,3 +1,9 @@
+{******************************************************************************}
+{ MailInBox main unit                                                          }
+{ bb - sdtp - january 2020                                                     }
+{ Check mails on pop3 and imap servers                                         }
+{******************************************************************************}
+
 unit mailsinbox1;
 
 {$mode objfpc}{$H+}
@@ -8,22 +14,16 @@ uses
   {$IFDEF WINDOWS}
   Win32Proc,
   {$ENDIF} Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ExtCtrls,
-  StdCtrls, Grids, ComCtrls, Buttons, Menus, IdPOP3, IdSSLOpenSSL,
+  StdCtrls, Grids, ComCtrls, Buttons, Menus, IdPOP3, IdSSLOpenSSL, LCLIntf,
   IdExplicitTLSClientServerBase, IdMessage, IdIMAP4, accounts1, lazbbutils,
   lazbbinifiles, lazbbosversion, LazUTF8, settings1, lazbbautostart, lazbbabout,
   Impex1, mailclients1, uxtheme, Types, IdComponent, fptimer, lazbbalert,
-  IdMessageCollection, RichMemo, UniqueInstance, csvdocument, log1;
+  IdMessageCollection, RichMemo, UniqueInstance, csvdocument, log1, registry;
 
 type
   TSaveMode = (None, Setting, All);
   TBtnSize=(Small, Large);
 
-  {Helper to detect stringgrid columns width change}
-  {Can access to protected function GetGridState   }
-
-  TCustomGridHelper = class helper for TCustomGrid
-    function GetGridState : TGridState;
-  end;
 
   { TFMailsInBox }
   TFMailsInBox = class(TForm)
@@ -91,7 +91,6 @@ type
     procedure BtnCloseClick(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure FormShow(Sender: TObject);
-    procedure FormWindowStateChange(Sender: TObject);
     procedure GetMailTimerTimer(Sender: TObject);
     procedure IdPOP3_1Connected(Sender: TObject);
     procedure IdPOP3_1Disconnected(Sender: TObject);
@@ -118,16 +117,13 @@ type
     procedure SGMailsKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure SGMailsMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
-    procedure SGMailsMouseUp(Sender: TObject; Button: TMouseButton;
-      Shift: TShiftState; X, Y: Integer);
     procedure TrayTimerTimer(Sender: TObject);
     procedure OnChkMailTimer(Sender: TObject);
   private
     Initialized: boolean;
     OS, OSTarget, CRLF: string;
     CompileDateTime: TDateTime;
-    UserPath, UserAppsDataPath: string;
-    MIBAppDataPath: string;
+    UserPath, UserAppsDataPath, MIBAppDataPath: string;
     ProgName: string;
     LangStr: string;
     LangFile: TBbIniFile;
@@ -137,7 +133,6 @@ type
     AccountsChanged:Boolean;
     ConfigFileName: string;
     ChkMailTimerTick: integer;
-    canCloseMsg: string;
     CanClose: boolean;
     BaseUpdateUrl, ChkVerURL, version: string;
     AccountCaption, EmailCaption, LastCheckCaption, NextCheckCaption : string;
@@ -159,11 +154,9 @@ type
     CurAccPend: integer;
     sCheckingAccMail, sCheckingAllMail: string;
     sConnectToServer, sDisconnectServer: string;
-    sConnectedToServer, DisconnectedServer: string;
-    ConnectErrorMsg: string;
+    sConnectedToServer, DisconnectedServer, ConnectErrorMsg: string;
     sAccountChanged, sAccountAdded: string;
-    sAccountDisabled, sAccountEnabled: string;
-    AccountStatus: string;
+    sAccountDisabled, sAccountEnabled, AccountStatus: string;
     LogFileName: string;
     sLoadingAccounts: string;
     Iconized: Boolean;
@@ -171,8 +164,9 @@ type
     sTrayHintNoMsg, sTrayHintMsg, sTrayHintMsgs: string;
     sTrayHintNewMsg, sTrayHintNewMsgs: string;
     sTrayBallHintMsg, sTrayBallHintMsgs: string;
-    sNoshowAlert: string;
-    sNoCloseAlert, sNoQuitAlert: string;
+    sNoCloseAlert, sNoQuitAlert, sNoshowAlert: string;
+    sColumnswidth: string;
+    sRestart: string;
     procedure Initialize;
     procedure LoadCfgFile(filename: string);
     procedure SettingsOnChange(Sender: TObject);
@@ -193,9 +187,9 @@ type
     procedure GetAccMail(ndx: integer);
     function HideOnTaskbar: boolean;
     procedure OnAppMinimize(Sender: TObject);
+    procedure OnQueryendSession(var Cancel: Boolean);
   public
     OsInfo: TOSInfo;
-
   end;
 
 var
@@ -205,7 +199,9 @@ implementation
 
 {$R *.lfm}
 
-// Intercept minimize system command
+
+// Intercept minimize system system command to correct
+// wrong window placement on restore from tray
 
 procedure TFMailsInBox.OnAppMinimize(Sender: TObject);
 begin
@@ -218,12 +214,38 @@ begin
   end;
 end;
 
-// Unprotect TStringgrid function GetGridState
-// Allow detection of columns width, row heigth change in mouseup event
+// Intercept end session : save all pending settings and load the program
+// on next logon (Windows only for the moment. On linux, we use autostart
+// and we delete auttostrart on next startup
 
-function TCustomGridHelper.GetGridState: TGridState;
+procedure TFMailsInBox.OnQueryendSession(var Cancel: Boolean);
+var
+  {$IFDEF WINDOWS}
+    reg: TRegistry;
+    RunRegKeyVal, RunRegKeySz: string;
+  {$ENDIF}
+  caClose: TCloseAction;
 begin
-  Result := FGridState;
+  if not FSettings.Settings.Startup then
+  begin
+    FSettings.Settings.Restart:= true;
+    {$IFDEF WINDOWS}
+      reg := TRegistry.Create;
+      reg.RootKey := HKEY_CURRENT_USER;
+      reg.OpenKey('Software\Microsoft\Windows\CurrentVersion\RunOnce', True) ;
+      RunRegKeyVal:= UTF8ToAnsi(ProgName);
+      RunRegKeySz:= UTF8ToAnsi('"'+Application.ExeName+'"');
+      reg.WriteString(RunRegKeyVal, RunRegKeySz) ;
+      reg.CloseKey;
+      reg.free;
+      Application.ProcessMessages;
+      caClose:= caFree;
+      FormClose(self, caClose);
+    {$ENDIF}
+    {$IFDEF Linux}
+       SetAutostart(ProgName, Application.exename);
+    {$ENDIF}
+  end;
 end;
 
 // TFMailsInBox : This is the main form of the program
@@ -241,6 +263,7 @@ begin
   ChkMailTimerTick:= 0;
   // Intercept minimize system command
   Application.OnMinimize:=@OnAppMinimize;
+  Application.OnQueryEndSession:= @OnQueryendSession;
   TrayTimerTick:=0;
   TrayTimerBmp:= TBitmap.Create;
   // Flag needed to execute once some processes in Form activation
@@ -248,6 +271,7 @@ begin
   MainLog:= '';
   SessionLog:= TStringList.Create;
   LogAddLine(-1, now, 'Opening MailsInBox');
+
   CompileDateTime:= StringToDateTime({$I %DATE%}+' '+{$I %TIME%}, 'yyyy/mm/dd hh:nn:ss');
   OS := 'Unk';
   UserPath := GetUserDir;
@@ -280,6 +304,7 @@ begin
     {$ENDIF}
   {$ENDIF}
   GetSysInfo(OsInfo);
+  LogAddLine(-1, now, OsInfo.VerDetail);
   ProgName := 'MailsInBox';
   // Chargement des chaînes de langue...
   LangFile := TBbIniFile.Create(ExtractFilePath(Application.ExeName) + LowerCase(ProgName)+'.lng');
@@ -355,6 +380,16 @@ begin
   ChkVerURL := IniFile.ReadString('urls', 'ChkVerURL',
     'https://www.sdtp.com/versions/versions.csv');
   if Assigned(IniFile) then IniFile.free;
+  // in case startup was done after a session end
+  if FSettings.Settings.Restart then
+  begin
+    FSettings.Settings.Restart:= false;
+    LogAddLine(-1, now, sRestart);
+  end;
+  {$IFDEF Linux}
+     if not FSettings.Settings.Startup  then UnsetAutostart(ProgName);
+  {$ENDIF}
+
   version := GetVersionInfo.ProductVersion;
   // AboutBox.UrlUpdate:= BaseUpdateURl+Version+'&language='+Settings.LangStr;    // In Modlangue
   // AboutBox.LUpdate.Caption:= 'Recherche de mise à jour';                       // in Modlangue
@@ -495,6 +530,7 @@ begin
     Settings.LoadXMLFile(filename);
     if Settings.SavSizePos then
     try
+      WinState := TWindowState(StrToInt('$' + Copy(Settings.WState, 1, 4)));
       self.Top := StrToInt('$' + Copy(Settings.WState, 5, 4));
       self.Left := StrToInt('$' + Copy(Settings.WState, 9, 4));
       self.Height := StrToInt('$' + Copy(Settings.WState, 13, 4));
@@ -502,7 +538,10 @@ begin
       self.PnlLeft.width:= StrToInt('$' + Copy(Settings.WState, 21, 4));
       self.PnlAccounts.Height:= StrToInt('$' + Copy(Settings.WState, 25, 4));
       For i:= 0 to 4 do self.SGMails.Columns[i].Width:= StrToInt('$'+Copy(Settings.WState,29+(i*4),4)) ;
-      WinState := TWindowState(StrToInt('$' + Copy(Settings.WState, 1, 4)));
+      FLogView.Top:= StrToInt('$' + Copy(Settings.WState, 49, 4));
+      FLogView.Left:= StrToInt('$' + Copy(Settings.WState, 53, 4));
+      FLogView.Height:= StrToInt('$' + Copy(Settings.WState, 57, 4));
+      FLogView.Width:= StrToInt('$' + Copy(Settings.WState, 61, 4));;
       self.WindowState := WinState;
       if Winstate = wsMinimized then
       begin
@@ -510,6 +549,9 @@ begin
       end;
     except
     end;
+    // Get columns width to use at application close
+    sColumnswidth:='';
+    For i:= 0 to 4 do  sColumnswidth:= sColumnswidth+IntToHex(self.SGMails.Columns [i].Width, 4);
     if settings.StartMini then Application.Minimize;
     // Détermination de la langue (si pas dans settings, langue par défaut)
     if Settings.LangStr = '' then Settings.LangStr := LangStr;
@@ -544,8 +586,10 @@ end;
 procedure TFMailsInBox.FormClose(Sender: TObject; var CloseAction: TCloseAction);
 var
   s: string;
-  //i: integer;
+  i: integer;
+  curcolsw: string;
 begin
+  // Alert box to explain close and quit operation
   if not FSettings.Settings.NoCloseAlert then
   begin
     if CanClose then AlertBox.MAlert.Text:= sNoQuitAlert
@@ -562,31 +606,35 @@ begin
 
   if CanClose then
   begin
+    CloseAction:= caFree;
     if CheckingMail then
     begin
       ShowMessage('Cannot quit during mails checking');
-      CanClose:= false;
-    end;
-    if FSettings.Settings.Startup then SetAutostart(progname, Application.exename)
-    else UnSetAutostart(progname);
-    if AccountsChanged then SaveConfig(All)
-    else if SettingsChanged then SaveConfig(Setting) ;
-    CloseAction := caFree;
-    LogAddLine(-1, now, 'Closing MailsInBox');
-    LogAddLine(-1, now, '************************');
-    if FSettings.Settings.SaveLogs then
+      CloseAction:= caNone;
+    end else
     begin
-      s:= Mainlog+SessionLog.text;
-      SessionLog.text:=s;
+      // check if columns width has changed
+      For i:= 0 to 4 do  curcolsw:= curcolsw+IntToHex(self.SGMails.Columns [i].Width, 4);
+      if (curcolsw <> sColumnswidth) then DoChangeBounds(self);
+      if FSettings.Settings.Startup then SetAutostart(progname, Application.exename)
+      else UnSetAutostart(progname);
+      if AccountsChanged then SaveConfig(All)
+      else if SettingsChanged then SaveConfig(Setting) ;
+      LogAddLine(-1, now, 'Closing MailsInBox');
+      LogAddLine(-1, now, '************************');
+      if FSettings.Settings.SaveLogs then
+      begin
+        s:= Mainlog+SessionLog.text;
+        SessionLog.text:=s;
+      end;
+      SessionLog.SaveToFile(LogFileName);
+      CloseAction:= caFree;
     end;
-    SessionLog.SaveToFile(LogFileName);
-
   end else
   begin
     MnuMinimizeClick(sender);
     CloseAction := caNone;
   end;
-
 end;
 
 
@@ -606,11 +654,17 @@ begin
     Settings.WState:= '';
     if self.Top < 0 then self.Top:= 0;
     if self.Left < 0 then self.Left:= 0;
+    // Main form size and position
     Settings.WState:= IntToHex(ord(self.WindowState), 4)+IntToHex(self.Top, 4)+
                       IntToHex(self.Left, 4)+IntToHex(self.Height, 4)+IntToHex(self.width, 4)+
                       IntToHex(self.PnlLeft.width, 4)+
                       IntToHex(self.PnlAccounts.height, 4);
+    // Mail list columns size
     For i:= 0 to 4 do Settings.WState:= Settings.WState+IntToHex(self.SGMails.Columns [i].Width, 4);
+
+    // Log window size
+    Settings.WState:= Settings.WState+IntToHex(FLogView.Top, 4)+IntToHex(FLogView.Left, 4)+
+                                      IntToHex(FLogView.Height, 4)+IntToHex(FLogView.width, 4);
     Settings.Version:= version;
     if FileExists (ConfigFileName) then
     begin
@@ -649,11 +703,13 @@ var
   sTrayNewHint: string;
   sTrayBallHint: string;
   sLineEnd: string;
+  oldBallHint: string;
 Begin
   if FAccounts.Accounts.Count = 0 then exit;
   sTrayNewHint:='';
   sTrayBallHint:='';
   TrayMail.Hint:= '';
+  oldBallHint:= TrayMail.BalloonHint;
   TrayMail.BalloonHint:='';
   sLineEnd:='';
   AccBmp:= TBitmap.create;
@@ -713,8 +769,10 @@ Begin
    LVAccounts.ItemIndex:= 0;
   AccBmp.free;
   TrayBmp.free;
-  if FSettings.Settings.Notifications and notify and (length(TrayMail.BalloonHint)>0)
-  then TrayMail.ShowBalloonHint;
+  if FSettings.Settings.Notifications
+             and notify
+             and (length(TrayMail.BalloonHint)>0)
+             and (TrayMail.BalloonHint<>oldBallHint) then TrayMail.ShowBalloonHint;
 
 end;
 
@@ -834,14 +892,6 @@ begin
 
 end;
 
-procedure TFMailsInBox.FormWindowStateChange(Sender: TObject);
-begin
- // ShowMessage('mini');
-
-
-
-
-end;
 
 procedure TFMailsInBox.GetMailTimerTimer(Sender: TObject);
 var
@@ -891,9 +941,6 @@ procedure TFMailsInBox.IdPOP3_1Status(ASender: TObject;
   const AStatus: TIdStatus; const AStatusText: string);
 begin
 end;
-
-
-
 
 
 procedure TFMailsInBox.LVAccountsSelectItem(Sender: TObject; Item: TListItem;
@@ -1165,22 +1212,6 @@ begin
     end;
   end;
 end;
-
-// Check if we have changed column width
-
-procedure TFMailsInBox.SGMailsMouseUp(Sender: TObject; Button: TMouseButton;
-  Shift: TShiftState; X, Y: Integer);
-var
-  grid: TStringGrid;
-begin
-  if Button = mbLeft then
-  begin
-    grid := TStringGrid(Sender);
-    if grid.GetGridState = gsColSizing then  SettingsChanged:= true;
-  end;
-end;
-
-
 
 procedure TFMailsInBox.TrayTimerTimer(Sender: TObject);
 
@@ -1598,20 +1629,26 @@ var
   exec: string;
   A: TStringArray;
   sl: TstringList;
-  //s: String;
-  i: integer;
+   i: integer;
 begin
-  A:= FSettings.Settings.MailClient.Split(' ','"');
-  sl:= TstringList.Create;
-  if length(A)>0 then
+  // if it is an URL, open it in the default browser
+  if (FSettings.Settings.MailClientIsUrl) then
   begin
-    exec:= A[0];
-    if length(A)>1 then
+    //RunCommand(FSettings.Settings.MailClient, s);
+  end else     // it is an app, extract parameters and execute it
+  begin
+    A:= FSettings.Settings.MailClient.Split(' ','"');
+    sl:= TstringList.Create;
+    if length(A)>0 then
+    begin
+      exec:= A[0];
+      if length(A)>1 then
       for i:=1 to length(A)-1 do
         sl.Add(A[I]);
-    Execute(exec, sl);
+      Execute(exec, sl);
+    end;
+    sl.free;
   end;
-  sl.free;
 end;
 
 
@@ -1650,13 +1687,15 @@ begin
       else s:=s+csvdoc.Cells[1,i]+' - '+csvdoc.Cells[2,i]+#10;
     end;
   end;
-  Flog.Caption:= TBitBtn(Sender).Hint;
-  Flog.RMLog.rtf:='';
-  Flog.RMLog.Text:=s;
-  Flog.RMLog.SelStart:=0;
-  Flog.RMLog.Sellength:=0;
-  FLog.showmodal;
-
+  With FLogView do
+  begin
+    Caption:= TBitBtn(Sender).Hint;
+    RMLog.rtf:='';
+    RMLog.Text:=s;
+    RMLog.SelStart:=0;
+    RMLog.Sellength:=0;
+    showmodal;
+  end;
   csvdoc.free;
 end;
 
@@ -1674,11 +1713,15 @@ procedure TFMailsInBox.EnableControls(Enable: boolean);
 begin
   LVAccounts.Enabled:= enable;
   SGMails.Enabled:= enable;
-  BtnGetAccMail.Enabled:= enable;
+  BtnImport.Enabled:= enable;
+  BtnAccountLog.Enabled:= enable;
   BtnGetAllMail.Enabled:= enable;
+  BtnGetAccMail.Enabled:= enable;
   BtnDelete.Enabled:= enable;
   BtnAddAcc.Enabled:= enable;
   BtnEditAcc.Enabled:= enable;
+  BtnSettings.Enabled:= enable;
+  BtnAbout.Enabled:= enable;
   BtnQuit.Enabled:= enable;
   if enable then SCreen.Cursor:= DefCursor
   else Screen.Cursor:= crHourGlass;
@@ -1803,6 +1846,8 @@ begin
                                      'pour vérifier l''arrivée de nouveaux courriels. Pour quitter le '+
                                      'programme, cliquez sur le bouton "Fermer la fenêtre de Courrier en attente".');
 
+    sRestart:= ReadString(LangStr, 'Restart','Redémarrage après arrêt forcé');
+
     // About
     sNoLongerChkUpdates:=ReadString(LangStr,'NoLongerChkUpdates','Ne plus rechercher les mises à jour');
     sLastUpdateSearch:=ReadString(LangStr,'LastUpdateSearch','Dernière recherche de mise à jour');
@@ -1886,6 +1931,9 @@ begin
     Fimpex.OutlAccName:=ReadString(LangStr,'Fimpex.OutlAccName', 'Comptes Outlook 2007-2010');
 
     // Tray
+    MnuRestore.Caption:=ReadString(LangStr,'MnuRestore.Caption',MnuRestore.Caption);
+    MnuMaximize.Caption:=ReadString(LangStr,'MnuMaximize.Caption',MnuMaximize.Caption);
+    MnuMinimize.Caption:=ReadString(LangStr,'MnuMinimize.Caption',MnuMinimize.Caption);
     MnuQuit.Caption:= BtnQuit.Hint;
     MnuAbout.Caption:=BtnAbout.Hint;
 
