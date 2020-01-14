@@ -6,10 +6,21 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ExtCtrls, StdCtrls,
-  Buttons, accounts1, registry;
+  Buttons, Grids, accounts1, registry, lazbbinifiles, lazbbutils, jsonparser,
+  fpjson;
 
 type
+  TProfile=record
+    Number: integer;
+    Name: string;
+    IsRelative : Boolean;
+    Path : string;
+    Default : Boolean;
+    Current: Boolean;
 
+  end;
+
+  TProfiles = array of TProfile;
   { TFImpex }
 
   TFImpex = class(TForm)
@@ -23,21 +34,30 @@ type
     ODImpex: TOpenDialog;
     Panel2: TPanel;
     BtnAccFile: TSpeedButton;
+    SGImpex: TStringGrid;
     procedure BtnOKClick(Sender: TObject);
     procedure CBAccTypeChange(Sender: TObject);
     procedure FormActivate(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure BtnAccFileClick(Sender: TObject);
+    procedure LBImpexSelectionChange(Sender: TObject; User: boolean);
   private
     Reg: Tregistry;
     IsOutlook: boolean;
-    procedure ImportOutlook ();
-    function BinToWideStr(a: array of word): string;
+    IsMailAttente: boolean;
+    IsTBird: boolean;
+    MailAttentePath: string;
+    TBirdPath: string;
+    procedure ImportOutlook;
+    procedure ImportMailAttente(filename: string);
+    procedure ImportTBird;
+    function BinToWideStr(a: array of word): widestring;
     function RegGetBinaryString(regkey: Tregistry; attr: string): string;
+    function GetTbirdProfilePath(tbpath: string): string;
   public
     ImpAccounts: TAccountsList;
-    MailattAccName, OutlAccName: string;
+    MailattAccName, OutlAccName, TBirdAccName: string;
 
   end;
 
@@ -52,7 +72,113 @@ implementation
 
 {$R *.lfm}
 
+uses mailsinbox1;
 { TFImpex }
+
+procedure TFImpex.FormCreate(Sender: TObject);
+
+begin
+  ImpAccounts:= TAccountsList.Create('impex');
+  MailattAccName:= 'MailAttente accounts';
+  OutlAccName:= 'Outlook 2007-2013 accounts';
+  // Mailattente accounts file
+  MailAttentePath:= FMailsInBox.UserAppsDataPath+PathDelim+'mailattente'+PathDelim+'accounts.xml';
+  if FileExists(MailAttentePath) then IsMailAttente:= true;
+  // Outlook accounts registry key
+  Reg := TRegistry.Create;
+  Reg.RootKey := HKEY_CURRENT_USER;
+  if Reg.KeyExists(OutlRegKey) then IsOutlook:= true;
+  // Thunderbird profiles path
+  TBirdPath:= FMailsInBox.UserAppsDataPath+PathDelim+'thunderbird'+PathDelim;
+  if DirectoryExists(TBirdPath) then IsTBird:= true;
+end;
+
+procedure TFImpex.FormActivate(Sender: TObject);
+begin
+  CBAccType.Clear;
+  CBAccType.Items.Add(MailattAccName);
+  if IsOutlook then CBAccType.Items.add(OutlAccName);
+  if IsTBird then CBAccType.Items.add('Thunderbird');
+  SGImpex.Cells[0,0]:= 'Champ';
+  SGImpex.Cells[1,0]:= 'Valeur';
+  SGImpex.Cells[0,1]:= 'Nom du compte';
+  SGImpex.Cells[0,2]:= 'Serveur de courrier';
+  SGImpex.Cells[0,3]:= 'Port';
+  SGImpex.Cells[0,4]:='Protocole';
+  SGImpex.Cells[0,5]:= 'Identifiant courriel';
+  SGImpex.Cells[0,6]:= 'Mot de passe';
+  SGImpex.Cells[0,7]:= 'Adresse courriel';
+  SGImpex.Cells[0,8]:= 'Adresse de réponse';
+  CBAccType.ItemIndex:= 0;
+  CBAccTypeChange(Sender);
+end;
+
+function TFImpex.GetTbirdProfilePath(tbpath: string): string;
+var
+  ProfileIni: TBbInifile;
+  Sections: TStringList;
+  ProfilesCount, CurrentProfile: integer;
+  i: integer;
+  ssect, sdefpath, spath: string;
+  ProfileVersion: integer;
+  Paths: array of string;
+  CurProfilePath: string;
+begin
+  ProfileIni:= TBbInifile.Create(tbpath+'profiles.ini');
+  // Enumerate sections
+  Sections:= TStringList.Create;
+  ProfileIni.ReadSections(Sections);
+  ProfilesCount:= 0;
+  CurrentProfile:= 0;
+  if Sections.Count > 0 then
+  begin
+    // First, search Install... section if exists (new profiles version)
+    for i:= 0 to Sections.Count-1 do
+    begin
+      ssect:= Sections[i];
+      if UpperCase(copy(ssect, 0, 7))='INSTALL' then
+      begin
+        sdefpath:= ProfileIni.ReadString (ssect, 'Default', '');
+        ProfileVersion:= 2;
+        Break;
+      end else
+      begin
+        sdefpath:= '';
+        ProfileVersion:= 1;
+      end;
+    end;
+    // Now parse profiles
+   for i:= 0 to Sections.Count-1 do
+    begin
+      ssect:= Sections[i];
+      if copy(ssect, 0, 7)='Profile' then
+      begin
+        Inc(ProfilesCount);
+        SetLength(Paths, ProfilesCount);
+        spath:= IsAnsi2Utf8(ProfileIni.ReadString (ssect, 'Path', ''));
+        // New profiles.ini version
+        if (ProfileVersion=2) and (sdefpath=spath) then CurrentProfile:= ProfilesCount-1 ;
+        spath:= StringReplace(spath, '/', PathDelim, [rfReplaceAll]);
+        if Boolean(ProfileIni.ReadInteger(ssect, 'IsRelative', 0)) then
+        begin
+          CurProfilePath:= TbirdPath+IsAnsi2Utf8(spath+PathDelim);
+        end else
+        begin
+           CurProfilePath:= spath+PathDelim;
+        end;
+         Paths[ProfilesCount-1]:= CurProfilePath;
+        // Old profiles.ini version
+        if (ProfileVersion=1) and (Boolean(ProfileIni.ReadInteger(ssect, 'Default', 0))) then CurrentProfile:= ProfilesCount-1 ;
+      end;
+    end;
+  end;
+  result:= Paths[CurrentProfile];
+  if assigned(Sections) then Sections.Free;
+  if Assigned(ProfileIni) then ProfileIni.free;
+end;
+
+
+
 
 procedure TFImpex.BtnAccFileClick(Sender: TObject);
 var
@@ -62,57 +188,81 @@ begin
      if Fileexists(ODIMpex.FileName) then
      begin
        EXMLAcc.text:= ODIMpex.FileName;
+       EXMLAcc.Hint:= ODIMpex.FileName;
        Case CBAccType.ItemIndex of
          0: begin    // Old mailattente accounts
-            if ImpAccounts.ImportOldXML(ODIMpex.FileName) then
-            for i:= 0 to ImpAccounts.count-1 do
-              LBImpex.Items.Add(ImpAccounts.GetItem(i).Name);
+              LBImpex.Items.Clear;
+
+              ImpAccounts.Reset;
+              ImportMailAttente(ODIMpex.FileName);
+              for i:= 0 to ImpAccounts.count-1 do LBImpex.Items.Add(ImpAccounts.GetItem(i).Name);
             end;
        end {case};
      end;
 end;
 
-procedure TFImpex.FormActivate(Sender: TObject);
+procedure TFImpex.LBImpexSelectionChange(Sender: TObject; User: boolean);
+var
+  CurAcc: TAccount;
 begin
-  CBAccType.Clear;
-  CBAccType.Items.Add(MailattAccName);
-  if IsOutlook then CBAccType.Items.add(OutlAccName);
-  CBAccType.ItemIndex:= 0;
+  if LBImpex.ItemIndex >= 0 then
+  Begin
+   CurAcc:=  ImpAccounts.GetItem(LBImpex.ItemIndex);
+    SGImpex.Cells[1,1]:= CurAcc.Name;
+    SGImpex.Cells[1,2]:= CurAcc.Server;
+    SGImpex.Cells[1,3]:= IntToStr(CurAcc.Port);
+    SGImpex.Cells[1,4]:=ImpAccounts.ProtocolToString(CurAcc.Protocol);
+    SGImpex.Cells[1,5]:= CurAcc.UserName;
+    if length(Curacc.Password)=0
+    then SGImpex.Cells[1,6]:= 'Mot de passe non disponible'
+    else SGImpex.Cells[1,6]:= '**********' ;
+    SGImpex.Cells[1,7]:= CurAcc.Email;
+    SGImpex.Cells[1,8]:= CurAcc.ReplyEmail;
+  end;
 end;
 
-procedure TFImpex.BtnOKClick(Sender: TObject);
 
+
+procedure TFImpex.BtnOKClick(Sender: TObject);
 begin
 
 end;
 
 procedure TFImpex.CBAccTypeChange(Sender: TObject);
+var
+  i: integer;
 begin
   EXMLAcc.text:='';
+  EXMLAcc.Hint:='';
+
   LBImpex.Items.Clear;
   ImpAccounts.Reset;
   Case CBAccType.ItemIndex of
    0: begin           // Old mailattente accounts
         BtnAccFile.enabled:= true;
+        EXMLAcc.text:= MailAttentePath;
+        EXMLAcc.Hint:= MailAttentePath;
+        ImportMailAttente(MailAttentePath);
       end;
    1: begin           // Outlook 2007-2013 accounts only windows and outlook found
         BtnAccFile.enabled:= false;
-        ImportOutlook();
+        If IsOutlook then
+        begin
+          ImportOutlook;
+        end;
       end;
- end;
-
+   2: begin          // Thunderbird accounts
+        BtnAccFile.enabled:= true;
+        //EXMLAcc.text:= TBirdPath;
+        ImportTBird;
+      end;
+  end;
+  for i:= 0 to ImpAccounts.count-1 do LBImpex.Items.Add(ImpAccounts.GetItem(i).Name);
+  LBImpex.ItemIndex:= 0;
+  LBImpex.OnSelectionChange(Self, true);
 end;
 
-procedure TFImpex.FormCreate(Sender: TObject);
-begin
-  ImpAccounts:= TAccountsList.Create('impex');
-  MailattAccName:= 'MailAttente accounts';
-  OutlAccName:= 'Outlook 2007-2013 accounts';
-  Reg := TRegistry.Create;
-  Reg.RootKey := HKEY_CURRENT_USER;
-  if Reg.KeyExists(OutlRegKey) then
-  IsOutlook:= true;
-end;
+
 
 procedure TFImpex.FormDestroy(Sender: TObject);
 begin
@@ -121,7 +271,7 @@ begin
 end;
 
 
-function TFImpex.BinToWideStr(a: array of word): string;
+function TFImpex.BinToWideStr(a: array of word): widestring;
 var
   i: integer;
 begin
@@ -145,8 +295,13 @@ begin
     l:= regkey.GetDataSize(attr);
     setlength(AK, l div 2);
     regkey.ReadBinaryData(attr, Pointer(AK)^, l);
-    result:= BinToWideStr(AK);
+    result:= UTF8Encode(BinToWideStr(AK));
   end;
+end;
+
+procedure TFImpex.ImportMailAttente(filename: string);
+begin
+  ImpAccounts.ImportOldXML(FileName);
 end;
 
 procedure TFImpex.ImportOutlook;
@@ -201,9 +356,152 @@ begin
         reg.CloseKey;
         ImpAccounts.AddAccount(Account);
       end;
-    for i:= 0 to ImpAccounts.count-1 do
-              LBImpex.Items.Add(ImpAccounts.GetItem(i).Name);
+
   end;
+end;
+
+procedure TFImpex.ImportTBird;
+var
+  CurProfilePath: string;
+  sl: TStringList;
+  slIds, slServ: TStringList;
+  i: integer;
+  s: string;
+  A, B: TStringArray;
+  AccNumber, PrevAccNumber, Acount: integer;
+  CurAcc: TAccount;
+  ndx: integer;
+begin
+  CurProfilePath:= GetTbirdProfilePath(TbirdPath);
+  EXMLAcc.text:= CurProfilePath;
+  EXMLAcc.Hint:= CurProfilePath;
+  //Accounts are in prefs.js;
+  sl:= TStringList.Create;
+  sl.LoadFromFile(CurProfilePath+'prefs.js');
+  sl.Sorted:= true;
+  sl.sort;
+  slIds:= TStringList.Create;
+  slServ:=TStringList.Create ;
+  // retrieve mail accounts
+  PrevAccNumber:= 0;
+  ACount:= 0;
+  CurAcc:= Default(TAccount);
+  for i:=0 to sl.Count-1 do
+  begin
+    s:= sl.Strings[i];
+    // Search accounts identities
+    if pos('user_pref("mail.account.ac', s)>0 then
+    begin
+      A:= s.split('"');
+      B:= A[1].Split('.');
+      AccNumber:= StringToInt(Copy(B[2], 8, 2));
+      if B[3]= 'identities' then
+      begin
+        CurAcc.Name:=A[3];
+        ImpAccounts.AddAccount(CurAcc);
+        Inc(Acount);
+      end;
+
+      // Search server values
+      if B[3]= 'server' then
+      begin
+        if AccNumber= PrevAccNumber then ImpAccounts.ModifyField(Acount-1, 'Server', A[3]);
+      end;
+      PrevAccNumber:= AccNumber;
+    end;
+    // Then create stringlisdt for identities and servers data
+    if pos('user_pref("mail.id', s)>0 then slIds.Add(s);
+    if pos('user_pref("mail.se', s)>0 then slServ.Add(s);
+  end;
+  // Now sort new stringlists
+  slIds.Sorted:= true;
+  slIds.Sort;
+  slServ.Sorted:= true;
+  slServ.Sort;
+  LBImpex.Clear;
+  For i:= 0 to ImpAccounts.count- 1 do
+  begin
+    // populate identity fields
+    ndx:=-1;
+    slIds.Find('user_pref("mail.identity.'+ImpAccounts.GetItem(i).Name+'.fullName"', ndx);
+    if ndx >=0 then
+    begin
+      s:= slIds.Strings[ndx];
+      A:= s.split('"');
+      CurAcc.Name:= A[3];
+    end;
+    ndx:=-1;
+    slIds.Find('user_pref("mail.identity.'+ImpAccounts.GetItem(i).Name+'.useremail"', ndx);
+    if ndx>=0 then
+    begin
+      s:= slIds.Strings[ndx];
+      A:= s.split('"');
+      CurAcc.Email:= A[3];
+    end;
+    ndx:=-1;
+    slIds.Find('user_pref("mail.identity.'+ImpAccounts.GetItem(i).Name+'.reply_to"', ndx);
+    if ndx>=0 then
+    begin
+      s:= slIds.Strings[ndx];
+      A:= s.split('"');
+      CurAcc.ReplyEmail:= A[3];
+    end;
+
+    // Populate server fields
+    ndx:=-1;
+    slServ.Find('user_pref("mail.server.'+ImpAccounts.GetItem(i).Server+'.hostname', ndx);
+    if ndx>=0 then
+    begin
+      s:= slServ.Strings[ndx];
+      A:= s.split('"');
+      CurAcc.Server := A[3];
+    end;
+    ndx:=-1;
+    slServ.Find('user_pref("mail.server.'+ImpAccounts.GetItem(i).Server+'.type', ndx);
+    if ndx>=0 then
+    begin
+      s:= slServ.Strings[ndx];
+      A:= s.split('"');
+      CurAcc.Protocol := ImpAccounts.StringToProtocol(A[3]);
+    end;
+    ndx:=-1;
+    slServ.Find('user_pref("mail.server.'+ImpAccounts.GetItem(i).Server+'.userName', ndx);
+    if ndx>=0 then
+    begin
+      s:= slServ.Strings[ndx];
+      A:= s.split('"');
+      CurAcc.UserName := A[3];
+    end;
+    ndx:=-1;
+    slServ.Find('user_pref("mail.server.'+ImpAccounts.GetItem(i).Server+'.port', ndx);
+    if ndx>=0 then
+    begin
+      s:= slServ.Strings[ndx];
+      A:= s.split('"');
+       B:= A[2].split(',)');
+      CurAcc.Port := StringToInt(Trim(B[1]));
+    end else Curacc.Port:= 0;
+    if Curacc.Port= 0 then
+    begin
+      if CurAcc.Protocol=ptcPOP3 then CurAcc.Port:= 110;       //Default value
+      if CurAcc.Protocol=ptcIMAP then CurAcc.Port:= 143;       //Default value
+    end;
+    ndx:=-1;
+    slServ.Find('user_pref("mail.server.'+ImpAccounts.GetItem(i).Server+'.socketType', ndx);
+    if ndx>=0 then
+    begin
+      s:= slServ.Strings[ndx];
+      A:= s.split('"');
+       B:= A[2].split(',)');
+      CurAcc.SSL := StringToInt(Trim(B[1]));
+    end else Curacc.SSL:= 0;
+    if Curacc.SSL>0 then Curacc.SSL:= 1;  // implicit
+    ImpAccounts.ModifyAccount(i, CurAcc);
+  end;
+  if Assigned(sl) then sl.free;
+  if Assigned(slServ) then slServ.free;
+  if Assigned(slIds) then slIds.free;
+
 end;
 
 end.

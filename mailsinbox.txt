@@ -1,5 +1,5 @@
 Mails In Box : Mail notifier application
-Version 0.5.1.1
+Version 0.5.1.2
 
 (Explication en Français à la fin de ce fichier)
 
@@ -11,7 +11,7 @@ Extract archive and run InstallMailInBox.exe, then follow instructions of the se
 
 USAGE
 On first run, you must create new account(s), or import account from previous MailAttente
-or import account(s) from Outlook 2007-2013. In the latter case, passwords are not imported
+or import account(s) from Outlook 2007-2013 and Thunderbird. In the two latter cases, passwords are not imported
 and you need to update them by editing the account(s).
 
 The program can be run at windows start and minimized, click the Settings button.
@@ -42,7 +42,7 @@ Web : http://www.sdtp.com
 *************************************************************************
 
 Courriels en attente - Notification de courriels arrivés
-MailAttente Version 0.5.1.1
+MailAttente Version 0.5.1.2
 
 
 OBJET
@@ -55,7 +55,7 @@ du programme d'installation.
 UTILISATION
 Lors de son premier lancement, vous devez créer un ou plusieurs nouveaux comptes, ou importer
 des comptes de courrier de notre précédent programme MailAttente, ou importer des comptes 
-Outlook. Dans ce dernier cas, les lots de passe ne sont pas impoprtés et vous devez les
+Outlook et Thunderbird. Dans ces deux dernier cas, les mots de passe ne sont pas impoprtés et vous devez les
 mettre à jour en éditant le(s) compte(s) correspondant(s).
 
 Dans des conditions normales, Courriels en attente peut être minimisé dans la zone de notification.

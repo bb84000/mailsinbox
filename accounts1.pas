@@ -43,6 +43,7 @@ type
     MessageDate : TDateTime;
     MessageContentType: String;
     MessageNew: Boolean;
+    MessageDisplayed: boolean;
     MessageToDelete: Boolean;
   end;
 
@@ -86,6 +87,9 @@ type
      SoundFile: string;
      Interval: Integer;
      Mails: TMailsList;
+     //UIDLList: TstringList;
+     //UIDLToDel: TstringList;
+     MsgToDel: TstringList;
      LastFire: TDateTime;
      NextFire: TDateTime;
      Email: string;
@@ -104,8 +108,7 @@ type
     FSortType: TChampsCompare;
     FAppName: string;
     procedure SetSortType (Value: TChampsCompare);
-    function StringToProtocol(s: string): TProtocols;
-    function ProtocolToString(protocol: TProtocols): string;
+
     function SaveItem(iNode: TDOMNode; sname, svalue: string): TDOMNode;
   public
     Duplicates : TDuplicates;
@@ -124,6 +127,8 @@ type
     function SaveToXMLnode(iNode: TDOMNode; typ: TSaveType= all): Boolean;
     function SaveToXMLfile(filename: string; typ: TSaveType= all): Boolean;
     function ImportOldXML(filename: string): Boolean;
+    function StringToProtocol(s: string): TProtocols;
+    function ProtocolToString(protocol: TProtocols): string;
     procedure DoSort;
     function charsum(s: string): integer;
     property OnChange: TNotifyEvent read FOnChange write FOnChange;
@@ -281,6 +286,7 @@ begin
   K^.Messagedate := Mail.Messagedate;
   K^.MessageContentType:= Mail.MessageContentType;
   K^.MessageNew  := Mail.MessageNew;
+  K^.MessageDisplayed := Mail.MessageDisplayed;
   K^.MessageToDelete:= Mail.MessageToDelete;
   add(K);
   DoSort;
@@ -302,6 +308,7 @@ begin
   TMail(Items[i]^).Messagedate := Mail.Messagedate;
   TMail(Items[i]^).MessageContentType:= Mail.MessageContentType;
   TMail(Items[i]^).MessageNew  := Mail.MessageNew;
+  TMail(Items[i]^).MessageDisplayed:= Mail.MessageDisplayed;
   TMail(Items[i]^).MessageToDelete:= Mail.MessageToDelete;
   DoSort;
   if Assigned(FOnChange) then FOnChange(Self);
@@ -369,6 +376,7 @@ begin
  for i := 0 to Count-1 do
  begin
    if assigned(TAccount(Items[i]^).Mails) then TAccount(Items[i]^).Mails:= nil;//.Free ;
+   //if assigned(TAccount(Items[i]^).UIDLList) then TAccount(Items[i]^).UIDLList.Free;
    if Items[i] <> nil then Items[i]:= nil;
  end;
  Clear;
@@ -392,6 +400,8 @@ begin
   K^:= Account;
   // we create the mails list if not already created
   if not assigned(K^.Mails) then K^.Mails:= TMailsList.Create;
+  //if not assigned(K^.UIDLList) then K^.UIDLList:= TStringList.Create;
+
   add(K);
   DoSort;
   K:= nil;

@@ -2,12 +2,12 @@ object FImpex: TFImpex
   Left = 533
   Height = 285
   Top = 350
-  Width = 401
+  Width = 612
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'Importation de comptes'
   ClientHeight = 285
-  ClientWidth = 401
+  ClientWidth = 612
   OnActivate = FormActivate
   OnCreate = FormCreate
   OnDestroy = FormDestroy
@@ -16,14 +16,14 @@ object FImpex: TFImpex
     Left = 0
     Height = 40
     Top = 245
-    Width = 401
+    Width = 612
     Align = alBottom
     BevelInner = bvLowered
     ClientHeight = 40
-    ClientWidth = 401
+    ClientWidth = 612
     TabOrder = 0
     object BtnOK: TBitBtn
-      Left = 112
+      Left = 208
       Height = 25
       Top = 8
       Width = 75
@@ -36,7 +36,7 @@ object FImpex: TFImpex
       TabOrder = 0
     end
     object BtnCancel: TBitBtn
-      Left = 216
+      Left = 312
       Height = 25
       Top = 8
       Width = 75
@@ -52,9 +52,12 @@ object FImpex: TFImpex
     Left = 16
     Height = 160
     Top = 72
-    Width = 367
+    Width = 160
     ItemHeight = 0
     MultiSelect = True
+    OnSelectionChange = LBImpexSelectionChange
+    ParentShowHint = False
+    ShowHint = True
     TabOrder = 1
   end
   object LFileName: TLabel
@@ -70,13 +73,16 @@ object FImpex: TFImpex
     Left = 104
     Height = 23
     Top = 36
-    Width = 246
+    Width = 448
+    ParentShowHint = False
+    ReadOnly = True
+    ShowHint = True
     TabOrder = 2
   end
   object BtnAccFile: TSpeedButton
-    Left = 360
+    Left = 568
     Height = 22
-    Top = 37
+    Top = 36
     Width = 23
     Glyph.Data = {
       36040000424D3604000000000000360000002800000010000000100000000100
@@ -138,6 +144,22 @@ object FImpex: TFImpex
     AutoSize = False
     Caption = 'Type de compte'
     ParentColor = False
+  end
+  object SGImpex: TStringGrid
+    Left = 192
+    Height = 160
+    Top = 72
+    Width = 400
+    AutoEdit = False
+    ColCount = 2
+    FixedCols = 0
+    Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goColSizing, goRowSelect, goSmoothScroll]
+    RowCount = 9
+    TabOrder = 4
+    ColWidths = (
+      132
+      240
+    )
   end
   object ODImpex: TOpenDialog
     left = 40

@@ -15,6 +15,10 @@
 Language=English
 
 ;main form
+OpenProgram=Opening Mails In Box
+RetConfBack=Reload last saved settings
+CreNewConf=New settings creation
+LoadConf=Loading settings
 Caption=Mails in Box
 OKBtn=OK
 YesBtn=Yes
@@ -153,6 +157,10 @@ NoBtn=Non
 CancelBtn=Annuler
 
 ;Main form
+OpenProgram=Ouverture de Courrier en attente
+RetConfBack=Recharge la dernière configuration sauvegardée
+CreNewConf=Création d'une nouvelle configuration
+LoadConf=Chargement de la configuration
 Caption=Courriels en attente
 OKBtn=OK
 YesBtn=Oui

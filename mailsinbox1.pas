@@ -123,7 +123,7 @@ type
     Initialized: boolean;
     OS, OSTarget, CRLF: string;
     CompileDateTime: TDateTime;
-    UserPath, UserAppsDataPath, MIBAppDataPath: string;
+    UserPath, MIBAppDataPath: string;
     ProgName: string;
     LangStr: string;
     LangFile: TBbIniFile;
@@ -166,7 +166,9 @@ type
     sTrayBallHintMsg, sTrayBallHintMsgs: string;
     sNoCloseAlert, sNoQuitAlert, sNoshowAlert: string;
     sColumnswidth: string;
-    sRestart: string;
+    sOpenProgram, sRestart: string;
+    sRetConfBack, sCreNewConf, sLoadConf: string;
+    MailsUIDArray: Array [0..50] of string;
     procedure Initialize;
     procedure LoadCfgFile(filename: string);
     procedure SettingsOnChange(Sender: TObject);
@@ -189,7 +191,8 @@ type
     procedure OnAppMinimize(Sender: TObject);
     procedure OnQueryendSession(var Cancel: Boolean);
   public
-    OsInfo: TOSInfo;
+    OsInfo: TOSInfo;           //used by Settings1
+    UserAppsDataPath: string;  //used by Impex1
   end;
 
 var
@@ -270,7 +273,6 @@ begin
   Initialized := False;
   MainLog:= '';
   SessionLog:= TStringList.Create;
-  LogAddLine(-1, now, 'Opening MailsInBox');
 
   CompileDateTime:= StringToDateTime({$I %DATE%}+' '+{$I %TIME%}, 'yyyy/mm/dd hh:nn:ss');
   OS := 'Unk';
@@ -304,10 +306,15 @@ begin
     {$ENDIF}
   {$ENDIF}
   GetSysInfo(OsInfo);
-  LogAddLine(-1, now, OsInfo.VerDetail);
   ProgName := 'MailsInBox';
+  version := GetVersionInfo.ProductVersion;
   // Chargement des chaînes de langue...
   LangFile := TBbIniFile.Create(ExtractFilePath(Application.ExeName) + LowerCase(ProgName)+'.lng');
+  // Cannot call Modlang as components are not yet created, use default language
+  sOpenProgram:=LangFile.ReadString(LangStr,'OpenProgram','Ouverture de Courrier en attente');
+  LogAddLine(-1, now, sOpenProgram+' - Version '+Version+ ' (' + OS + OSTarget + ')');
+  LogAddLine(-1, now, OsInfo.VerDetail);
+
   LangNums := TStringList.Create;
   MIBAppDataPath := UserAppsDataPath + PathDelim + ProgName + PathDelim;
   if not DirectoryExists(MIBAppDataPath) then CreateDir(MIBAppDataPath);
@@ -354,11 +361,12 @@ begin
   FSettings.Settings.AppName:= LowerCase(ProgName);
   FAccounts.Accounts.AppName := LowerCase(ProgName);
   ConfigFileName := MIBAppDataPath + ProgName + '.xml';
+  ModLangue;
   if not FileExists(ConfigFileName) then
   begin
     if FileExists(MIBAppDataPath + ProgName + '.bk0') then
     begin
-      LogAddLine(-1, now, 'Retreive configuration backup');
+      LogAddLine(-1, now, sRetConfBack);
       RenameFile(MIBAppDataPath + ProgName + '.bk0', ConfigFileName);
       for i := 1 to 5 do
         if FileExists(MIBAppDataPath + ProgName + '.bk' + IntToStr(i))
@@ -369,7 +377,7 @@ begin
     end else
     begin
       SaveConfig(All);
-      LogAddLine(-1, now, 'Creating new configuration file');
+      LogAddLine(-1, now, sCreNewConf);
     end;
   end;
   LoadCfgFile(ConfigFileName);
@@ -390,7 +398,7 @@ begin
      if not FSettings.Settings.Startup  then UnsetAutostart(ProgName);
   {$ENDIF}
 
-  version := GetVersionInfo.ProductVersion;
+
   // AboutBox.UrlUpdate:= BaseUpdateURl+Version+'&language='+Settings.LangStr;    // In Modlangue
   // AboutBox.LUpdate.Caption:= 'Recherche de mise à jour';                       // in Modlangue
   // Aboutbox.Caption:= 'A propos du Gestionnaire de contacts';                   // in ModLangue
@@ -400,7 +408,7 @@ begin
   AboutBox.LCopyright.Caption := GetVersionInfo.CompanyName + ' - ' + DateTimeToStr(CompileDateTime);
   AboutBox.LVersion.Caption := 'Version: ' + Version + ' (' + OS + OSTarget + ')';
   AboutBox.UrlWebsite := GetVersionInfo.Comments;
-  LogAddLine(-1, now, AboutBox.LVersion.Caption);
+  //LogAddLine(-1, now, AboutBox.LVersion.Caption);
   AboutBox.LUpdate.Hint := sLastUpdateSearch + ': ' + DateToStr(FSettings.Settings.LastUpdChk);
   AlertBox.Caption:= Caption;
   AlertBox.Image1.Picture.Icon.LoadFromResourceName(HInstance, 'MAINICON');
@@ -526,7 +534,7 @@ var
 begin
   with FSettings do
   begin
-    LogAddLine(-1, now, 'Load settings');
+    LogAddLine(-1, now, sLoadConf);
     Settings.LoadXMLFile(filename);
     if Settings.SavSizePos then
     try
@@ -614,6 +622,7 @@ begin
     end else
     begin
       // check if columns width has changed
+      curcolsw:='';
       For i:= 0 to 4 do  curcolsw:= curcolsw+IntToHex(self.SGMails.Columns [i].Width, 4);
       if (curcolsw <> sColumnswidth) then DoChangeBounds(self);
       if FSettings.Settings.Startup then SetAutostart(progname, Application.exename)
@@ -704,6 +713,7 @@ var
   sTrayBallHint: string;
   sLineEnd: string;
   oldBallHint: string;
+  totalNewMsgs: integer;
 Begin
   if FAccounts.Accounts.Count = 0 then exit;
   sTrayNewHint:='';
@@ -712,6 +722,7 @@ Begin
   oldBallHint:= TrayMail.BalloonHint;
   TrayMail.BalloonHint:='';
   sLineEnd:='';
+  totalNewMsgs:=0;
   AccBmp:= TBitmap.create;
   TrayBmp:= TBitmap.create;
   LVAccounts.Clear;
@@ -742,7 +753,18 @@ Begin
     if CurAcc.Mails.count >0 then
     begin
       for j:= 0 to CurAcc.Mails.count-1 do
-        if CurAcc.Mails.GetItem(j).MessageNew then Inc(NewMsgsCnt);
+        if CurAcc.Mails.GetItem(j).MessageNew then
+        begin
+          Inc(NewMsgsCnt);
+          // if new message already displayed but still new message
+          // mark it to not fire ballon for it
+          if not CurAcc.Mails.GetItem(j).MessageDisplayed then
+          begin
+             TMail(CurAcc.Mails.Items[j]^).MessageDisplayed:= true;
+             Inc(totalNewMsgs);
+          end;
+        end;
+
       if CurAcc.Mails.count=1 then sTmpHint:=sTrayHintMsg else sTmpHint:=sTrayHintMsgs;
       sTmpHint:=Format(sTmpHint, [CurAcc.Name, CurAcc.Mails.count]);
       if NewMsgsCnt>0 then
@@ -762,6 +784,7 @@ Begin
       end else sTmpHint:= Format(sTmpHint, ['']);
      TrayMail.Hint:=TrayMail.Hint+sTmpHint+#10;
     end;
+
   Except
     ShowMessage(inttostr(i));
   end;
@@ -772,7 +795,7 @@ Begin
   if FSettings.Settings.Notifications
              and notify
              and (length(TrayMail.BalloonHint)>0)
-             and (TrayMail.BalloonHint<>oldBallHint) then TrayMail.ShowBalloonHint;
+             and (totalNewMsgs>0)  then TrayMail.ShowBalloonHint;
 
 end;
 
@@ -1109,6 +1132,8 @@ begin
  //Need to reload position as it can change during hide in taskbar process
   left:= PrevLeft;
   top:= PrevTop;
+  // Infos box is black when restore from tray (bug of TRichMemo ?)
+  UpdateInfos;
   Application.BringToFront;
 end;
 
@@ -1559,11 +1584,12 @@ begin
   min:= EncodeTime(0,FAccounts.Accounts.GetItem(index).interval,0,0);
   FAccounts.Accounts.ModifyField(index, 'NEXTFIRE', now+min);
   TAccount(FAccounts.Accounts.Items[index]^).Mails.Reset;
+
   if Mails.count > 0 then
     for i:=0 to Mails.count-1 do
     begin
      TAccount(FAccounts.Accounts.Items[index]^).Mails.AddMail(Mails.GetItem(i));
-     Application.ProcessMessages;
+      Application.ProcessMessages;
     end;
   if assigned (Mails) then Mails.free;
   if assigned(idMsgList) then idMsgList.free;
@@ -1605,6 +1631,7 @@ var
 begin
   with FImpex do
   begin
+
     if ShowModal=mrOK then
     begin
       j:=0;
@@ -1615,7 +1642,8 @@ begin
           FAccounts.Accounts.AddAccount(ImpAccounts.GetItem(i));
           inc(j);
         end;
-      end;
+       end;
+      FAccounts.Accounts.DoSort;
       PopulateAccountsList(false);
       if j>1 then s:= sAccountsImported else s:= sAccountImported;
       MsgDlg(Caption, Format(s, [j, CBAccType.Items[CBAccType.ItemIndex]]),
@@ -1670,6 +1698,7 @@ begin
     if LVAccounts.ItemIndex>=0 then
     begin
       CurAcc:= FAccounts.Accounts.GetItem(LVAccounts.ItemIndex);
+      s:='';
       for i:= 0 to csvdoc.RowCount-1 do
       begin
         // First insert *************** line to indicate a new session
@@ -1791,6 +1820,9 @@ begin
   with LangFile do
   begin
     LangStr:=FSettings.Settings.LangStr;
+    sRetConfBack:= ReadString(LangStr,'RetConfBack','Recharge la dernière configuration sauvegardée');
+    sCreNewConf:= ReadString(LangStr,'CreNewConf','Création d''une nouvelle configuration');
+    sLoadConf:= ReadString(LangStr,'LoadConf','Chargement de la configuration');
     //Main Form
     Caption:=ReadString(LangStr,'Caption','Courrier en attente');
     OKBtn:= ReadString(LangStr, 'OKBtn','OK');

@@ -1,7 +1,7 @@
 object FMailsInBox: TFMailsInBox
-  Left = 464
+  Left = 583
   Height = 431
-  Top = 182
+  Top = 301
   Width = 940
   Caption = 'FMailsInBox'
   ClientHeight = 431
@@ -2944,7 +2944,7 @@ object FMailsInBox: TFMailsInBox
       0000000000000000000000000000FFFF0000FFFF0000FFFF0000
     }
     Visible = True
-    OnDblClick = MnuRestoreClick
+    OnClick = MnuRestoreClick
     left = 24
     top = 120
   end
