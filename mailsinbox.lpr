@@ -25,7 +25,6 @@ begin
   Application.CreateForm(TFImpex, FImpex);
   Application.CreateForm(TFMailClientChoose, FMailClientChoose);
   Application.CreateForm(TFLogView, FLogView);
-
   Application.Run;
 end.
 

@@ -393,7 +393,7 @@ begin
     TDOMElement(iNode).SetAttribute ('version', FVersion);
     iNode.AppendChild(SaveItem(iNode, 'savsizepos', BoolToString(FSavSizePos)));
     iNode.AppendChild(SaveItem(iNode, 'wstate', FWState));
-    iNode.AppendChild(SaveItem(iNode, 'lastupdchk', DateTimeToString(FLastUpdChk)));
+    iNode.AppendChild(SaveItem(iNode, 'lastupdchk', TimeDateToString(FLastUpdChk)));
     iNode.AppendChild(SaveItem(iNode, 'nochknewver', BoolToString(FNoChkNewVer)));
     iNode.AppendChild(SaveItem(iNode, 'startup', BoolToString(FStartup)));
     iNode.AppendChild(SaveItem(iNode, 'startmini',BoolToString(FStartMini)));
@@ -461,7 +461,7 @@ begin
       s:= subNode.TextContent;
       if upCaseSetting = 'SAVSIZEPOS' then FSavSizePos:= StringToBool(s);
       if upCaseSetting = 'WSTATE' then  FWState:= s;
-      if upCaseSetting = 'LASTUPDCHK' then FLastUpdChk:= StringToDateTime(s);
+      if upCaseSetting = 'LASTUPDCHK' then FLastUpdChk:= StringToTimeDate(s);
       if upCaseSetting = 'NOCHKNEWVER' then FNoChkNewVer:= StringToBool(s);
       if upCaseSetting = 'STARTUP' then FStartup:= StringToBool(s);
       if upCaseSetting = 'STARTMINI' then FStartMini:= StringToBool(s);

@@ -1,3 +1,9 @@
+{*******************************************************************************}
+{ Impex1 unit - Import Outlook, Thunderbird and Mailattente mail accounts       }
+{ for MailsInBox application                                                    }
+{ bb - sdtp - january 2020                                                      }
+{*******************************************************************************}
+
 unit impex1;
 
 {$mode objfpc}{$H+}
@@ -6,23 +12,10 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ExtCtrls, StdCtrls,
-  Buttons, Grids, accounts1, registry, lazbbinifiles, lazbbutils, jsonparser,
-  fpjson;
+  Buttons, Grids, accounts1, registry, lazbbinifiles, lazbbutils;
 
 type
-  TProfile=record
-    Number: integer;
-    Name: string;
-    IsRelative : Boolean;
-    Path : string;
-    Default : Boolean;
-    Current: Boolean;
-
-  end;
-
-  TProfiles = array of TProfile;
-  { TFImpex }
-
+  // Main Impex form
   TFImpex = class(TForm)
     BtnCancel: TBitBtn;
     BtnOK: TBitBtn;
@@ -41,6 +34,7 @@ type
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure BtnAccFileClick(Sender: TObject);
+    procedure FormShow(Sender: TObject);
     procedure LBImpexSelectionChange(Sender: TObject; User: boolean);
   private
     Reg: Tregistry;
@@ -48,17 +42,19 @@ type
     IsMailAttente: boolean;
     IsTBird: boolean;
     MailAttentePath: string;
-    TBirdPath: string;
+    TBirdPath, TbirdProfilePath: string;
     procedure ImportOutlook;
     procedure ImportMailAttente(filename: string);
-    procedure ImportTBird;
+    procedure ImportTBird(filename: string);
     function BinToWideStr(a: array of word): widestring;
     function RegGetBinaryString(regkey: Tregistry; attr: string): string;
     function GetTbirdProfilePath(tbpath: string): string;
   public
+    spassNotAvail: string;
     ImpAccounts: TAccountsList;
     MailattAccName, OutlAccName, TBirdAccName: string;
-
+    xmlFilter, jsFilter: string;
+    sBtnAccFileHint: string;
   end;
 
 var
@@ -73,6 +69,7 @@ implementation
 {$R *.lfm}
 
 uses mailsinbox1;
+
 { TFImpex }
 
 procedure TFImpex.FormCreate(Sender: TObject);
@@ -90,7 +87,12 @@ begin
   if Reg.KeyExists(OutlRegKey) then IsOutlook:= true;
   // Thunderbird profiles path
   TBirdPath:= FMailsInBox.UserAppsDataPath+PathDelim+'thunderbird'+PathDelim;
-  if DirectoryExists(TBirdPath) then IsTBird:= true;
+  TbirdProfilePath:=GetTbirdProfilePath(TBirdPath);
+  if DirectoryExists(TBirdPath) then
+  begin
+    IsTBird:= true;
+    TbirdProfilePath:=GetTbirdProfilePath(TBirdPath);
+  end;
 end;
 
 procedure TFImpex.FormActivate(Sender: TObject);
@@ -99,19 +101,11 @@ begin
   CBAccType.Items.Add(MailattAccName);
   if IsOutlook then CBAccType.Items.add(OutlAccName);
   if IsTBird then CBAccType.Items.add('Thunderbird');
-  SGImpex.Cells[0,0]:= 'Champ';
-  SGImpex.Cells[1,0]:= 'Valeur';
-  SGImpex.Cells[0,1]:= 'Nom du compte';
-  SGImpex.Cells[0,2]:= 'Serveur de courrier';
-  SGImpex.Cells[0,3]:= 'Port';
-  SGImpex.Cells[0,4]:='Protocole';
-  SGImpex.Cells[0,5]:= 'Identifiant courriel';
-  SGImpex.Cells[0,6]:= 'Mot de passe';
-  SGImpex.Cells[0,7]:= 'Adresse courriel';
-  SGImpex.Cells[0,8]:= 'Adresse de réponse';
   CBAccType.ItemIndex:= 0;
   CBAccTypeChange(Sender);
 end;
+
+// Get Thunderbird current profile path
 
 function TFImpex.GetTbirdProfilePath(tbpath: string): string;
 var
@@ -177,8 +171,7 @@ begin
   if Assigned(ProfileIni) then ProfileIni.free;
 end;
 
-
-
+// Click on file open button
 
 procedure TFImpex.BtnAccFileClick(Sender: TObject);
 var
@@ -192,13 +185,23 @@ begin
        Case CBAccType.ItemIndex of
          0: begin    // Old mailattente accounts
               LBImpex.Items.Clear;
-
               ImpAccounts.Reset;
               ImportMailAttente(ODIMpex.FileName);
               for i:= 0 to ImpAccounts.count-1 do LBImpex.Items.Add(ImpAccounts.GetItem(i).Name);
             end;
+         2: begin // external Thunderbird prefs.js file
+              LBImpex.Items.Clear;
+              ImpAccounts.Reset;
+              ImportTBird(ODIMpex.FileName);
+              for i:= 0 to ImpAccounts.count-1 do LBImpex.Items.Add(ImpAccounts.GetItem(i).Name);
+            end;
        end {case};
      end;
+end;
+
+procedure TFImpex.FormShow(Sender: TObject);
+begin
+
 end;
 
 procedure TFImpex.LBImpexSelectionChange(Sender: TObject; User: boolean);
@@ -214,7 +217,7 @@ begin
     SGImpex.Cells[1,4]:=ImpAccounts.ProtocolToString(CurAcc.Protocol);
     SGImpex.Cells[1,5]:= CurAcc.UserName;
     if length(Curacc.Password)=0
-    then SGImpex.Cells[1,6]:= 'Mot de passe non disponible'
+    then SGImpex.Cells[1,6]:= spassNotAvail
     else SGImpex.Cells[1,6]:= '**********' ;
     SGImpex.Cells[1,7]:= CurAcc.Email;
     SGImpex.Cells[1,8]:= CurAcc.ReplyEmail;
@@ -239,6 +242,9 @@ begin
   ImpAccounts.Reset;
   Case CBAccType.ItemIndex of
    0: begin           // Old mailattente accounts
+        ODImpex.Filter:= xmlFilter;
+        ODImpex.FilterIndex:=1;
+        BtnAccFile.Hint:= Format(sBtnAccFileHint,['Mailattente']);
         BtnAccFile.enabled:= true;
         EXMLAcc.text:= MailAttentePath;
         EXMLAcc.Hint:= MailAttentePath;
@@ -252,9 +258,13 @@ begin
         end;
       end;
    2: begin          // Thunderbird accounts
+        BtnAccFile.Hint:= Format(sBtnAccFileHint,['Thunderbird']);
+        ODImpex.Filter:= jsFilter;
+        ODImpex.FilterIndex:=1;
         BtnAccFile.enabled:= true;
-        //EXMLAcc.text:= TBirdPath;
-        ImportTBird;
+        EXMLAcc.text:= TbirdProfilePath+'prefs.js';
+        EXMLAcc.Hint:= TbirdProfilePath+'prefs.js';
+        ImportTBird(TbirdProfilePath+'prefs.js');
       end;
   end;
   for i:= 0 to ImpAccounts.count-1 do LBImpex.Items.Add(ImpAccounts.GetItem(i).Name);
@@ -360,7 +370,7 @@ begin
   end;
 end;
 
-procedure TFImpex.ImportTBird;
+procedure TFImpex.ImportTBird(filename: string);
 var
   CurProfilePath: string;
   sl: TStringList;
@@ -372,12 +382,9 @@ var
   CurAcc: TAccount;
   ndx: integer;
 begin
-  CurProfilePath:= GetTbirdProfilePath(TbirdPath);
-  EXMLAcc.text:= CurProfilePath;
-  EXMLAcc.Hint:= CurProfilePath;
   //Accounts are in prefs.js;
   sl:= TStringList.Create;
-  sl.LoadFromFile(CurProfilePath+'prefs.js');
+  sl.LoadFromFile(filename);
   sl.Sorted:= true;
   sl.sort;
   slIds:= TStringList.Create;

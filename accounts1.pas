@@ -59,6 +59,7 @@ type
     procedure Reset;
     procedure AddMail(Mail : TMail);
     procedure ModifyMail (const i: integer; Mail : TMail);
+    procedure ModifyField (const i: integer; field: string; value: variant);
     function GetItem(const i: Integer): TMail;
     function FindUIDL(value: string): integer;
     //function LoadXML(FileName: String): Integer;
@@ -88,13 +89,14 @@ type
      Interval: Integer;
      Mails: TMailsList;
      //UIDLList: TstringList;
-     //UIDLToDel: TstringList;
+     UIDLToDel: Array of string;
      MsgToDel: TstringList;
      LastFire: TDateTime;
      NextFire: TDateTime;
      Email: string;
      ReplyEmail: string;
      Error: Boolean;
+     ErrorStr: String;
      Checking: Boolean;
      Tag: Boolean;
      UID: Integer;
@@ -273,21 +275,7 @@ var
  K: PMail;
 begin
   new(K);
-  K^.AccountName := Mail.AccountName;
-  K^.AccountIndex:= Mail.AccountIndex;
-  K^.MessageNum  := Mail.MessageNum;
-  K^.MessageSize := Mail.MessageSize;
-  K^.MessageUIDL := Mail.MessageUIDL;
-  K^.MessageFrom := Mail.MessageFrom;
-  K^.FromAddress := Mail.FromAddress;
-  K^.MessageTo   := Mail.MessageTo;
-  K^.ToAddress   := Mail.ToAddress;
-  K^.MessageSubject := Mail.MessageSubject;
-  K^.Messagedate := Mail.Messagedate;
-  K^.MessageContentType:= Mail.MessageContentType;
-  K^.MessageNew  := Mail.MessageNew;
-  K^.MessageDisplayed := Mail.MessageDisplayed;
-  K^.MessageToDelete:= Mail.MessageToDelete;
+  K^:= Mail;
   add(K);
   DoSort;
   if Assigned(FOnChange) then FOnChange(Self);
@@ -295,21 +283,30 @@ end;
 
 procedure TMailsList.ModifyMail (const i: integer; Mail : TMail);
 begin
-  TMail(Items[i]^).AccountName := Mail.AccountName;
-  TMail(Items[i]^).AccountIndex:= Mail.AccountIndex;
-  TMail(Items[i]^).MessageNum  := Mail.MessageNum;
-  TMail(Items[i]^).MessageSize := Mail.MessageSize;
-  TMail(Items[i]^).MessageUIDL := Mail.MessageUIDL;
-  TMail(Items[i]^).MessageFrom := Mail.MessageFrom;
-  TMail(Items[i]^).FromAddress := Mail.FromAddress;
-  TMail(Items[i]^).MessageTo   := Mail.MessageTo;
-  TMail(Items[i]^).ToAddress   := Mail.ToAddress;
-  TMail(Items[i]^).MessageSubject := Mail.MessageSubject;
-  TMail(Items[i]^).Messagedate := Mail.Messagedate;
-  TMail(Items[i]^).MessageContentType:= Mail.MessageContentType;
-  TMail(Items[i]^).MessageNew  := Mail.MessageNew;
-  TMail(Items[i]^).MessageDisplayed:= Mail.MessageDisplayed;
-  TMail(Items[i]^).MessageToDelete:= Mail.MessageToDelete;
+  TMail(Items[i]^):= Mail;
+
+  DoSort;
+  if Assigned(FOnChange) then FOnChange(Self);
+end;
+
+procedure TMailsList.ModifyField (const i: integer; field: string; value: variant);
+begin
+  field:= Uppercase(field);
+  if field = 'ACCOUNTNAME' then TMail(Items[i]^).AccountName:= value;
+  if field = 'ACCOUNTINDEX' then TMail(Items[i]^).AccountIndex:= value;
+  if field = 'MESSAGENUM' then TMail(Items[i]^).MessageNum:= value;
+  if field = 'MESSAGESIZE' then TMail(Items[i]^).MessageSize:= value;
+  if field = 'MESSAGEUIDL' then TMail(Items[i]^).MessageUIDL:= value;
+  if field = 'MESSAGEFROM' then TMail(Items[i]^).MessageFrom:= value;
+  if field = 'FROMADDRESS' then TMail(Items[i]^).FromAddress:= value;
+  if field = 'MESSAGETO' then TMail(Items[i]^).MessageTo:= value;
+  if field = 'TOADDRESS' then TMail(Items[i]^).ToAddress:= value;
+  if field = 'MESSAGESUBJECT' then TMail(Items[i]^).MessageSubject:= value;
+  if field = 'MESSAGEDATE' then TMail(Items[i]^).Messagedate:= value;
+  if field = 'MESSAGECONTENTTYPE' then TMail(Items[i]^).MessageContentType:= value;
+  if field = 'MESSAGENEW' then TMail(Items[i]^).MessageNew:= value;
+  if field = 'MESSAGEDISPLAYED' then TMail(Items[i]^).MessageDisplayed:= value;
+  if field = 'MESSAGETODELETE' then TMail(Items[i]^).MessageToDelete:= value;
   DoSort;
   if Assigned(FOnChange) then FOnChange(Self);
 end;
@@ -456,6 +453,7 @@ begin
   if field = 'LASTFIRE' then TAccount(Items[i]^).LastFire:= value;
   if field = 'NEXTFIRE' then TAccount(Items[i]^).NextFire:= value;
   if field = 'ERROR' then TAccount(Items[i]^).Error:= value;
+  if field = 'ERRORSTR' then TAccount(Items[i]^).ErrorStr:= value;
   if field = 'CHECKING' then TAccount(Items[i]^).Checking:= value;
   if field = 'TAG' then TAccount(Items[i]^).Tag:= value;
   if field = 'UID' then TAccount(Items[i]^).UID:= value;
@@ -530,8 +528,8 @@ begin
         if upNodeName = 'INTERVAL' then A.Interval:= StringToInt(s);
         if upNodeName = 'EMAIL' then A.Email:= s;
         if upNodeName = 'REPLYEMAIL' then A.ReplyEmail:= s;
-        if upNodeName = 'LASTFIRE' then A.LastFire:= StringToDateTime(s, 'dd/mm/yyyy hh:nn:ss');
-        if upNodeName = 'NEXTFIRE' then A.NextFire:= StringToDateTime(s, 'dd/mm/yyyy hh:nn:ss');
+        if upNodeName = 'LASTFIRE' then A.LastFire:= StringToTimeDate(s, 'dd/mm/yyyy hh:nn:ss');
+        if upNodeName = 'NEXTFIRE' then A.NextFire:= StringToTimeDate(s, 'dd/mm/yyyy hh:nn:ss');
         if upNodeName = 'TAG' then A.Tag:= StringToBool(s);
         if upNodeName = 'UID' then A.UID:= StringToInt(s);
       finally
@@ -664,8 +662,8 @@ begin
        ContNode.AppendChild(SaveItem(ContNode, 'interval', IntToStr(GetItem(i).Interval)));
        ContNode.AppendChild(SaveItem(ContNode, 'email', GetItem(i).Email));
        ContNode.AppendChild(SaveItem(ContNode, 'replyemail', GetItem(i).ReplyEmail));
-       ContNode.AppendChild(SaveItem(ContNode, 'lastfire', DateTimeToString(GetItem(i).LastFire, 'dd/mm/yyyy hh:nn:ss')));
-       ContNode.AppendChild(SaveItem(ContNode, 'nextfire', DateTimeToString(GetItem(i).NextFire, 'dd/mm/yyyy hh:nn:ss')));
+       ContNode.AppendChild(SaveItem(ContNode, 'lastfire', TimeDateToString(GetItem(i).LastFire, 'dd/mm/yyyy hh:nn:ss')));
+       ContNode.AppendChild(SaveItem(ContNode, 'nextfire', TimeDateToString(GetItem(i).NextFire, 'dd/mm/yyyy hh:nn:ss')));
        ContNode.AppendChild(SaveItem(ContNode, 'tag', BoolToString(GetItem(i).Tag)));
        ContNode.AppendChild(SaveItem(ContNode, 'uid', IntToStr(GetItem(i).UID)));
      except
