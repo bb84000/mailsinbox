@@ -46,6 +46,7 @@ type
     FSmallBtns: Boolean;
     FNotifications: Boolean;
     FNoCloseAlert: Boolean;
+    FNoQuitAlert: Boolean;
     FSoundFile: String;
     FLangStr: String;
     FMailClient: String;
@@ -72,6 +73,7 @@ type
     procedure SetSmallBtns(b: boolean);
     procedure SetNotifications(b: boolean);
     procedure SetNoCloseAlert(b: boolean);
+    procedure SetNoQuitAlert(b: boolean);
     procedure SetSoundFile(s: string);
     procedure SetLangStr (s: string);
     procedure SetMailClient(s: string);
@@ -100,6 +102,7 @@ type
     property SmallBtns: boolean read FSmallBtns write SetSmallBtns;
     property Notifications: boolean read FNotifications write SetNotifications;
     property NoCloseAlert: boolean read FNoCloseAlert write SetNoCloseAlert;
+    property NoQuitAlert: boolean read FNoQuitAlert write SetNoQuitAlert;
     property SoundFile: string read FSoundFile write SetSoundFile;
     property LangStr: String read FLangStr write SetLangStr;
     property MailClient: string read FMailClient write SetMailClient;
@@ -122,6 +125,7 @@ end;
     CBMailClientMini: TCheckBox;
     CBHideInTaskBar: TCheckBox;
     CBNoCloseAlert: TCheckBox;
+    CBNoQuitAlert: TCheckBox;
     CBSmallBtns: TCheckBox;
     CBSaveLogs: TCheckBox;
     CBNotifications: TCheckBox;
@@ -318,6 +322,15 @@ begin
   end;
 end;
 
+procedure TConfig.SetNoQuitAlert(b: boolean);
+begin
+  if FNoQuitAlert <> b then
+  begin
+    FNoQuitAlert:= b;
+    if Assigned(FOnChange) then FOnChange(Self);
+  end;
+end;
+
 procedure TConfig.SetSoundFile (s: string);
 begin
   if FSoundFile <> s then
@@ -405,6 +418,7 @@ begin
     iNode.AppendChild(SaveItem(iNode, 'smallbtns',BoolToString(FSmallBtns)));
     iNode.AppendChild(SaveItem(iNode, 'notifications',BoolToString(FNotifications)));
     iNode.AppendChild(SaveItem(iNode, 'noclosealert', BoolToString(FNoCloseAlert)));
+    iNode.AppendChild(SaveItem(iNode, 'noquitalert', BoolToString(FNoQuitAlert)));
     iNode.AppendChild(SaveItem(iNode, 'soundfile', FSoundFile));
     iNode.AppendChild(SaveItem(iNode, 'langstr', FLangStr));
     iNode.AppendChild(SaveItem(iNode, 'mailclient', FMailClient));
@@ -473,6 +487,7 @@ begin
       if upCaseSetting = 'SMALLBTNS' then FSmallBtns:= StringToBool(s);
       if upCaseSetting = 'NOTIFICATIONS' then FNotifications:= StringToBool(s);
       if upCaseSetting = 'NOCLOSEALERT' then FNoCloseAlert:= StringToBool(s);
+      if upCaseSetting = 'NOQUITALERT' then FNoQuitAlert:= StringToBool(s);
       if upCaseSetting = 'SOUNDFILE' then FSoundFile:= s;
       if upCaseSetting = 'LANGSTR' then FLangStr:= s;
       if upCaseSetting = 'MAILCLIENT' then FMailClient:= s;

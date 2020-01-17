@@ -45,5 +45,12 @@ Version 0.5.1.3 - 15/01/2020
 - Translated mails list headers
 - Added delete messages function
 
+Version 0.6.0.0 - 17/01/2020
+- Dynamic tray menu images loading (imagelist)
+- maximum use of png instead bmp for compoents images
+- changed alertbox : can display  standard message box icons or custom icon
+- some weird behaviours fixed
+- Differentiate close windows and quit program alert boxes
+- Fixed bug in import mailattente accounts (mails list not created)
 
 

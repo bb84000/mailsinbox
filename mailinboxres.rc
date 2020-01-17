@@ -1,6 +1,5 @@
 // Icones (doivent être placées alphabétiquement après MAINICON
 
-MAINICON      ICON "images\\mainicon.ico"
 TRAYICON      ICON "images\\trayicon.ico"
 XATT0         ICON "images\\getmail0.ico"
 XATT1         ICON "images\\getmail1.ico"
@@ -9,20 +8,19 @@ XATT3         ICON "images\\getmail3.ico"
 XATT4         ICON "images\\getmail4.ico"
 XATT5         ICON "images\\getmail5.ico"
 
-// Bitmaps
-ACCOUNT       BITMAP "images\\account16.bmp"
-ACCOUNTD      BITMAP "images\\account16d.bmp"
-TRAY          BITMAP "images\\trayicon.bmp"
+ACCOUNT216    RCDATA "images\\account216.png"
+MAIL16        RCDATA "images\\mail16.png"
+MAILSTATES    RCDATA "images\\mailstates.png"
+ABOUTIMG      RCDATA "images\\mainicon32.png"
 
-ACCOUNT16     RCDATA "images\\account16.png"
+// Small buttons glyphs (same name as buttons/menus suffix)
 
-// Small buttons glyphs (same name as buttons suffix)
 IMPORT16      RCDATA "images\\importaccounts216.png"
 FIRST16       RCDATA "images\\arrowfirst216.png"
 PREV16        RCDATA "images\\arrowprev216.png"
 NEXT16        RCDATA "images\\arrownext216.png"
 LAST16        RCDATA "images\\arrowlast216.png"
-ACCOUNTLOG16         RCDATA "images\\accountlog216.png"
+ACCOUNTLOG16  RCDATA "images\\accountlog216.png"
 GETALLMAIL16  RCDATA "images\\getallmail216.png"
 GETACCMAIL16  RCDATA "images\\getaccmail216.png"
 LAUNCHCLIENT16  RCDATA "images\\launchclient216.png"
@@ -34,4 +32,16 @@ LOG16         RCDATA"images\\log216.png"
 ABOUT16       RCDATA "images\\help216.png"
 CLOSE16       RCDATA "images\\close216.png"
 QUIT16        RCDATA "images\\quit216.png"
+
+// Menus glyphs
+RESTORE16     RCDATA "images\\restore216.png"
+MAXIMIZE16    RCDATA "images\\maximize216.png"
+ICONIZE16     RCDATA "images\\iconize216.png"
+MAILINFOS16   RCDATA "images\\mailinfos216.png"
+MAILANSWER16  RCDATA "images\\mailanswer216.png"
+MAILDELETE16  RCDATA "images\\maildelete216.png"
+ARROWUP16     RCDATA "images\\arrowup216.png"
+ARROWDN16     RCDATA "images\\arrowdn216.png"
+
+
 

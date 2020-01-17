@@ -570,8 +570,9 @@ var
   iNode:TDOMNode;
   i: integer;
   UpCaseAttrib: string;
-  k: PAccount;
+  //k: PAccount;
   s: string;
+  A: TAccount;
 const
   key=14235;
 begin
@@ -586,35 +587,32 @@ begin
     while iNode <> nil do
       if iNode.Attributes<>nil then
       begin
-        new(K);
+        A:= Default(TAccount);
+        //new(K);
         for i:= 0 to iNode.Attributes.Length-1 do
         try
-
-
           UpCaseAttrib:=UpperCase(iNode.Attributes.Item[i].NodeName);
           s:= iNode.Attributes.Item[i].NodeValue;
-
-          if UpCaseAttrib='ENABLED' then K^.Enabled:= StringToBool(s);
-          if UpCaseAttrib='ACCOUNTNAME' then K^.Name:= s;
-          if UpCaseAttrib='ACCOUNTINDEX' then K^.Index:= StringToInt(s);
-          if UpCaseAttrib='HOST' then K^.Server:= s;
-          if UpCaseAttrib='PROTOCOL' then K^.Protocol:= StringToProtocol(s);
-          if UpCaseAttrib='SSLTYPE' then K^.SSL:= StringToInt(s);
-          if UpCaseAttrib='PORT' then K^.Port:= StringToInt(s);
-          if UpCaseAttrib='USERNAME' then K^.UserName:= s;
-          if UpCaseAttrib='PASSWORD' then K^.Password := StringDecrypt(s, key);
-          if UpCaseAttrib='AUTH' then K^.SecureAuth:= StringToBool(s);
-          if UpCaseAttrib='COLOR' then K^.Color:= StrToInt('$'+s);
-          if UpCaseAttrib='MAILCLIENT' then K^.MailClient:= s;
-          if UpCaseAttrib='SOUND' then K^.SoundFile:= s;
-          if UpCaseAttrib='INTERVAL' then K^.Interval:= StringToInt(s);
-          if UpCaseAttrib='EMAIL' then K^.Email:= s;
-          if UpCaseAttrib='REPLYEMAIL' then K^.ReplyEmail:= s;
+          if UpCaseAttrib='ENABLED' then  A.Enabled:= StringToBool(s);
+          if UpCaseAttrib='ACCOUNTNAME' then A.Name:= s;
+          if UpCaseAttrib='ACCOUNTINDEX' then A.Index:= StringToInt(s);
+          if UpCaseAttrib='HOST' then A.Server:= s;
+          if UpCaseAttrib='PROTOCOL' then A.Protocol:= StringToProtocol(s);
+          if UpCaseAttrib='SSLTYPE' then A.SSL:= StringToInt(s);
+          if UpCaseAttrib='PORT' then A.Port:= StringToInt(s);
+          if UpCaseAttrib='USERNAME' then A.UserName:= s;
+          if UpCaseAttrib='PASSWORD' then A.Password := StringDecrypt(s, key);
+          if UpCaseAttrib='AUTH' then A.SecureAuth:= StringToBool(s);
+          if UpCaseAttrib='COLOR' then A.Color:= StrToInt('$'+s);
+          if UpCaseAttrib='MAILCLIENT' then A.MailClient:= s;
+          if UpCaseAttrib='SOUND' then A.SoundFile:= s;
+          if UpCaseAttrib='INTERVAL' then A.Interval:= StringToInt(s);
+          if UpCaseAttrib='EMAIL' then A.Email:= s;
+          if UpCaseAttrib='REPLYEMAIL' then A.ReplyEmail:= s;
         except
         end;
-        add(K);
+        AddAccount(A);
         iNode:= iNode.NextSibling;
-        K:= nil;
       end;
     result:= true;
   end;

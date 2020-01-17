@@ -1,5 +1,5 @@
 Mails In Box : Mail notifier application
-Version 0.5.1.2
+Version 0.6.0.0
 
 (Explication en Français à la fin de ce fichier)
 
@@ -42,8 +42,7 @@ Web : http://www.sdtp.com
 *************************************************************************
 
 Courriels en attente - Notification de courriels arrivés
-MailAttente Version 0.5.1.2
-
+MailAttente Version 6.0.0.0
 
 OBJET
 Vérifie la présence de courrier sur les boîtes de courriel POP3 et IMAP
