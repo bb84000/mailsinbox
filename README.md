@@ -1,7 +1,6 @@
 # mailsinbox
 
-OBJECT
-Check if there are mails on POP3 and IMAP mailboxes.
+OBJECT : Check if there are mails on POP3 and IMAP mailboxes.
 
 Can import Outlook 2007-2013, Thunderbird and Mailattente accounts.
 
