@@ -1,7 +1,7 @@
 object FMailClientChoose: TFMailClientChoose
-  Left = 999
+  Left = 388
   Height = 121
-  Top = 241
+  Top = 116
   Width = 446
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle

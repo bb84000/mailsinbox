@@ -53,4 +53,16 @@ Version 0.6.0.0 - 17/01/2020
 - Differentiate close windows and quit program alert boxes
 - Fixed bug in import mailattente accounts (mails list not created)
 
+Version 0.7.0.0 - 19/01/2020
+- Quit and close alertbox routines rewritten with new AlertMsg function in lazbbutils
+- Changed Quit button behaviour : double quit to close the program. Single click
+  display an alert message explaining the behaviour.
+- Added a TFPTimer do manage time display and eventually other stuff to come.
+- Implemented answer to mail function
+- Implemented manual unknown mail client selection
+- Implemented manual update check
+- Changed log file structure and log display routine (no longer use csvdoc
+- Changed lastfire and nextfire management, data no longer stored in accounts file
+  now in settings file in unix form to better protect accounts data integrity
+
 

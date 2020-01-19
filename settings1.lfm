@@ -2,12 +2,12 @@ object FSettings: TFSettings
   Left = 817
   Height = 327
   Top = 299
-  Width = 537
+  Width = 589
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'Préférences de MailsInBox'
   ClientHeight = 327
-  ClientWidth = 537
+  ClientWidth = 589
   OnActivate = FormActivate
   OnCreate = FormCreate
   OnDestroy = FormDestroy
@@ -18,11 +18,11 @@ object FSettings: TFSettings
     Left = 0
     Height = 31
     Top = 296
-    Width = 537
+    Width = 589
     Align = alBottom
     BevelInner = bvLowered
     ClientHeight = 31
-    ClientWidth = 537
+    ClientWidth = 589
     TabOrder = 0
     object LStatus: TLabel
       Left = 8
@@ -38,12 +38,12 @@ object FSettings: TFSettings
     Left = 0
     Height = 42
     Top = 254
-    Width = 537
+    Width = 589
     Align = alBottom
     BevelInner = bvLowered
     BevelOuter = bvNone
     ClientHeight = 42
-    ClientWidth = 537
+    ClientWidth = 589
     TabOrder = 1
     object BtnOK: TBitBtn
       Left = 192
@@ -74,11 +74,11 @@ object FSettings: TFSettings
     Left = 0
     Height = 254
     Top = 0
-    Width = 537
+    Width = 589
     Align = alClient
     Caption = 'Système'
     ClientHeight = 234
-    ClientWidth = 533
+    ClientWidth = 585
     TabOrder = 2
     object LMailClient: TLabel
       Left = 8
@@ -93,17 +93,17 @@ object FSettings: TFSettings
       Left = 8
       Height = 19
       Top = 0
-      Width = 250
+      Width = 280
       AutoSize = False
       Caption = 'Lancer au démarrage'
       OnChange = CBStartupChange
       TabOrder = 0
     end
     object CBStartMini: TCheckBox
-      Left = 275
+      Left = 300
       Height = 19
       Top = 0
-      Width = 250
+      Width = 280
       AutoSize = False
       Caption = 'Démarrage minimisé'
       TabOrder = 1
@@ -112,7 +112,7 @@ object FSettings: TFSettings
       Left = 8
       Height = 19
       Top = 22
-      Width = 250
+      Width = 280
       AutoSize = False
       Caption = 'Sauvegarde taille et position de la fenêtre'
       TabOrder = 2
@@ -121,7 +121,7 @@ object FSettings: TFSettings
       Left = 8
       Height = 19
       Top = 66
-      Width = 250
+      Width = 280
       AutoSize = False
       Caption = 'Ne pas rechercher de mise à jour'
       TabOrder = 3
@@ -136,10 +136,10 @@ object FSettings: TFSettings
       OnClick = LLangueClick
     end
     object CBMailClientMini: TCheckBox
-      Left = 275
+      Left = 300
       Height = 19
       Top = 22
-      Width = 250
+      Width = 280
       AutoSize = False
       Caption = 'Minimiser au lancement du client courrier'
       TabOrder = 4
@@ -148,31 +148,31 @@ object FSettings: TFSettings
       Left = 8
       Height = 19
       Top = 44
-      Width = 250
+      Width = 280
       AutoSize = False
       Caption = 'Restaurer la fenêtre si nouveaux messages'
       TabOrder = 5
     end
     object CBSaveLogs: TCheckBox
-      Left = 275
+      Left = 300
       Height = 19
       Top = 66
-      Width = 250
+      Width = 280
       AutoSize = False
       Caption = 'Conserver le journal'
       TabOrder = 6
     end
     object CBStartupCheck: TCheckBox
-      Left = 275
+      Left = 300
       Height = 19
       Top = 88
-      Width = 250
+      Width = 280
       AutoSize = False
       Caption = 'Relever le courrier au démarrage'
       TabOrder = 7
     end
     object BtnMailClient: TSpeedButton
-      Left = 490
+      Left = 544
       Height = 22
       Hint = 'Cliquer pour sélectionner un client courriel'
       Top = 180
@@ -264,7 +264,7 @@ object FSettings: TFSettings
       Left = 120
       Height = 21
       Top = 204
-      Width = 342
+      Width = 368
       AutoSize = False
       OnChange = ESoundFileChange
       ParentShowHint = False
@@ -272,7 +272,7 @@ object FSettings: TFSettings
       TabOrder = 8
     end
     object BtnSoundFile: TSpeedButton
-      Left = 490
+      Left = 544
       Height = 22
       Hint = 'Cliquer pour sélectionner un fichier son'
       Top = 204
@@ -354,7 +354,7 @@ object FSettings: TFSettings
       Left = 120
       Height = 21
       Top = 156
-      Width = 288
+      Width = 384
       AutoSelect = False
       AutoSize = False
       Constraints.MaxHeight = 21
@@ -363,10 +363,10 @@ object FSettings: TFSettings
       TabOrder = 9
     end
     object BtnPlaySound: TSpeedButton
-      Left = 464
+      Left = 500
       Height = 22
       Hint = 'Ecouter le son sélectionné'
-      Top = 204
+      Top = 203
       Width = 23
       Glyph.Data = {
         76010000424D7601000000000000760000002800000020000000100000000100
@@ -390,7 +390,7 @@ object FSettings: TFSettings
       Left = 8
       Height = 19
       Top = 88
-      Width = 250
+      Width = 280
       AutoSize = False
       Caption = 'Petits boutons'
       TabOrder = 10
@@ -399,7 +399,7 @@ object FSettings: TFSettings
       Left = 120
       Height = 21
       Top = 180
-      Width = 288
+      Width = 368
       AutoSelect = False
       AutoSize = False
       Constraints.MaxHeight = 21
@@ -410,11 +410,11 @@ object FSettings: TFSettings
       TabOrder = 11
     end
     object CBUrl: TCheckBox
-      Left = 418
+      Left = 500
       Height = 19
       Hint = 'Cocher s''il s''agit d''une adresse Web'
-      Top = 182
-      Width = 62
+      Top = 181
+      Width = 40
       AutoSize = False
       Caption = 'URL'
       ParentShowHint = False
@@ -425,36 +425,36 @@ object FSettings: TFSettings
       Left = 8
       Height = 19
       Top = 132
-      Width = 250
+      Width = 280
       AutoSize = False
       Caption = 'Notifications activées'
       TabOrder = 13
     end
     object CBHideInTaskBar: TCheckBox
-      Left = 275
+      Left = 300
       Height = 19
       Top = 44
-      Width = 250
+      Width = 280
       AutoSize = False
       Caption = 'Masquer l''icone dans la barre des tâches'
       TabOrder = 14
     end
     object CBNoCloseAlert: TCheckBox
-      Left = 275
+      Left = 300
       Height = 19
       Top = 110
-      Width = 250
+      Width = 280
       AutoSize = False
-      Caption = 'Ne pas afficher l''alerte de fermeture'
+      Caption = 'Ne pas afficher l''alerte de masquage de la fenêtre'
       TabOrder = 15
     end
     object CBNoQuitAlert: TCheckBox
       Left = 8
       Height = 19
       Top = 110
-      Width = 250
+      Width = 280
       AutoSize = False
-      Caption = 'Ne pas afficher l''alerte d''arrêt'
+      Caption = 'Ne pas afficher l''alerte d''arrêt du programme'
       TabOrder = 16
     end
   end

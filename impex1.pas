@@ -372,7 +372,7 @@ end;
 
 procedure TFImpex.ImportTBird(filename: string);
 var
-  CurProfilePath: string;
+  //CurProfilePath: string;
   sl: TStringList;
   slIds, slServ: TStringList;
   i: integer;

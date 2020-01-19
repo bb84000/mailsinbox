@@ -17,9 +17,9 @@
     </General>
     <VersionInfo>
       <UseVersionInfo Value="True"/>
-      <MinorVersionNr Value="6"/>
+      <MinorVersionNr Value="7"/>
       <Attributes pvaPreRelease="True"/>
-      <StringTable Comments="www.sdtp.com" CompanyName="sdtp" FileDescription="Courrier en attente - Mails in Box" InternalName="mailsinbox" LegalCopyright="sdtp - bb - january 2020" LegalTrademarks="sdtp - bb - january 2020" OriginalFilename="mailsinbox" ProductName="Mails In Box - Courriels en attente" ProductVersion="0.6.0.0"/>
+      <StringTable Comments="www.sdtp.com" CompanyName="sdtp" FileDescription="Courrier en attente - Mails in Box" InternalName="mailsinbox" LegalCopyright="sdtp - bb - january 2020" LegalTrademarks="sdtp - bb - january 2020" OriginalFilename="mailsinbox" ProductName="Mails In Box - Courriels en attente" ProductVersion="0.7.0.0"/>
     </VersionInfo>
     <BuildModes Count="1">
       <Item1 Name="Default" Default="True"/>
@@ -46,7 +46,7 @@
         <PackageName Value="LCL"/>
       </Item4>
     </RequiredPackages>
-    <Units Count="11">
+    <Units Count="8">
       <Unit0>
         <Filename Value="mailsinbox.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -73,43 +73,30 @@
         <ResourceBaseClass Value="Form"/>
       </Unit3>
       <Unit4>
-        <Filename Value="mailsinbox.lng.txt"/>
-        <IsPartOfProject Value="True"/>
-      </Unit4>
-      <Unit5>
-        <Filename Value="images\history.txt"/>
-        <IsPartOfProject Value="True"/>
-      </Unit5>
-      <Unit6>
         <Filename Value="impex1.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="FImpex"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-      </Unit6>
-      <Unit7>
+      </Unit4>
+      <Unit5>
         <Filename Value="mailclients1.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="FMailClientChoose"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-      </Unit7>
-      <Unit8>
-        <Filename Value="uthreadtimer.pas"/>
-        <IsPartOfProject Value="True"/>
-        <UnitName Value="uThreadTimer"/>
-      </Unit8>
-      <Unit9>
+      </Unit5>
+      <Unit6>
         <Filename Value="mailsinbox.ini"/>
         <IsPartOfProject Value="True"/>
-      </Unit9>
-      <Unit10>
+      </Unit6>
+      <Unit7>
         <Filename Value="log1.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="FLogView"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-      </Unit10>
+      </Unit7>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -126,6 +113,9 @@
     <CodeGeneration>
       <TargetCPU Value="x86_64"/>
       <TargetOS Value="win64"/>
+      <Optimizations>
+        <OptimizationLevel Value="2"/>
+      </Optimizations>
     </CodeGeneration>
     <Linking>
       <Debugging>

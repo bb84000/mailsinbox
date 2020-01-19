@@ -1,7 +1,7 @@
 object FMailsInBox: TFMailsInBox
-  Left = 476
+  Left = 467
   Height = 431
-  Top = 193
+  Top = 245
   Width = 940
   Caption = 'FMailsInBox'
   ClientHeight = 431
@@ -811,7 +811,7 @@ object FMailsInBox: TFMailsInBox
       OnClick = BtnLaunchClientClick
     end
     object BtnDelete: TSpeedButton
-      Left = 210
+      Left = 208
       Height = 32
       Hint = 'Supprimer le compte sélectionné'
       Top = 5
@@ -1755,7 +1755,7 @@ object FMailsInBox: TFMailsInBox
     object BtnClose: TSpeedButton
       Left = 450
       Height = 32
-      Hint = 'Fermer la fenêtre de  MainsInBox %s(( le programme fonctionne en tâche de fond)'
+      Hint = 'Masquer la fenêtre de  MainsInBox %s(( le programme fonctionne en tâche de fond)'
       Top = 5
       Width = 32
       Glyph.Data = {
@@ -1912,7 +1912,7 @@ object FMailsInBox: TFMailsInBox
     object BtnQuit: TSpeedButton
       Left = 490
       Height = 32
-      Hint = 'Quitter MailsInBox'
+      Hint = 'Quitter Courrier en attente'
       Top = 5
       Width = 32
       Glyph.Data = {
@@ -2063,8 +2063,9 @@ object FMailsInBox: TFMailsInBox
         0000000000000000000000000000000000000000000000000000000000000000
         0000000000000000000000000000000000000000000000000000
       }
+      GroupIndex = 1
       NumGlyphs = 2
-      OnClick = BtnQuitClick
+      OnDblClick = BtnQuitDblClick
     end
   end
   object PnlStatus: TPanel
@@ -3043,7 +3044,8 @@ object FMailsInBox: TFMailsInBox
     }
   end
   object TrayTimer: TTimer
-    OnTimer = TrayTimerTimer
+    Interval = 1750
+    OnTimer = OnTrayTimer
     left = 400
     top = 152
   end
@@ -3096,8 +3098,8 @@ object FMailsInBox: TFMailsInBox
       OnClick = BtnAboutClick
     end
     object MnuQuit: TMenuItem
-      Caption = 'Quitter'
-      OnClick = BtnQuitClick
+      Caption = 'Quitter Courriels en attente'
+      OnClick = MnuQuitClick
     end
   end
   object UniqueInstance1: TUniqueInstance

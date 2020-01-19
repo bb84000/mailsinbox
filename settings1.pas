@@ -32,6 +32,7 @@ type
   private
     FOnChange: TNotifyEvent;
     FOnStateChange: TNotifyEvent;
+    FOnQuitAlertChange: TNotifyEvent;
     FSavSizePos: Boolean;
     FWState: string;
     FLastUpdChk: Tdatetime;
@@ -55,6 +56,8 @@ type
     FRestart: Boolean;
     FAppName: String;
     FVersion: String;
+    FLastFires: string;
+    FNextFires: string;
     function SaveItem(iNode: TDOMNode; sname, svalue: string): TDOMNode;
   public
 
@@ -81,13 +84,16 @@ type
     procedure SetMailClientIsUrl(b: boolean);
     procedure SetVersion(s: string);
     procedure SetRestart(b: boolean);
-    function SaveXMLnode(iNode: TDOMNode): Boolean;
+    procedure SetLastFires(s: string);
+    procedure SetNextFires(s: string);
+    function saveXMLnode(iNode: TDOMNode): Boolean;
     function SaveToXMLfile(filename: string): Boolean;
     function LoadXMLNode(iNode: TDOMNode): Boolean;
     function LoadXMLFile(filename: string): Boolean;
   published
     property OnChange: TNotifyEvent read FOnChange write FOnChange;
     property OnStateChange: TNotifyEvent read FOnStateChange write FOnStateChange;
+    property OnQuitAlertChange: TNotifyEvent read FOnQuitAlertChange write FOnQuitAlertChange;
     property SavSizePos: Boolean read FSavSizePos write SetSavSizePos;
     property WState: string read FWState write SetWState;
     property LastUpdChk: Tdatetime read FLastUpdChk write SetLastUpdChk;
@@ -111,8 +117,11 @@ type
     property AppName: string read FAppName write FAppName;
     property Version: string read FVersion write SetVersion;
     property Restart: boolean read FRestart write SetRestart;
+    // couple of account UID and unix date converted to strings.
+    // separator is '|'
+    property LastFires: string read FLastFires write SetLastFires;
+    property NextFires: string read FNextFires write SetNextFires;
 end;
-
 
   { TFSettings }
 
@@ -197,84 +206,66 @@ end;
 
 procedure TConfig.SetSavSizePos(b: Boolean);
 begin
-  if FSavSizePos <> b then
-  begin
-    FSavSizePos:= b;
-    if Assigned(FOnStateChange) then FOnStateChange(Self);
-  end;
+  if FSavSizePos=b then exit;
+  FSavSizePos:= b;
+  if Assigned(FOnStateChange) then FOnStateChange(Self);
 end;
 
 procedure TConfig.SetWState(s: string);
 begin
-   if FWState <> s then
-   begin
-     FWState:= s;
-     if Assigned(FOnStateChange) then FOnStateChange(Self);
-   end;
+  if FWState=s then exit;
+  FWState:= s;
+  if Assigned(FOnStateChange) then FOnStateChange(Self);
 end;
 
 procedure TConfig.SetLastUpdChk(dt: TDateTime);
 begin
-   if FLastUpdChk <> dt then
-   begin
-     FLastUpdChk:= dt;
-     if Assigned(FOnChange) then FOnChange(Self);
-   end;
+  if FLastUpdChk=dt then exit;
+  FLastUpdChk:= dt;
+  if Assigned(FOnChange) then FOnChange(Self);
 end;
 
 procedure TConfig.SetNoChkNewVer(b: Boolean);
 begin
-   if FNoChkNewVer <> b then
-   begin
-     FNoChkNewVer:= b;
-     if Assigned(FOnChange) then FOnChange(Self);
-   end;
+  if FNoChkNewVer=b then exit;
+  FNoChkNewVer:= b;
+  if Assigned(FOnChange) then FOnChange(Self);
 end;
 
 
 procedure TConfig.SetStartup (b: Boolean);
 begin
-   if FStartup <> b then
-   begin
-     FStartup:= b;
-     if Assigned(FOnChange) then FOnChange(Self);
-   end;
+  if FStartup=b then exit;
+  FStartup:= b;
+  if Assigned(FOnChange) then FOnChange(Self);
 end;
 
 procedure TConfig.SetStartMini (b: Boolean);
 begin
-   if FStartMini <> b then
-   begin
-     FStartMini:= b;
-     if Assigned(FOnChange) then FOnChange(Self);
-   end;
+  if FStartMini=b then exit;
+  FStartMini:= b;
+  if Assigned(FOnChange) then FOnChange(Self);
 end;
 
 procedure TConfig.SetMailClientMini (b: Boolean);
 begin
-   if FMailClientMini <> b then
-   begin
-     FMailClientMini:= b;
-     if Assigned(FOnChange) then FOnChange(Self);
-   end;
+  if FMailClientMini=b then exit;
+  FMailClientMini:= b;
+  if Assigned(FOnChange) then FOnChange(Self);
 end;
 
 procedure TConfig.SetHideInTaskbar (b: Boolean);
 begin
-   if FHideInTaskbar <> b then
-   begin
-     FHideInTaskbar := b;
-     if Assigned(FOnChange) then FOnChange(Self);
-   end;
+  if FHideInTaskbar=b then exit;
+  FHideInTaskbar := b;
+  if Assigned(FOnChange) then FOnChange(Self);
 end;
 
 procedure TConfig.SetRestNewMsg (b: Boolean);
 begin
-   if FRestNewMsg <> b then
-   begin
-     FRestNewMsg:= b;
-     if Assigned(FOnChange) then FOnChange(Self);
-   end;
+  if FRestNewMsg=b then exit;
+  FRestNewMsg:= b;
+  if Assigned(FOnChange) then FOnChange(Self);
 end;
 
 procedure TConfig.SetSaveLogs (b: boolean);
@@ -328,6 +319,7 @@ begin
   begin
     FNoQuitAlert:= b;
     if Assigned(FOnChange) then FOnChange(Self);
+    if Assigned(OnQuitAlertChange) then FOnQuitAlertChange(self);
   end;
 end;
 
@@ -394,14 +386,39 @@ begin
   end;
 end;
 
+procedure TConfig.SetLastFires(s: string);
+begin
+  if FLastFires <> s then
+  begin
+    FLastFires:= s;
+    if Assigned(FOnChange) then FOnChange(Self);
+  end;
+end;
+
+
+procedure TConfig.SetNextFires(s: string);
+begin
+  if FNextFires <> s then
+  begin
+    FNextFires:= s;
+    if Assigned(FOnChange) then FOnChange(Self);
+  end;
+end;
+
 function TConfig.SaveItem(iNode: TDOMNode; sname, svalue: string): TDOMNode;
+
 begin
   result:= iNode.OwnerDocument.CreateElement(sname);
   result.TextContent:= svalue;
 end;
 
 function TConfig.SaveXMLnode(iNode: TDOMNode): Boolean;
+var
+  j: integer;
+  jNode: TDOMNode;
+  ts: TStringList;
 begin
+  ts:= TstringList.Create;
   Try
     TDOMElement(iNode).SetAttribute ('version', FVersion);
     iNode.AppendChild(SaveItem(iNode, 'savsizepos', BoolToString(FSavSizePos)));
@@ -425,10 +442,21 @@ begin
     iNode.AppendChild(SaveItem(iNode, 'mailclientname', FMailClientName));
     iNode.AppendChild(SaveItem(iNode, 'mailclientisurl', BoolToString(FMailClientIsUrl)));
     iNode.AppendChild(SaveItem(iNode, 'restart', BoolToString(FRestart)));
+    jNode:= iNode.AppendChild(SaveItem(iNode, 'lastfires', ''));
+    // lastfires has child nodes to store accounts lastfire
+    ts.text:= FLastFires;
+    if ts.count >0 then
+       for j:=0 to ts.count-1 do jNode.AppendChild(SaveItem(jNode, 'lastfire', ts.strings[j]));
+     jNode:= iNode.AppendChild(SaveItem(iNode, 'nextfires', ''));
+    // nextfires has cheld nodes
+    ts.Text:= FNextFires;
+    if ts.count >0 then
+       for j:=0 to ts.count-1 do jNode.AppendChild(SaveItem(jNode, 'nextfire', ts.strings[j]));
     Result:= true;
   except
     Result:= false;
   end;
+  if assigned(ts) then ts.free;
 end;
 
 function TConfig.SaveToXMLfile(filename: string): Boolean;
@@ -461,9 +489,12 @@ function TConfig.LoadXMLNode(iNode: TDOMNode): Boolean;
 var
   UpCaseSetting: string;
   subNode: TDOMNode;
+  fireNode: TDomNode;
   s:string;
+  ts: TStringList;
 begin
   Result := false;
+  ts:= TStringList.Create;
   if (iNode = nil) then exit;
   try
     UpCaseSetting:=UpperCase(iNode.Attributes.Item[0].NodeName);
@@ -494,6 +525,32 @@ begin
       if upCaseSetting = 'MAILCLIENTNAME' then FMailClientName:= s;
       if upCaseSetting = 'MAILCLIENTISURL' then FMailClientIsUrl:= StringToBool(s);
       if upCaseSetting = 'RESTART' then FRestart:= StringToBool(s);
+      // parse child nodes
+      if upCaseSetting = 'LASTFIRES' then
+      begin
+        fireNode := subNode.FirstChild;
+        ts.clear;
+        while fireNode <> nil do
+        try
+          ts.add(fireNode.TextContent);
+        finally
+          firenode:= firenode.NextSibling;
+        end;
+        FLastFires:= ts.Text;
+      end;
+      // parse child bnodes
+      if upCaseSetting = 'NEXTFIRES' then
+      begin
+        fireNode := subNode.FirstChild;
+        ts.clear;
+        while fireNode <> nil do
+        try
+          ts.add(fireNode.TextContent);
+        finally
+          firenode:= firenode.NextSibling;
+        end;
+        FNextFires:= ts.Text;
+      end;
     finally
         subnode:= subnode.NextSibling;
     end;
@@ -501,6 +558,7 @@ begin
   except
     result:= false;
   end;
+  if Assigned(ts) then ts.free;
 end;
 
 function TConfig.LoadXMLFile(filename: string): Boolean;

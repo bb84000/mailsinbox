@@ -54,7 +54,9 @@ end;
 
 procedure TFMailClientChoose.BtnMailClientClick(Sender: TObject);
 begin
-  OD1.Execute;
+  if OD1.Execute then
+  ECommand.text:= OD1.FileName;
+
 end;
 
 end.

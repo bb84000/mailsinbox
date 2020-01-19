@@ -34,8 +34,8 @@ BtnAddAcc.Hint=Add new account
 BtnEditAccHint=Modify account %s
 BtnSettings.Hint=General Settings
 BtnAbout.Hint=About Mails in Box
-BtnClose.Hint=Close Mails in Box window%s(the program runs in the background)
-BtnQuit.Hint=Quit Mails in Box
+BtnClose.Hint=Hide Mails in Box window%s(the program runs in the background)
+BtnQuit.Hint=Double click to quit Mails In Box
 SGMails.Columns_0.Title.Caption=From
 SGMails.Columns_1.Title.Caption=To
 SGMails.Columns_2.Title.Caption=Subject
@@ -80,8 +80,7 @@ TrayHintNewMsg=(including %u new)
 TrayHintNewMsgs=(including %u new)
 NoShowCloseAlert=Hide program window alert disabled
 sNoShowQuitAlert=Quit program alert disabled
-
-NoQuitAlert=The program will exit and will no longer check new mails. Next time, to let the program run in the background, click the button "Close Mails in Box window".
+NoQuitAlert=To close the program and no longer check new mails, double click on this button. To let the program check mail in the background, click the button "Hide Mails in Box window".
 NoCloseAlert=The program will run in the background to check new mails. To quit the program, click the button "Quit Mails in Box".
 Restart=Restart after system shutdown
 CannotQuit=Cannot quit during mail checking
@@ -89,6 +88,10 @@ ClosingProg=Closing Mails In Box
 SettingsChange=Settings changed
 MsgDeleted=%s : Message #%u deleted
 MsgNotDeleted=%s : Message #%u not deleted
+Bytes=bytes
+KBytes=KB
+MBytes=MB
+NeverChecked= Not yet checked
 
 ;About
 Aboutbox.Caption=About Mails In Box
@@ -98,8 +101,9 @@ NoLongerChkUpdates=No longer check updates
 LastUpdateSearch=Last update check
 UpdateAlertBox=Current version: %sA new version %s is available
 
+
 ;Alert
-AlertBox.CBNoShowAlert.Caption=No longer show this warning
+AlertBoxCBNoShowAlert=No longer show this warning
 
 ;Accounts
 FAccounts.LAccName.Caption=Account name
@@ -140,7 +144,8 @@ FSettings.CBSaveLogs.Caption=Save account log
 FSettings.CBNoChkNewVer.Caption=No check for update
 FSettings.CBSmallBtns.Caption=Small buttons in the buttons bar
 FSettings.CBNotifications.Caption=Enable notifications
-FSettings.CBNoCloseAlert.Caption=Don't display exit alert
+FSettings.CBNoCloseAlert.Caption=Don't display hide window alert
+FSettings.CBNoQuitAlert.Caption=Don't display exit program alert
 FSettings.CBStartupCheck.Caption=Check mail on startup
 FSettings.LLangue.Caption=Language
 FSettings.CBUrl.Hint=Check if it is a Web address (Url)
@@ -179,7 +184,7 @@ FImpex.sBtnAccFileHint=Clicl to open a %s settings file
 MnuRestore.Caption=Restore
 MnuMaximize.Caption=Maximize
 MnuMinimize.Caption=Minimize
-
+MnuQuit.Caption=Quit Mails In Box
 
 ;Français
 [fr]
@@ -213,8 +218,8 @@ BtnAddAcc.Hint=Ajouter un nouveau compte
 BtnEditAccHint=Modifier le compte %s
 BtnSettings.Hint=Options générales
 BtnAbout.Hint=A propos de Courrier en attente
-BtnClose.Hint=Fermer la fenêtre de Courrier en attente%s(le programme fonctionne en tâche de fond)
-BtnQuit.Hint=Quitter Courrier en attente
+BtnClose.Hint=Masquer la fenêtre de Courrier en attente%s(le programme fonctionne en tâche de fond)
+BtnQuit.Hint=Double clic pour quitter Courrier en attente
 SGMails.Columns_0.Title.Caption=De
 SGMails.Columns_1.Title.Caption=A
 SGMails.Columns_2.Title.Caption=Objet
@@ -258,13 +263,16 @@ TrayHintNewMsg=(dont %u nouveau)
 TrayHintNewMsgs=(dont %u nouveaux)
 NoShowCloseAlert=Alerte de masquage de la fenêtre du programme déactivée
 sNoShowQuitAlert=Alerte de fermeture du programme désactivée
-
-NoQuitAlert=Le programme va se fermer et ne vérifiera plus l'arrivée de nouveaux courriels. La prochaine fois, pour que la vérification se poursuive en tâche de fond, il faut cliquer sur le bouton "Quitter Courrier en attente".
-NoCloseAlert=Le programme va se poursuivre en tâche de fond pour vérifier l'arrivée de nouveaux courriels. Pour quitter le programme, il faut cliquer sur le bouton "Fermer le fenêtre de Courrier en attente".
+NoQuitAlert=Pour fermer le programme et ne plus vérifier l'arrivée de nouveaux courriels, double cliquer sur ce bouton. Pour que la vérification se poursuive en tâche de fond, cliquez sur le bouton "Masquer la fenêtre de Courrier en attente".
+NoCloseAlert=Le programme va se poursuivre en tâche de fond pour vérifier l'arrivée de nouveaux courriels. Pour quitter le programme, il faut cliquer sur le bouton "Quitter Courrier en attente".
 Restart=Redémarrage après arrêt forcé du système
 SettingsChange=Configuration modifiée
 MsgDeleted=%s : Message #%u supprimé
 MsgNotDeleted=%s : Message #%u non supprimé
+Bytes=octets
+KBytes=Ko
+MBytes=Mo
+NeverChecked=Pas encore vérifié
 
 ;About
 Aboutbox.Caption=A propos de Courrier en attente
@@ -275,7 +283,7 @@ LastUpdateSearch=Dernière recherche de mise à jour
 UpdateAlertBox=Version actuelle: %sUne nouvelle version %s est disponible
 
 ;Alert
-AlertBox.CBNoShowAlert.Caption=Ne plus afficher cet avertissement
+AlertBoxCBNoShowAlert=Ne plus afficher cet avertissement
 
 ;Accounts
 FAccounts.LAccName.Caption=Nom du compte
@@ -322,7 +330,8 @@ FSettings.CBUrl.Hint=Cocher s'il s'agit d'une adresse Web (Url)
 FSettings.GMailWeb=Site Web de GMail
 FSettings.OutlookWeb=Site Web d'Outlook.com
 FSettings.Win10Mail=Application Courrier de Windows 10
-FSettings.CBNoCloseAlert.Caption=Ne pas afficher l'alerte de fermeture
+FSettings.CBNoCloseAlert.Caption=Ne pas afficher l'alerte de masquage de la fenêtre
+FSettings.CBNoQuitAlert.Caption=Ne pas afficher l'alerte d'arrêt du programme
 
 ;Choose mail client
 FMailClientChoose.Caption=Choisir un client courrier
@@ -355,4 +364,6 @@ FImpex.sBtnAccFileHint=Cliquer pour ouvrir un fichier de configuration %s
 MnuRestore.Caption=Restaurer
 MnuMaximize.Caption=Agrandir
 MnuMinimize.Caption=Réduire
+MnuQuit.Caption=Quitter Courriels en attente
+
 

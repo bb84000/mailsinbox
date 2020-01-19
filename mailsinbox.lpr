@@ -7,7 +7,7 @@ uses
   cthreads,
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
-  Forms, indylaz, accounts1, settings1, lazbbabout, lazbbalert,
+  Forms, indylaz, accounts1, settings1, lazbbabout,
   impex1, mailclients1, log1, mailsinbox1;
 
 {$R *.res}
@@ -21,7 +21,6 @@ begin
   Application.CreateForm(TFSettings, FSettings);
   Application.CreateForm(TFAccounts, FAccounts);
   Application.CreateForm(TAboutBox, AboutBox);
-  Application.CreateForm(TAlertBox, AlertBox);
   Application.CreateForm(TFImpex, FImpex);
   Application.CreateForm(TFMailClientChoose, FMailClientChoose);
   Application.CreateForm(TFLogView, FLogView);

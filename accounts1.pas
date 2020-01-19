@@ -88,7 +88,6 @@ type
      SoundFile: string;
      Interval: Integer;
      Mails: TMailsList;
-     //UIDLList: TstringList;
      UIDLToDel: Array of string;
      MsgToDel: TstringList;
      LastFire: TDateTime;
@@ -114,7 +113,6 @@ type
     function SaveItem(iNode: TDOMNode; sname, svalue: string): TDOMNode;
   public
     Duplicates : TDuplicates;
-    //function StringDecrypt(S: String; Key: DWord): String;
     constructor Create(AppName: String);
     destructor Destroy; override;
     procedure AddAccount(Account : TAccount);
@@ -188,9 +186,6 @@ type
     Accounts: TAccountsList;
   end;
 
-//const
-  //AFieldNames : array [0..39] of string  =(
-
 var
   FAccounts: TFAccounts;
   ClesTri: array[0..10] of TChampsCompare;
@@ -201,7 +196,6 @@ implementation
 
 
 // global functions
-
 
 function stringCompare(Item1, Item2: String): Integer;
 begin
@@ -385,7 +379,6 @@ var
 begin
   result:=0;
   for i:=1 to length(s) do result:=result+ord(s[i]);
-
 end;
 
 procedure TAccountsList.AddAccount(Account : TAccount);
@@ -393,7 +386,7 @@ var
  K: PAccount;
 begin
   new(K);
-  if Account.UID=0 then Account.UID:= charsum(Account.Name+Account.Password);
+  if Account.UID=0 then Account.UID:= charsum(Account.Name+Account.Password+Account.Server);
   K^:= Account;
   // we create the mails list if not already created
   if not assigned(K^.Mails) then K^.Mails:= TMailsList.Create;
@@ -452,8 +445,8 @@ begin
   if field = 'REPLYEMAIL' then TAccount(Items[i]^).ReplyEmail:= value;
   if field = 'LASTFIRE' then TAccount(Items[i]^).LastFire:= value;
   if field = 'NEXTFIRE' then TAccount(Items[i]^).NextFire:= value;
-  if field = 'ERROR' then TAccount(Items[i]^).Error:= value;
-  if field = 'ERRORSTR' then TAccount(Items[i]^).ErrorStr:= value;
+  //if field = 'ERROR' then TAccount(Items[i]^).Error:= value;
+  //if field = 'ERRORSTR' then TAccount(Items[i]^).ErrorStr:= value;
   if field = 'CHECKING' then TAccount(Items[i]^).Checking:= value;
   if field = 'TAG' then TAccount(Items[i]^).Tag:= value;
   if field = 'UID' then TAccount(Items[i]^).UID:= value;
@@ -570,7 +563,6 @@ var
   iNode:TDOMNode;
   i: integer;
   UpCaseAttrib: string;
-  //k: PAccount;
   s: string;
   A: TAccount;
 const
@@ -588,7 +580,6 @@ begin
       if iNode.Attributes<>nil then
       begin
         A:= Default(TAccount);
-        //new(K);
         for i:= 0 to iNode.Attributes.Length-1 do
         try
           UpCaseAttrib:=UpperCase(iNode.Attributes.Item[i].NodeName);
