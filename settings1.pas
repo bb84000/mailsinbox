@@ -1,6 +1,7 @@
 {****************************************************************************** }
 { settings1 - Modify settings form and record                                   }
-{ bb - sdtp - november 2019                                                     }
+{ for mailsinbox application                                                    }
+{ bb - sdtp -january 2020                                                       }
 {*******************************************************************************}
 
 unit settings1;
@@ -56,8 +57,8 @@ type
     FRestart: Boolean;
     FAppName: String;
     FVersion: String;
-    FLastFires: string;
-    FNextFires: string;
+    FLastFires: TStringList;
+    FNextFires: TstringList;
     function SaveItem(iNode: TDOMNode; sname, svalue: string): TDOMNode;
   public
 
@@ -84,8 +85,8 @@ type
     procedure SetMailClientIsUrl(b: boolean);
     procedure SetVersion(s: string);
     procedure SetRestart(b: boolean);
-    procedure SetLastFires(s: string);
-    procedure SetNextFires(s: string);
+    procedure SetLastFires(sl: TStringList);
+    procedure SetNextFires(sl: TStringList);
     function saveXMLnode(iNode: TDOMNode): Boolean;
     function SaveToXMLfile(filename: string): Boolean;
     function LoadXMLNode(iNode: TDOMNode): Boolean;
@@ -119,8 +120,8 @@ type
     property Restart: boolean read FRestart write SetRestart;
     // couple of account UID and unix date converted to strings.
     // separator is '|'
-    property LastFires: string read FLastFires write SetLastFires;
-    property NextFires: string read FNextFires write SetNextFires;
+    property LastFires: TstringList read FLastFires write SetLastFires;
+    property NextFires: TstringList read FNextFires write SetNextFires;
 end;
 
   { TFSettings }
@@ -151,11 +152,10 @@ end;
     LSoundFile: TLabel;
     LLangue: TLabel;
     LMailClient: TLabel;
-    LStatus: TLabel;
+    Lstatus: TLabel;
     PnlButtons: TPanel;
-    PnlStatus: TPanel;
+    PnLstatus: TPanel;
     BtnPlaySound: TSpeedButton;
-
     procedure BtnMailClientClick(Sender: TObject);
     procedure CBMailClientChange(Sender: TObject);
     procedure CBMailClientDrawItem(Control: TWinControl; Index: Integer;
@@ -200,7 +200,6 @@ uses mailsinbox1;
 constructor TConfig.Create(AppName: string);
 begin
   inherited Create;
-
   FAppName:= AppName;
 end;
 
@@ -270,143 +269,113 @@ end;
 
 procedure TConfig.SetSaveLogs (b: boolean);
 begin
-  if FSaveLogs <> b then
-  begin
-    FSaveLogs:= b;
-    if Assigned(FOnChange) then FOnChange(Self);
-  end;
+  if FSaveLogs=b then exit;
+  FSaveLogs:= b;
+  if Assigned(FOnChange) then FOnChange(Self);
 end;
 
 procedure TConfig.SetStartupCheck (b: boolean);
 begin
-  if FStartupCheck <> b then
-  begin
-    FStartupCheck:= b;
-    if Assigned(FOnChange) then FOnChange(Self);
-  end;
+  if FStartupCheck=b then exit;
+  FStartupCheck:= b;
+  if Assigned(FOnChange) then FOnChange(Self);
 end;
 
 procedure TConfig.SetSmallBtns (b: boolean);
 begin
-  if FSmallBtns <> b then
-  begin
-    FSmallBtns:= b;
-    if Assigned(FOnChange) then FOnChange(Self);
-  end;
+  if FSmallBtns=b then exit;
+  FSmallBtns:= b;
+  if Assigned(FOnChange) then FOnChange(Self);
 end;
 
 procedure TConfig.SetNotifications(b: boolean);
 begin
-  if FNotifications <> b then
-  begin
-    FNotifications:= b;
-    if Assigned(FOnChange) then FOnChange(Self);
-  end;
+  if FNotifications=b then exit;
+  FNotifications:= b;
+  if Assigned(FOnChange) then FOnChange(Self);
 end;
 
 procedure TConfig.SetNoCloseAlert(b: boolean);
 begin
-  if FNoCloseAlert <> b then
-  begin
-    FNoCloseAlert:= b;
-    if Assigned(FOnChange) then FOnChange(Self);
-  end;
+  if FNoCloseAlert=b then exit;
+  FNoCloseAlert:= b;
+  if Assigned(FOnChange) then FOnChange(Self);
 end;
 
 procedure TConfig.SetNoQuitAlert(b: boolean);
 begin
-  if FNoQuitAlert <> b then
-  begin
-    FNoQuitAlert:= b;
-    if Assigned(FOnChange) then FOnChange(Self);
-    if Assigned(OnQuitAlertChange) then FOnQuitAlertChange(self);
-  end;
+  if FNoQuitAlert=b then exit;
+  FNoQuitAlert:= b;
+  if Assigned(FOnChange) then FOnChange(Self);
+  if Assigned(OnQuitAlertChange) then FOnQuitAlertChange(self);
 end;
 
 procedure TConfig.SetSoundFile (s: string);
 begin
-  if FSoundFile <> s then
-  begin
-    FSoundFile:= s;
-    if Assigned(FOnChange) then FOnChange(Self);
-  end;
+  if FSoundFile=s then exit;
+  FSoundFile:= s;
+  if Assigned(FOnChange) then FOnChange(Self);
 end;
 
 procedure TConfig.SetLangStr (s: string);
 begin
-  if FLangStr <> s then
-  begin
-    FLangStr:= s;
-    if Assigned(FOnChange) then FOnChange(Self);
-  end;
+  if FLangStr=s then exit;
+  FLangStr:= s;
+  if Assigned(FOnChange) then FOnChange(Self);
 end;
 
 procedure TConfig.SetMailClient (s: string);
 begin
-  if FMailClient <> s then
-  begin
-    FMailClient:= s;
-    if Assigned(FOnChange) then FOnChange(Self);
-  end;
+  if FMailClient=s then exit;
+  FMailClient:= s;
+  if Assigned(FOnChange) then FOnChange(Self);
 end;
 
 procedure TConfig.SetMailClientName (s: string);
 begin
-  if FMailClientName <> s then
-  begin
-    FMailClientName:= s;
-    if Assigned(FOnChange) then FOnChange(Self);
-  end;
+  if FMailClientName=s then exit;
+  FMailClientName:= s;
+  if Assigned(FOnChange) then FOnChange(Self);
 end;
 
 procedure TConfig.SetMailClientIsUrl (b: boolean);
 begin
-  if FMailClientIsUrl <> b then
-  begin
-    FMailClientIsUrl:= b;
-    if Assigned(FOnChange) then FOnChange(Self);
-  end;
+  if FMailClientIsUrl=b then exit;
+  FMailClientIsUrl:= b;
+  if Assigned(FOnChange) then FOnChange(Self);
 end;
 
 procedure TConfig.SetVersion(s:string);
 begin
-  if FVersion <> s then
-  begin
-    FVersion:= s;
-    if Assigned(FOnChange) then FOnChange(Self);
-  end;
+  if FVersion=s then exit;
+  FVersion:= s;
+  if Assigned(FOnChange) then FOnChange(Self);
 end;
 
 procedure TConfig.SetRestart(b:boolean);
 begin
-  if FRestart <> b then
-  begin
-    FRestart:= b;
-    if Assigned(FOnChange) then FOnChange(Self);
-  end;
+  if FRestart=b then exit;
+  FRestart:= b;
+  if Assigned(FOnChange) then FOnChange(Self);
 end;
 
-procedure TConfig.SetLastFires(s: string);
+
+procedure TConfig.SetLastFires(sl: TStringList);
 begin
-  if FLastFires <> s then
-  begin
-    FLastFires:= s;
-    if Assigned(FOnChange) then FOnChange(Self);
-  end;
+  if FLastFires.text=sl.text then exit;
+  FLastFires.text:= sl.text;
+  if Assigned(FOnChange) then FOnChange(Self);
 end;
 
-
-procedure TConfig.SetNextFires(s: string);
+procedure TConfig.SetNextFires(sl: TStringList);
 begin
-  if FNextFires <> s then
-  begin
-    FNextFires:= s;
-    if Assigned(FOnChange) then FOnChange(Self);
-  end;
+  if FNextFires.text=sl.text then exit;
+  FNextFires.text:= sl.text;
+  if Assigned(FOnChange) then FOnChange(Self);
 end;
+
 
 function TConfig.SaveItem(iNode: TDOMNode; sname, svalue: string): TDOMNode;
-
 begin
   result:= iNode.OwnerDocument.CreateElement(sname);
   result.TextContent:= svalue;
@@ -442,16 +411,12 @@ begin
     iNode.AppendChild(SaveItem(iNode, 'mailclientname', FMailClientName));
     iNode.AppendChild(SaveItem(iNode, 'mailclientisurl', BoolToString(FMailClientIsUrl)));
     iNode.AppendChild(SaveItem(iNode, 'restart', BoolToString(FRestart)));
-    jNode:= iNode.AppendChild(SaveItem(iNode, 'lastfires', ''));
-    // lastfires has child nodes to store accounts lastfire
-    ts.text:= FLastFires;
-    if ts.count >0 then
-       for j:=0 to ts.count-1 do jNode.AppendChild(SaveItem(jNode, 'lastfire', ts.strings[j]));
-     jNode:= iNode.AppendChild(SaveItem(iNode, 'nextfires', ''));
-    // nextfires has cheld nodes
-    ts.Text:= FNextFires;
-    if ts.count >0 then
-       for j:=0 to ts.count-1 do jNode.AppendChild(SaveItem(jNode, 'nextfire', ts.strings[j]));
+    jnode:= iNode.AppendChild(SaveItem(iNode, 'lastfires', ''));
+    if FLastFires.count > 0 then
+       for j:=0 to FLastFires.count-1 do jNode.AppendChild(SaveItem(jNode, 'lastfire', FLastFires.Strings[j]));  ;
+    jnode:= iNode.AppendChild(SaveItem(iNode, 'nextfires', ''));
+    if FNextFires.count > 0 then
+       for j:=0 to FNextFires.count-1 do jNode.AppendChild(SaveItem(jNode, 'nextfire', FNextFires.Strings[j]));  ;
     Result:= true;
   except
     Result:= false;
@@ -529,27 +494,22 @@ begin
       if upCaseSetting = 'LASTFIRES' then
       begin
         fireNode := subNode.FirstChild;
-        ts.clear;
         while fireNode <> nil do
         try
-          ts.add(fireNode.TextContent);
+          FLastFires.add(fireNode.TextContent);
         finally
           firenode:= firenode.NextSibling;
         end;
-        FLastFires:= ts.Text;
       end;
-      // parse child bnodes
       if upCaseSetting = 'NEXTFIRES' then
       begin
         fireNode := subNode.FirstChild;
-        ts.clear;
         while fireNode <> nil do
         try
-          ts.add(fireNode.TextContent);
+          FNextFires.add(fireNode.TextContent);
         finally
           firenode:= firenode.NextSibling;
         end;
-        FNextFires:= ts.Text;
       end;
     finally
         subnode:= subnode.NextSibling;
@@ -588,6 +548,8 @@ begin
   OutlookWeb:= 'Outlook Web site';
   Win10Mail:= 'Windows 10 mail';
   Settings:= TConfig.Create('progname');
+  Settings.FLastFires:= TstringList.Create;
+  Settings.FNextFires:= TstringList.Create;
 end;
 
 procedure TFSettings.FormActivate(Sender: TObject);
@@ -601,6 +563,8 @@ end;
 
 procedure TFSettings.FormDestroy(Sender: TObject);
 begin
+  if assigned(Settings.FLastFires) then  Settings.FLastFires.free;
+  if assigned(Settings.FNextFires) then  Settings.FNextFires.free;
   if assigned (Settings) then Settings.free;
 end;
 

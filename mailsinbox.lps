@@ -4,11 +4,11 @@
     <PathDelim Value="\"/>
     <Version Value="11"/>
     <BuildModes Active="Default"/>
-    <Units Count="59">
+    <Units Count="60">
       <Unit0>
         <Filename Value="mailsinbox.lpr"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="10"/>
+        <EditorIndex Value="7"/>
         <CursorPos Y="28"/>
         <UsageCount Value="200"/>
         <Loaded Value="True"/>
@@ -19,9 +19,9 @@
         <ComponentName Value="FMailsInBox"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <TopLine Value="1689"/>
-        <CursorPos Y="1706"/>
-        <UsageCount Value="150"/>
+        <TopLine Value="411"/>
+        <CursorPos Y="428"/>
+        <UsageCount Value="170"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
       </Unit1>
@@ -31,12 +31,9 @@
         <ComponentName Value="FAccounts"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <EditorIndex Value="1"/>
-        <TopLine Value="691"/>
-        <CursorPos X="73" Y="448"/>
+        <EditorIndex Value="-1"/>
+        <CursorPos X="112"/>
         <UsageCount Value="200"/>
-        <Loaded Value="True"/>
-        <LoadedDesigner Value="True"/>
       </Unit2>
       <Unit3>
         <Filename Value="settings1.pas"/>
@@ -44,9 +41,9 @@
         <ComponentName Value="FSettings"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <EditorIndex Value="2"/>
-        <TopLine Value="436"/>
-        <CursorPos X="53" Y="450"/>
+        <EditorIndex Value="5"/>
+        <TopLine Value="308"/>
+        <CursorPos X="21" Y="336"/>
         <UsageCount Value="200"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
@@ -57,12 +54,9 @@
         <ComponentName Value="FImpex"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <EditorIndex Value="5"/>
-        <TopLine Value="22"/>
-        <CursorPos X="55" Y="38"/>
+        <EditorIndex Value="-1"/>
+        <CursorPos Y="37"/>
         <UsageCount Value="200"/>
-        <Loaded Value="True"/>
-        <LoadedDesigner Value="True"/>
       </Unit4>
       <Unit5>
         <Filename Value="mailclients1.pas"/>
@@ -70,9 +64,8 @@
         <ComponentName Value="FMailClientChoose"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <EditorIndex Value="3"/>
-        <TopLine Value="5"/>
-        <CursorPos X="60" Y="48"/>
+        <EditorIndex Value="4"/>
+        <CursorPos X="30" Y="22"/>
         <UsageCount Value="200"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
@@ -91,267 +84,255 @@
         <ComponentName Value="FLogView"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <EditorIndex Value="6"/>
-        <TopLine Value="10"/>
-        <CursorPos X="57" Y="41"/>
-        <UsageCount Value="199"/>
-        <Loaded Value="True"/>
-        <LoadedDesigner Value="True"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="83"/>
+        <CursorPos X="58" Y="100"/>
+        <UsageCount Value="200"/>
       </Unit7>
       <Unit8>
-        <Filename Value="mailsinbox.lng.txt"/>
+        <Filename Value="..\lazbbunits\lazbbutils.txt"/>
+        <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <CursorPos X="77"/>
-        <UsageCount Value="199"/>
+        <UsageCount Value="32"/>
         <DefaultSyntaxHighlighter Value="None"/>
       </Unit8>
       <Unit9>
-        <Filename Value="images\history.txt"/>
+        <Filename Value="mailsinbox.lng.txt"/>
         <EditorIndex Value="-1"/>
-        <CursorPos Y="4"/>
-        <UsageCount Value="199"/>
+        <CursorPos X="77"/>
+        <UsageCount Value="198"/>
         <DefaultSyntaxHighlighter Value="None"/>
       </Unit9>
       <Unit10>
+        <Filename Value="images\history.txt"/>
+        <EditorIndex Value="-1"/>
+        <CursorPos Y="4"/>
+        <UsageCount Value="198"/>
+        <DefaultSyntaxHighlighter Value="None"/>
+      </Unit10>
+      <Unit11>
         <Filename Value="uthreadtimer.pas"/>
         <UnitName Value="uThreadTimer"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="12"/>
         <CursorPos X="33" Y="16"/>
-        <UsageCount Value="199"/>
-      </Unit10>
-      <Unit11>
+        <UsageCount Value="198"/>
+      </Unit11>
+      <Unit12>
         <Filename Value="mailinboxres.rc"/>
         <EditorIndex Value="9"/>
-        <TopLine Value="13"/>
-        <CursorPos X="29" Y="44"/>
+        <CursorPos X="37" Y="26"/>
         <UsageCount Value="100"/>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="None"/>
-      </Unit11>
-      <Unit12>
+      </Unit12>
+      <Unit13>
         <Filename Value="C:\lazarus\lcl\include\icon.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="669"/>
         <CursorPos X="31" Y="672"/>
-        <UsageCount Value="4"/>
-      </Unit12>
-      <Unit13>
+        <UsageCount Value="3"/>
+      </Unit13>
+      <Unit14>
         <Filename Value="C:\lazarus\lcl\include\picture.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="378"/>
         <CursorPos Y="400"/>
-        <UsageCount Value="4"/>
-      </Unit13>
-      <Unit14>
+        <UsageCount Value="3"/>
+      </Unit14>
+      <Unit15>
         <Filename Value="..\..\..\AppData\Local\lazarus\onlinepackagemanager\packages\Indy10\Protocols\IdPOP3.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="586"/>
         <CursorPos X="16" Y="601"/>
-        <UsageCount Value="10"/>
+        <UsageCount Value="9"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
-      </Unit14>
-      <Unit15>
+      </Unit15>
+      <Unit16>
         <Filename Value="C:\lazarus\lcl\include\control.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="3469"/>
         <CursorPos Y="3476"/>
-        <UsageCount Value="4"/>
-      </Unit15>
-      <Unit16>
-        <Filename Value="..\lazbbunits\lazbbutils.pas"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="703"/>
-        <CursorPos X="7" Y="728"/>
-        <UsageCount Value="95"/>
+        <UsageCount Value="3"/>
       </Unit16>
       <Unit17>
-        <Filename Value="C:\lazarus\components\lazutils\laz2_dom.pas"/>
-        <UnitName Value="Laz2_DOM"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="2632"/>
-        <CursorPos Y="2654"/>
-        <UsageCount Value="1"/>
+        <Filename Value="..\lazbbunits\lazbbutils.pas"/>
+        <EditorIndex Value="8"/>
+        <TopLine Value="112"/>
+        <CursorPos X="39" Y="128"/>
+        <UsageCount Value="95"/>
+        <Loaded Value="True"/>
       </Unit17>
       <Unit18>
-        <Filename Value="C:\lazarus\components\lazutils\lazmethodlist.pas"/>
-        <UnitName Value="LazMethodList"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="275"/>
-        <CursorPos Y="314"/>
-        <UsageCount Value="1"/>
-      </Unit18>
-      <Unit19>
         <Filename Value="C:\lazarus\lcl\include\imglist.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="1771"/>
         <CursorPos Y="1793"/>
-        <UsageCount Value="10"/>
-      </Unit19>
-      <Unit20>
+        <UsageCount Value="9"/>
+      </Unit18>
+      <Unit19>
         <Filename Value="mailsinbox.lng"/>
-        <EditorIndex Value="4"/>
-        <TopLine Value="255"/>
-        <CursorPos X="25" Y="275"/>
+        <EditorIndex Value="3"/>
+        <CursorPos X="15" Y="3"/>
         <UsageCount Value="100"/>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="None"/>
-      </Unit20>
-      <Unit21>
+      </Unit19>
+      <Unit20>
         <Filename Value="C:\lazarus\lcl\forms.pp"/>
         <UnitName Value="Forms"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="783"/>
         <CursorPos X="14" Y="798"/>
-        <UsageCount Value="8"/>
-      </Unit21>
-      <Unit22>
+        <UsageCount Value="7"/>
+      </Unit20>
+      <Unit21>
         <Filename Value="..\lazbbunits\lazbbosversion.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="351"/>
         <CursorPos X="3" Y="21"/>
-        <UsageCount Value="16"/>
-      </Unit22>
-      <Unit23>
+        <UsageCount Value="15"/>
+      </Unit21>
+      <Unit22>
         <Filename Value="..\lazbbunits\lazbbinifiles.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="14"/>
         <CursorPos X="16" Y="36"/>
-        <UsageCount Value="7"/>
-      </Unit23>
-      <Unit24>
+        <UsageCount Value="6"/>
+      </Unit22>
+      <Unit23>
         <Filename Value="C:\lazarus\fpc\3.0.4\source\packages\fcl-base\src\inifiles.pp"/>
         <UnitName Value="IniFiles"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="601"/>
         <CursorPos X="18" Y="638"/>
-        <UsageCount Value="7"/>
-      </Unit24>
-      <Unit25>
+        <UsageCount Value="6"/>
+      </Unit23>
+      <Unit24>
         <Filename Value="..\lazbbunits\lazbbabout.pas"/>
         <ComponentName Value="AboutBox"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="48"/>
-        <UsageCount Value="17"/>
-      </Unit25>
-      <Unit26>
+        <UsageCount Value="16"/>
+      </Unit24>
+      <Unit25>
         <Filename Value="history.txt"/>
-        <EditorIndex Value="7"/>
-        <TopLine Value="33"/>
-        <CursorPos X="16" Y="34"/>
-        <UsageCount Value="100"/>
+        <EditorIndex Value="2"/>
+        <TopLine Value="39"/>
+        <CursorPos X="21" Y="68"/>
+        <UsageCount Value="99"/>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="None"/>
-      </Unit26>
-      <Unit27>
+      </Unit25>
+      <Unit26>
         <Filename Value="C:\lazarus\lcl\graphics.pp"/>
         <UnitName Value="Graphics"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="1068"/>
         <CursorPos X="15" Y="1087"/>
-        <UsageCount Value="4"/>
-      </Unit27>
-      <Unit28>
+        <UsageCount Value="3"/>
+      </Unit26>
+      <Unit27>
         <Filename Value="C:\lazarus\fpc\3.0.4\source\rtl\objpas\classes\classesh.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="102"/>
         <CursorPos X="3" Y="119"/>
-        <UsageCount Value="21"/>
-      </Unit28>
-      <Unit29>
+        <UsageCount Value="20"/>
+      </Unit27>
+      <Unit28>
         <Filename Value="..\..\..\AppData\Local\lazarus\onlinepackagemanager\packages\Indy10\Protocols\IdExplicitTLSClientServerBase.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="128"/>
         <CursorPos X="18" Y="148"/>
-        <UsageCount Value="28"/>
+        <UsageCount Value="27"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
-      </Unit29>
-      <Unit30>
+      </Unit28>
+      <Unit29>
         <Filename Value="..\..\..\AppData\Local\lazarus\onlinepackagemanager\packages\Indy10\Protocols\IdMessage.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="353"/>
         <CursorPos X="5" Y="375"/>
-        <UsageCount Value="15"/>
+        <UsageCount Value="14"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
-      </Unit30>
-      <Unit31>
+      </Unit29>
+      <Unit30>
         <Filename Value="..\..\..\AppData\Local\lazarus\onlinepackagemanager\packages\Indy10\Protocols\IdEMailAddress.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="136"/>
         <CursorPos X="4" Y="152"/>
-        <UsageCount Value="15"/>
+        <UsageCount Value="14"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
-      </Unit31>
-      <Unit32>
+      </Unit30>
+      <Unit31>
         <Filename Value="C:\lazarus\lcl\grids.pas"/>
         <UnitName Value="Grids"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="902"/>
         <CursorPos X="22" Y="921"/>
-        <UsageCount Value="29"/>
-      </Unit32>
-      <Unit33>
+        <UsageCount Value="28"/>
+      </Unit31>
+      <Unit32>
         <Filename Value="C:\lazarus\fpc\3.0.4\source\rtl\objpas\sysutils\sysstrh.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="107"/>
         <CursorPos X="94" Y="129"/>
-        <UsageCount Value="23"/>
-      </Unit33>
-      <Unit34>
+        <UsageCount Value="22"/>
+      </Unit32>
+      <Unit33>
         <Filename Value="..\..\..\AppData\Local\lazarus\onlinepackagemanager\packages\Indy10\System\IdComponent.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="94"/>
         <CursorPos X="3" Y="105"/>
-        <UsageCount Value="10"/>
+        <UsageCount Value="9"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
-      </Unit34>
-      <Unit35>
+      </Unit33>
+      <Unit34>
         <Filename Value="..\Packets\Lazbbcomponents\lazbbstringgrids.pas"/>
         <UnitName Value="LazbbStringGrids"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="22" Y="11"/>
-        <UsageCount Value="6"/>
-      </Unit35>
-      <Unit36>
+        <UsageCount Value="5"/>
+      </Unit34>
+      <Unit35>
         <Filename Value="..\..\..\AppData\Local\lazarus\onlinepackagemanager\packages\Indy10\Protocols\IdIMAP4.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="2543"/>
         <CursorPos X="32" Y="2567"/>
-        <UsageCount Value="10"/>
+        <UsageCount Value="9"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
-      </Unit36>
-      <Unit37>
+      </Unit35>
+      <Unit36>
         <Filename Value="..\..\..\AppData\Local\lazarus\onlinepackagemanager\packages\Indy10\Core\IdTCPClient.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="189"/>
         <CursorPos X="39" Y="189"/>
-        <UsageCount Value="9"/>
+        <UsageCount Value="8"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
-      </Unit37>
-      <Unit38>
+      </Unit36>
+      <Unit37>
         <Filename Value="..\..\..\AppData\Local\lazarus\onlinepackagemanager\packages\Indy10\Protocols\IdMessageCollection.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="44"/>
         <CursorPos X="3" Y="65"/>
-        <UsageCount Value="4"/>
+        <UsageCount Value="3"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
-      </Unit38>
-      <Unit39>
+      </Unit37>
+      <Unit38>
         <Filename Value="C:\lazarus\lcl\controls.pp"/>
         <UnitName Value="Controls"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="35"/>
         <CursorPos X="3" Y="53"/>
-        <UsageCount Value="16"/>
-      </Unit39>
-      <Unit40>
+        <UsageCount Value="15"/>
+      </Unit38>
+      <Unit39>
         <Filename Value="..\..\..\AppData\Local\Temp\7zO4E4F21B7\usb2.pas"/>
         <EditorIndex Value="-1"/>
-        <UsageCount Value="8"/>
-      </Unit40>
-      <Unit41>
+        <UsageCount Value="7"/>
+      </Unit39>
+      <Unit40>
         <Filename Value="..\hidapi\main.lfm"/>
         <ComponentName Value="Form1"/>
         <HasResources Value="True"/>
@@ -359,32 +340,24 @@
         <EditorIndex Value="-1"/>
         <WindowIndex Value="-1"/>
         <CursorPos X="116" Y="7"/>
-        <UsageCount Value="8"/>
+        <UsageCount Value="7"/>
         <DefaultSyntaxHighlighter Value="LFM"/>
-      </Unit41>
-      <Unit42>
+      </Unit40>
+      <Unit41>
         <Filename Value="C:\lazarus\fpc\3.0.4\source\rtl\objpas\sysutils\sysinth.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="50"/>
         <CursorPos X="3" Y="57"/>
-        <UsageCount Value="16"/>
-      </Unit42>
-      <Unit43>
+        <UsageCount Value="15"/>
+      </Unit41>
+      <Unit42>
         <Filename Value="C:\lazarus\fpc\3.0.4\source\packages\fcl-base\src\csvdocument.pp"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="115"/>
         <CursorPos X="14" Y="134"/>
-        <UsageCount Value="11"/>
-      </Unit43>
-      <Unit44>
-        <Filename Value="C:\lazarus\lcl\stdctrls.pp"/>
-        <UnitName Value="StdCtrls"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="1319"/>
-        <CursorPos X="14" Y="1339"/>
-        <UsageCount Value="1"/>
-      </Unit44>
-      <Unit45>
+        <UsageCount Value="10"/>
+      </Unit42>
+      <Unit43>
         <Filename Value="..\lazbbunits\lazbbalert.pas"/>
         <ComponentName Value="AlertBox"/>
         <HasResources Value="True"/>
@@ -392,230 +365,248 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="14"/>
         <CursorPos X="23" Y="28"/>
-        <UsageCount Value="24"/>
-      </Unit45>
-      <Unit46>
+        <UsageCount Value="23"/>
+      </Unit43>
+      <Unit44>
         <Filename Value="C:\lazarus\fpc\3.0.4\source\packages\fcl-process\src\process.pp"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="18"/>
         <CursorPos X="3" Y="39"/>
-        <UsageCount Value="4"/>
-      </Unit46>
-      <Unit47>
+        <UsageCount Value="3"/>
+      </Unit44>
+      <Unit45>
         <Filename Value="C:\lazarus\lcl\lclintf.pas"/>
         <UnitName Value="LCLIntf"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="57"/>
         <CursorPos X="10" Y="82"/>
-        <UsageCount Value="11"/>
-      </Unit47>
-      <Unit48>
+        <UsageCount Value="10"/>
+      </Unit45>
+      <Unit46>
         <Filename Value="..\lazbbunits\lazbbautostart.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="38"/>
         <CursorPos Y="59"/>
-        <UsageCount Value="34"/>
-      </Unit48>
-      <Unit49>
+        <UsageCount Value="33"/>
+      </Unit46>
+      <Unit47>
         <Filename Value="..\..\..\AppData\Local\lazarus\onlinepackagemanager\packages\Indy10\Protocols\IdSSLOpenSSL.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="422"/>
         <CursorPos X="21" Y="406"/>
-        <UsageCount Value="2"/>
+        <UsageCount Value="1"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
-      </Unit49>
-      <Unit50>
+      </Unit47>
+      <Unit48>
         <Filename Value="..\..\..\AppData\Local\lazarus\onlinepackagemanager\packages\Indy10\System\IdBaseComponent.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="130"/>
         <CursorPos X="17" Y="147"/>
-        <UsageCount Value="2"/>
+        <UsageCount Value="1"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
-      </Unit50>
-      <Unit51>
+      </Unit48>
+      <Unit49>
         <Filename Value="..\..\..\AppData\Local\lazarus\onlinepackagemanager\packages\Indy10\Core\IdTCPConnection.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="491"/>
         <CursorPos X="17" Y="519"/>
-        <UsageCount Value="2"/>
+        <UsageCount Value="1"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
-      </Unit51>
-      <Unit52>
+      </Unit49>
+      <Unit50>
         <Filename Value="C:\lazarus\fpc\3.0.4\source\rtl\objpas\sysutils\datih.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="124"/>
         <CursorPos X="23" Y="158"/>
-        <UsageCount Value="6"/>
-      </Unit52>
-      <Unit53>
+        <UsageCount Value="5"/>
+      </Unit50>
+      <Unit51>
         <Filename Value="C:\lazarus\fpc\3.0.4\source\rtl\win\sysutils.pp"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="69"/>
         <CursorPos X="18" Y="86"/>
-        <UsageCount Value="7"/>
-      </Unit53>
-      <Unit54>
+        <UsageCount Value="6"/>
+      </Unit51>
+      <Unit52>
         <Filename Value="C:\lazarus\lcl\dialogs.pp"/>
         <UnitName Value="Dialogs"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="25"/>
         <CursorPos X="31" Y="35"/>
-        <UsageCount Value="21"/>
-      </Unit54>
-      <Unit55>
+        <UsageCount Value="20"/>
+      </Unit52>
+      <Unit53>
         <Filename Value="C:\lazarus\components\lazutils\uitypes.pas"/>
         <UnitName Value="UITypes"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="19"/>
         <CursorPos X="6" Y="24"/>
-        <UsageCount Value="21"/>
-      </Unit55>
-      <Unit56>
+        <UsageCount Value="20"/>
+      </Unit53>
+      <Unit54>
         <Filename Value="C:\lazarus\lcl\lcltype.pp"/>
         <UnitName Value="LCLType"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="17" Y="774"/>
-        <UsageCount Value="17"/>
-      </Unit56>
-      <Unit57>
+        <UsageCount Value="16"/>
+      </Unit54>
+      <Unit55>
         <Filename Value="..\lazbbunits\lazbbalert.rc"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="49" Y="6"/>
-        <UsageCount Value="16"/>
+        <UsageCount Value="15"/>
         <DefaultSyntaxHighlighter Value="None"/>
-      </Unit57>
-      <Unit58>
+      </Unit55>
+      <Unit56>
         <Filename Value="mailsinbox.txt"/>
         <IsVisibleTab Value="True"/>
-        <EditorIndex Value="8"/>
-        <TopLine Value="39"/>
-        <CursorPos X="24" Y="45"/>
-        <UsageCount Value="10"/>
+        <EditorIndex Value="1"/>
+        <CursorPos X="14" Y="2"/>
+        <UsageCount Value="12"/>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="None"/>
+      </Unit56>
+      <Unit57>
+        <Filename Value="C:\lazarus\lcl\menus.pp"/>
+        <UnitName Value="Menus"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="266"/>
+        <CursorPos X="14" Y="282"/>
+        <UsageCount Value="10"/>
+      </Unit57>
+      <Unit58>
+        <Filename Value="C:\lazarus\fpc\3.0.4\source\packages\fcl-base\src\fileinfo.pp"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="187"/>
+        <CursorPos X="3" Y="51"/>
+        <UsageCount Value="9"/>
       </Unit58>
+      <Unit59>
+        <Filename Value="C:\lazarus\fpc\3.0.4\source\rtl\objpas\sysutils\syshelph.inc"/>
+        <EditorIndex Value="6"/>
+        <TopLine Value="69"/>
+        <CursorPos X="22" Y="81"/>
+        <UsageCount Value="14"/>
+        <Loaded Value="True"/>
+      </Unit59>
     </Units>
-    <JumpHistory Count="30" HistoryIndex="29">
+    <JumpHistory Count="29" HistoryIndex="28">
       <Position1>
-        <Filename Value="mailsinbox1.pas"/>
-        <Caret Line="1626" Column="14" TopLine="1598"/>
+        <Filename Value="settings1.pas"/>
+        <Caret Line="608" Column="70" TopLine="580"/>
       </Position1>
       <Position2>
-        <Filename Value="mailsinbox1.pas"/>
-        <Caret Line="1650" Column="16" TopLine="1622"/>
+        <Filename Value="settings1.pas"/>
+        <Caret Line="623" Column="26" TopLine="595"/>
       </Position2>
       <Position3>
-        <Filename Value="mailsinbox1.pas"/>
-        <Caret Line="2025" Column="18" TopLine="1997"/>
+        <Filename Value="settings1.pas"/>
+        <Caret Line="549" Column="7" TopLine="532"/>
       </Position3>
       <Position4>
-        <Filename Value="mailsinbox1.pas"/>
-        <Caret Line="206" Column="26" TopLine="191"/>
+        <Filename Value="settings1.pas"/>
+        <Caret Line="700" Column="48" TopLine="672"/>
       </Position4>
       <Position5>
-        <Filename Value="mailsinbox1.pas"/>
-        <Caret Line="513" Column="14" TopLine="485"/>
+        <Filename Value="settings1.pas"/>
+        <Caret Line="701" Column="51" TopLine="673"/>
       </Position5>
       <Position6>
-        <Filename Value="mailsinbox1.pas"/>
-        <Caret Line="893" Column="41" TopLine="878"/>
+        <Filename Value="settings1.pas"/>
+        <Caret Line="189" Column="6" TopLine="160"/>
       </Position6>
       <Position7>
         <Filename Value="settings1.pas"/>
-        <Caret Line="461" Column="19" TopLine="441"/>
+        <Caret Line="691" Column="37" TopLine="663"/>
       </Position7>
       <Position8>
-        <Filename Value="accounts1.pas"/>
-        <Caret Line="133" Column="19" TopLine="111"/>
+        <Filename Value="settings1.pas"/>
+        <Caret Line="189" Column="13" TopLine="172"/>
       </Position8>
       <Position9>
-        <Filename Value="accounts1.pas"/>
-        <Caret Line="376" Column="31" TopLine="348"/>
+        <Filename Value="settings1.pas"/>
+        <Caret Line="690" Column="28" TopLine="663"/>
       </Position9>
       <Position10>
         <Filename Value="settings1.pas"/>
-        <Caret Line="269" TopLine="245"/>
+        <Caret Line="177" Column="25" TopLine="161"/>
       </Position10>
       <Position11>
         <Filename Value="settings1.pas"/>
-        <Caret Line="267" Column="20" TopLine="250"/>
+        <Caret Line="548" Column="13" TopLine="520"/>
       </Position11>
       <Position12>
-        <Filename Value="settings1.pas"/>
-        <Caret Line="266" Column="30" TopLine="250"/>
+        <Filename Value="mailsinbox1.pas"/>
+        <Caret Line="676" Column="94" TopLine="648"/>
       </Position12>
       <Position13>
-        <Filename Value="settings1.pas"/>
-        <Caret Line="415" Column="18" TopLine="398"/>
+        <Filename Value="mailsinbox1.pas"/>
+        <Caret Line="25" Column="25"/>
       </Position13>
       <Position14>
-        <Filename Value="settings1.pas"/>
-        <Caret Line="380" Column="28" TopLine="275"/>
+        <Filename Value="mailsinbox1.pas"/>
+        <Caret Line="216" Column="43" TopLine="189"/>
       </Position14>
       <Position15>
-        <Filename Value="settings1.pas"/>
-        <Caret Line="266" TopLine="266"/>
+        <Filename Value="mailsinbox1.pas"/>
+        <Caret Line="558" Column="18" TopLine="530"/>
       </Position15>
       <Position16>
-        <Filename Value="settings1.pas"/>
-        <Caret Line="268" Column="22" TopLine="250"/>
+        <Filename Value="mailsinbox1.pas"/>
+        <Caret Line="578" Column="60" TopLine="549"/>
       </Position16>
       <Position17>
-        <Filename Value="settings1.pas"/>
-        <Caret Line="267" Column="18" TopLine="251"/>
+        <Filename Value="mailsinbox1.pas"/>
+        <Caret Line="1615" Column="67" TopLine="1598"/>
       </Position17>
       <Position18>
-        <Filename Value="settings1.pas"/>
-        <Caret Line="89" Column="15" TopLine="80"/>
+        <Filename Value="mailsinbox1.pas"/>
+        <Caret Line="558" Column="10" TopLine="544"/>
       </Position18>
       <Position19>
-        <Filename Value="settings1.pas"/>
-        <Caret Line="448" Column="8" TopLine="436"/>
+        <Filename Value="mailsinbox1.pas"/>
+        <Caret Line="568" Column="48" TopLine="544"/>
       </Position19>
       <Position20>
-        <Filename Value="settings1.pas"/>
-        <Caret Line="453" Column="5" TopLine="436"/>
+        <Filename Value="mailsinbox1.pas"/>
+        <Caret Line="642" Column="5" TopLine="611"/>
       </Position20>
       <Position21>
         <Filename Value="settings1.pas"/>
-        <Caret Line="451" Column="7" TopLine="436"/>
+        <Caret Line="55" Column="20" TopLine="32"/>
       </Position21>
       <Position22>
-        <Filename Value="mailsinbox1.pas"/>
-        <Caret Line="222" Column="18" TopLine="210"/>
+        <Filename Value="settings1.pas"/>
+        <Caret Line="84" Column="32" TopLine="56"/>
       </Position22>
       <Position23>
-        <Filename Value="mailsinbox1.pas"/>
-        <Caret Line="1034" Column="64" TopLine="1006"/>
+        <Filename Value="settings1.pas"/>
+        <Caret Line="116" Column="81" TopLine="88"/>
       </Position23>
       <Position24>
-        <Filename Value="mailsinbox1.pas"/>
-        <Caret Line="1100" Column="30" TopLine="1072"/>
+        <Filename Value="settings1.pas"/>
+        <Caret Line="334" Column="36" TopLine="306"/>
       </Position24>
       <Position25>
-        <Filename Value="mailsinbox1.pas"/>
-        <Caret Line="1137" Column="68" TopLine="1117"/>
+        <Filename Value="history.txt"/>
+        <Caret Line="74" TopLine="40"/>
       </Position25>
       <Position26>
         <Filename Value="mailsinbox1.pas"/>
-        <Caret Line="2319" Column="65" TopLine="2294"/>
+        <Caret Line="1749" TopLine="1732"/>
       </Position26>
       <Position27>
         <Filename Value="mailsinbox1.pas"/>
-        <Caret Line="1137" TopLine="1120"/>
+        <Caret Line="2116" TopLine="2099"/>
       </Position27>
       <Position28>
-        <Filename Value="mailsinbox1.pas"/>
-        <Caret Line="124" Column="61" TopLine="107"/>
+        <Filename Value="mailsinbox.txt"/>
+        <Caret Line="80" Column="55" TopLine="52"/>
       </Position28>
       <Position29>
-        <Filename Value="mailsinbox1.pas"/>
-        <Caret Line="1693" Column="8" TopLine="1676"/>
+        <Filename Value="mailsinbox.lpr"/>
+        <Caret Line="28"/>
       </Position29>
-      <Position30>
-        <Filename Value="mailsinbox1.pas"/>
-        <Caret Line="1706" TopLine="1689"/>
-      </Position30>
     </JumpHistory>
     <RunParams>
       <FormatVersion Value="2"/>

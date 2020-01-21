@@ -1,3 +1,9 @@
+{*******************************************************************************}
+{ log1 : Unit to display program log                                            }
+{ for mailsinbox application                                                    }
+{ bb -sdtp - january 2020                                                       }
+{*******************************************************************************}
+
 unit log1;
 
 {$mode objfpc}{$H+}
@@ -6,7 +12,7 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ExtCtrls, Buttons,
-  Menus, RichMemo, Clipbrd, lazutf8;
+  Menus, RichMemo, Clipbrd, lazutf8, lazbbutils;
 
 type
 
@@ -14,6 +20,7 @@ type
 
   TFLogView = class(TForm)
     BtnOK: TBitBtn;
+    ILMnuLog: TImageList;
     MnuCopyLine: TMenuItem;
     MnuCopyAll: TMenuItem;
     MnuCopySel: TMenuItem;
@@ -23,7 +30,9 @@ type
     procedure FormChangeBounds(Sender: TObject);
     procedure MnuCopyAllClick(Sender: TObject);
     procedure MnuCopyLineClick(Sender: TObject);
+    procedure MnuCopyPopup(Sender: TObject);
     procedure MnuCopySelClick(Sender: TObject);
+    procedure RMLogChange(Sender: TObject);
   private
 
   public
@@ -41,13 +50,19 @@ uses mailsinbox1;
 
 { TFLogView }
 
+// copy selection
 
 procedure TFLogView.MnuCopySelClick(Sender: TObject);
 begin
   Clipboard.AsText := RMLog.SelText;
+end;
+
+procedure TFLogView.RMLogChange(Sender: TObject);
+begin
 
 end;
 
+// copy line
 
 procedure TFLogView.MnuCopyLineClick(Sender: TObject);
 var
@@ -71,7 +86,21 @@ begin
   end;
 end;
 
-
+procedure TFLogView.MnuCopyPopup(Sender: TObject);
+var
+  bmp: TBitmap;
+begin
+  bmp:= Tbitmap.Create;
+  ILMnuLog.GetBitmap(0, Bmp);
+  MnuCopySel.enabled:=  RMLog.SelLength> 0;
+  CropBitmap(bmp, MnuCopySel.Bitmap, MnuCopySel.enabled);
+  ILMnuLog.GetBitmap(1, Bmp);
+  CropBitmap(bmp, MnuCopyAll.Bitmap, MnuCopyAll.enabled);
+  ILMnuLog.GetBitmap(2, Bmp);
+  MnuCopyLine.enabled:=  (RMLog.SelStart<RMlog.GetTextLen);
+  CropBitmap(bmp, MnuCopyLine.Bitmap, MnuCopyLine.enabled);
+  if Assigned(bmp) then bmp.free;
+end;
 
 procedure TFLogView.MnuCopyAllClick(Sender: TObject);
 begin

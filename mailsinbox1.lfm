@@ -6,6 +6,7 @@ object FMailsInBox: TFMailsInBox
   Caption = 'FMailsInBox'
   ClientHeight = 431
   ClientWidth = 940
+  Menu = MainMenu1
   OnActivate = FormActivate
   OnChangeBounds = DoChangeBounds
   OnClose = FormClose
@@ -810,7 +811,7 @@ object FMailsInBox: TFMailsInBox
       NumGlyphs = 2
       OnClick = BtnLaunchClientClick
     end
-    object BtnDelete: TSpeedButton
+    object BtnDeleteAcc: TSpeedButton
       Left = 208
       Height = 32
       Hint = 'Supprimer le compte sélectionné'
@@ -965,7 +966,7 @@ object FMailsInBox: TFMailsInBox
         0000000000000000000000000000000000000000000000000000
       }
       NumGlyphs = 2
-      OnClick = BtnDeleteClick
+      OnClick = BtnDeleteAccClick
     end
     object BtnAddAcc: TSpeedButton
       Left = 250
@@ -2974,13 +2975,32 @@ object FMailsInBox: TFMailsInBox
     OnPopup = MnuAccountPopup
     left = 168
     top = 80
+    object MnuAccountLog: TMenuItem
+      Caption = 'Journal du compte sélectionné'
+      OnClick = BtnLogClick
+    end
+    object MnuGetAccMail: TMenuItem
+      Caption = 'Vérifier le compte sélectionné'
+      OnClick = BtnGetAccMailClick
+    end
+    object MnuDeleteAcc: TMenuItem
+      Caption = 'MnuDeleteAcc'
+      OnClick = BtnDeleteAccClick
+    end
+    object MnuEditAcc: TMenuItem
+      Caption = 'Modifier le compte sélectionné'
+      OnClick = BtnEditAccClick
+    end
+    object N1: TMenuItem
+      Caption = '-'
+    end
     object MnuMoveUp: TMenuItem
       Caption = 'Déplacer vers le haut'
-      OnClick = MnuMoveUpClick
+      OnClick = MnuMoveClick
     end
     object MnuMoveDown: TMenuItem
       Caption = 'Déplacer vers le bas'
-      OnClick = MnuMoveDownClick
+      OnClick = MnuMoveClick
     end
   end
   object MnuMails: TPopupMenu
@@ -3088,7 +3108,12 @@ object FMailsInBox: TFMailsInBox
       Caption = '-'
     end
     object MnuGetAllMail: TMenuItem
+      Caption = 'Vérifier tous les comptes'
       OnClick = BtnGetAllMailClick
+    end
+    object MnuLaunchClient: TMenuItem
+      Caption = 'Lancer le client courrier'
+      OnClick = BtnLaunchClientClick
     end
     object MenuItem1: TMenuItem
       Caption = '-'
@@ -3118,5 +3143,9 @@ object FMailsInBox: TFMailsInBox
   object ILMnuAccounts: TImageList
     left = 112
     top = 144
+  end
+  object MainMenu1: TMainMenu
+    left = 61
+    top = 80
   end
 end

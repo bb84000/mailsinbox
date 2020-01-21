@@ -65,4 +65,9 @@ Version 0.7.0.0 - 19/01/2020
 - Changed lastfire and nextfire management, data no longer stored in accounts file
   now in settings file in unix form to better protect accounts data integrity
 
-
+Version 0.7.5.0 - 21/01/2020
+- Optimized move accounts function
+- Added account log, check mail, delete account, edit accountitems to accounts menu
+- Nextfires and Lastfires stored as Tstringlists instead string in settings records
+- Added images to log view menu
+- Customized Mail client images

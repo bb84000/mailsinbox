@@ -1,7 +1,7 @@
 {******************************************************************************}
 { accounts1 unit                                                               }
 { Form and types for accounts management                                       }
-{ bb - sdtp - december 2019                                                    }
+{ bb - sdtp - january 2020                                                     }
 { key for imported passwords 14235                                             }
 { key for saved passwords 14236                                                }
 {******************************************************************************}
@@ -177,7 +177,6 @@ type
     BtnPlaySound: TSpeedButton;
     procedure CBShowPassClick(Sender: TObject);
     procedure ESoundFileChange(Sender: TObject);
-    procedure ESoundFileExit(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
   private
@@ -708,11 +707,6 @@ end;
 procedure TFAccounts.ESoundFileChange(Sender: TObject);
 begin
   BtnPlaySound.Enabled:= not (length(ESoundFile.Text)=0);
-end;
-
-procedure TFAccounts.ESoundFileExit(Sender: TObject);
-begin
-
 end;
 
 procedure TFAccounts.FormDestroy(Sender: TObject);

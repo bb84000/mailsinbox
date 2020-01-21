@@ -34,7 +34,6 @@ type
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure BtnAccFileClick(Sender: TObject);
-    procedure FormShow(Sender: TObject);
     procedure LBImpexSelectionChange(Sender: TObject; User: boolean);
   private
     Reg: Tregistry;
@@ -197,11 +196,6 @@ begin
             end;
        end {case};
      end;
-end;
-
-procedure TFImpex.FormShow(Sender: TObject);
-begin
-
 end;
 
 procedure TFImpex.LBImpexSelectionChange(Sender: TObject; User: boolean);

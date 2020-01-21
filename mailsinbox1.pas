@@ -18,11 +18,11 @@ uses
   IdExplicitTLSClientServerBase, IdMessage, IdIMAP4, accounts1, lazbbutils,
   lazbbinifiles, lazbbosversion, LazUTF8, settings1, lazbbautostart, lazbbabout,
   Impex1, mailclients1, uxtheme, Types, IdComponent, fptimer, RichMemo,
-  IdMessageCollection, UniqueInstance, log1, registry, dateutils;
+  IdMessageCollection, UniqueInstance, log1, registry, dateutils, strutils;
 
 type
   TSaveMode = (None, Setting, All);
-  TBtnSize=(Small, Large);
+  TBtnSize=(bzLarge, bzSmall, bzNone);
   TCloseMode = (cmHide, cmQuit);
   TFireMode = (fmLast, fmNext);
 
@@ -31,7 +31,7 @@ type
     BtnAbout: TSpeedButton;
     BtnAddAcc: TSpeedButton;
     BtnClose: TSpeedButton;
-    BtnDelete: TSpeedButton;
+    BtnDeleteAcc: TSpeedButton;
     BtnEditAcc: TSpeedButton;
     BtnGetAccMail: TSpeedButton;
     BtnGetAllMail: TSpeedButton;
@@ -51,8 +51,15 @@ type
     LNow: TLabel;
     LStatus: TLabel;
     LVAccounts: TListView;
+    MainMenu1: TMainMenu;
     MenuItem1: TMenuItem;
     MenuItem3: TMenuItem;
+    MnuLaunchClient: TMenuItem;
+    MnuDeleteAcc: TMenuItem;
+    MnuEditAcc: TMenuItem;
+    MnuGetAccMail: TMenuItem;
+    MnuAccountLog: TMenuItem;
+    N1: TMenuItem;
     MnuAnswerMsg: TMenuItem;
     MnuDeleteMsg: TMenuItem;
     MnuGetAllMail: TMenuItem;
@@ -60,11 +67,11 @@ type
     MenuItem2: TMenuItem;
     MnuAbout: TMenuItem;
     MnuMaximize: TMenuItem;
+    MnuMoveUp: TMenuItem;
     MnuQuit: TMenuItem;
     MnuRestore: TMenuItem;
     MnuInfos: TMenuItem;
     MnuMoveDown: TMenuItem;
-    MnuMoveUp: TMenuItem;
     PnlAccounts: TPanel;
     PnlInfos: TPanel;
     PnlMails: TPanel;
@@ -84,7 +91,7 @@ type
     TrayMail: TTrayIcon;
     UniqueInstance1: TUniqueInstance;
     procedure BtnAboutClick(Sender: TObject);
-    procedure BtnDeleteClick(Sender: TObject);
+    procedure BtnDeleteAccClick(Sender: TObject);
     procedure BtnGetAccMailClick(Sender: TObject);
     procedure BtnGetAllMailClick(Sender: TObject);
     procedure BtnImportClick(Sender: TObject);
@@ -115,8 +122,7 @@ type
     procedure MnuMailsPopup(Sender: TObject);
     procedure MnuMaximizeClick(Sender: TObject);
     procedure MnuIconizeClick(Sender: TObject);
-    procedure MnuMoveDownClick(Sender: TObject);
-    procedure MnuMoveUpClick(Sender: TObject);
+    procedure MnuMoveClick(Sender: TObject);
     procedure MnuQuitClick(Sender: TObject);
     procedure MnuRestoreClick(Sender: TObject);
     procedure MnuTrayPopup(Sender: TObject);
@@ -194,9 +200,10 @@ type
     sAlertDelMmsg: string;
     ClickCnt: integer;
     sBytes, sKBytes, SMBytes: string;
-    AccountPictures, TrayPicture, MailPictures: TPicture;
+    AccountPictures, TrayPicture, MailPictures, LaunchPicture: TPicture;
     slLastFires, slNextFires: TStringList;
     sNeverChecked: string;
+    sUse64bit: string;
     procedure Initialize;
     procedure LoadCfgFile(filename: string);
     procedure SettingsOnChange(Sender: TObject);
@@ -206,7 +213,7 @@ type
     function SaveConfig(Typ: TSaveMode): boolean;
     procedure PopulateAccountsList(notify: boolean);
     procedure ModLangue;
-    procedure SetSmallBtns(small: boolean);
+    procedure SetSmallBtns(small: TBtnSize);
     function GetPendingMail(index: integer): integer;
     procedure PopulateMailsList(index: integer);
     procedure EnableControls(Enable: boolean);
@@ -422,18 +429,26 @@ begin
   if initialized then exit;
   // For popup menu, retrieve bitmap from resource
   // Get tray menu images from ressource
+
   ILMnuTray.Clear;
   GetMnuImage(ILMnuTray, 'RESTORE16');
   GetMnuImage(ILMnuTray, 'MAXIMIZE16');
   GetMnuImage(ILMnuTray, 'ICONIZE16');
   GetMnuImage(ILMnuTray, 'GETALLMAIL16');
+  GetMnuImage(ILMnuTray, 'LAUNCHCLIENT16');
   GetMnuImage(ILMnuTray, 'ABOUT16');
   GetMnuImage(ILMnuTray, 'QUIT16');
+  // get Mails menu images
   ILMnuMails.Clear;
   GetMnuImage(ILMnuMails, 'MAILINFOS16');
   GetMnuImage(ILMnuMails, 'MAILANSWER16');
   GetMnuImage(ILMnuMails, 'MAILDELETE16');
   ILMnuAccounts.Clear;
+  // get accounts menu images
+  GetMnuImage(ILMnuAccounts, 'ACCOUNTLOG16');
+  GetMnuImage(ILMnuAccounts, 'GETACCMAIL16');
+  GetMnuImage(ILMnuAccounts, 'DELETEACC16');
+  GetMnuImage(ILMnuAccounts, 'EDITACC16');
   GetMnuImage(ILMnuAccounts, 'ARROWUP16');
   GetMnuImage(ILMnuAccounts, 'ARROWDN16');
   // Mail list images
@@ -444,6 +459,9 @@ begin
   // Tray icon
   TrayPicture:= Tpicture.Create;
   TrayPicture.LoadFromResourceName(HInstance, 'MAIL16');
+  // General pictures
+  LaunchPicture:= Tpicture.Create;
+
   // Now, main settings
   FSettings.Settings.AppName:= LowerCase(ProgName);
   FAccounts.Accounts.AppName := LowerCase(ProgName);
@@ -477,8 +495,10 @@ begin
     'https://www.sdtp.com/versions/versions.csv');
   if Assigned(IniFile) then IniFile.free;
   LoadCfgFile(ConfigFileName);
-  slLastFires.text:= FSettings.Settings.LastFires;
-  slNextFires.text:= FSettings.Settings.NextFires;
+  Application.Title:=Caption;
+  if (OSINfo.Architecture = 'x86_64') and (OsTarget = '32 bits') then
+     MsgDlg(Caption, sUse64bit, mtInformation,  [mbOK], [OKBtn]);
+  Application.ProcessMessages;
   // in case startup was done after a session end
   if FSettings.Settings.Restart then
   begin
@@ -508,6 +528,7 @@ begin
     MainLog:= tmpLog.text;
   end;
   BtnLaunchClient.Enabled:= not (FSettings.Settings.MailClient='');
+  MnuLaunchClient.Enabled:= BtnLaunchClient.Enabled;
   // Accounts are sorted on their index
   FAccounts.Accounts.SortType:= cdcindex;
   FAccounts.Accounts.DoSort;
@@ -540,7 +561,8 @@ begin
     BmpArray[i].Assign(TSpeedButton(PnlToolbar.Controls[i]).Glyph);
   end;
   // set small buttons only if asked
-  if FSettings.Settings.SmallBtns then SetSmallBtns(FSettings.Settings.SmallBtns);
+  if FSettings.Settings.SmallBtns then SetSmallBtns(bzSmall)
+  else SetSmallBtns(bzNone); // customize only launchmail button
   Constraints.MinWidth:= BtnQuit.left+BtnQuit.width+10;
   if width < Constraints.MinWidth then width := Constraints.MinWidth;
   // Get default mail client and stores its name
@@ -601,37 +623,54 @@ end;
 
 // change size of buttons in toolbar
 
-procedure TFMailsInBox. SetSmallBtns(small:boolean);
+procedure TFMailsInBox. SetSmallBtns(small:TBtnSize);
 var
   Pict:TPicture;
   i: integer;
   ImgName:string;
+  smcl: string;
 begin
-  if Small then PnlToolbar.height:= 34
-  else PnlToolbar.height:= 42;
+  Case Small of
+    bzSmall: PnlToolbar.height:= 34;
+    bzLarge: PnlToolbar.height:= 42;
+  end;
   Pict:= TPicture.Create;
-  for i:= 0 to PnlToolbar.ControlCount-1 do
+  if not (small=bzNone) then
   begin
-    ImgName:= uppercase(TSpeedButton(PnlToolbar.Controls[i]).name);
-    ImgName:=copy(ImgName,4, length(ImgName)-3);
-    if Small then
+    for i:= 0 to PnlToolbar.ControlCount-1 do
+    begin
+      ImgName:= uppercase(TSpeedButton(PnlToolbar.Controls[i]).name);
+      ImgName:=copy(ImgName,4, length(ImgName)-3);
+      if Small=bzSmall then
       begin
         if PnlToolbar.Controls[i].ClassType=TSpeedButton then
-      try
-        TSpeedButton(PnlToolbar.Controls[i]).Height:= 24;
-        TSpeedButton(PnlToolbar.Controls[i]).Width:=24;
-        Pict.LoadFromResourceName(HInstance, ImgName+'16');
-        TSpeedButton(PnlToolbar.Controls[i]).Left:= 10+i*(24+8);
-        TSpeedButton(PnlToolbar.Controls[i]).Glyph.Assign(Pict.Bitmap);
-      except
-      end;
-    end else
+        try
+          TSpeedButton(PnlToolbar.Controls[i]).Height:= 24;
+          TSpeedButton(PnlToolbar.Controls[i]).Width:=24;
+          Pict.LoadFromResourceName(HInstance, ImgName+'16');
+          TSpeedButton(PnlToolbar.Controls[i]).Left:= 10+i*(24+8);
+          TSpeedButton(PnlToolbar.Controls[i]).Glyph.Assign(Pict.Bitmap);
+        except
+        end;
+      end else
       begin
         TSpeedButton(PnlToolbar.Controls[i]).Height:= 32;
         TSpeedButton(PnlToolbar.Controls[i]).Width:=32;
         TSpeedButton(PnlToolbar.Controls[i]).Left:= 10+i*(32+8);
         TSpeedButton(PnlToolbar.Controls[i]).Glyph.Assign(BmpArray[i]);
       end;
+    end;
+  end;
+  smcl:='';
+  if AnsiContainsText(FSettings.Settings.MailClientName, 'thunder') then smcl:='LAUNCHTHUN';
+  if AnsiContainsText(FSettings.Settings.MailClientName, 'outlook') then smcl:='LAUNCHOUTL';
+  if AnsiContainsText(FSettings.Settings.MailClientName, 'outlook.com') then smcl:='LAUNCHOUTLC';
+  if AnsiContainsText(FSettings.Settings.MailClientName, 'gmail') then smcl:='LAUNCHGMAIL';
+  if AnsiContainsText(FSettings.Settings.MailClientName, 'windows') then smcl:='LAUNCHWMAIL';
+  if length(smcl)>0 then
+  begin
+    Pict.LoadFromResourceName(HInstance, smcl+InttoStr(BtnLaunchClient.Glyph.height));
+    BtnLaunchClient.Glyph.Assign(Pict.Bitmap);
   end;
   Pict.Free;
 end;
@@ -693,7 +732,6 @@ begin
     end;
   end;
   Modlangue;
-  Application.Title:=Caption;
   LogAddLine(-1, now, sLoadingAccounts);
   FAccounts.Accounts.Reset;
   FAccounts.Accounts.LoadXMLfile(AccountsFileName);
@@ -765,9 +803,7 @@ begin
   if (Typ= Setting) or (Typ = All) then
   with FSettings do
   begin
-   Settings.LastFires:= slLastFires.text;
-   Settings.NextFires:= slNextFires.text;
-   Settings.WState:= '';
+    Settings.WState:= '';
     if self.Top < 0 then self.Top:= 0;
     if self.Left < 0 then self.Left:= 0;
     // Main form size and position
@@ -927,6 +963,8 @@ begin
   AccountsChanged := True;
 end;
 
+// edit or add an account
+
 procedure TFMailsInBox.BtnEditAccClick(Sender: TObject);
 var
   Account: TAccount;
@@ -942,7 +980,7 @@ begin
       Account.UID:=0;
       Caption:= BtnAddAcc.Hint;
     end;
-    if (TSpeedButton(Sender).Name='BtnEditAcc') and  (ndx>=0) then
+    if ((TSpeedButton(Sender).Name='BtnEditAcc') or (TMenuItem(Sender).Name='MnuEditAcc')) and  (ndx>=0) then
     begin
       Account:= Accounts.GetItem(ndx);
       Caption:= BtnEditAcc.Hint;
@@ -1012,6 +1050,7 @@ begin
   if Assigned(AccountPictures) then AccountPictures.Free;
   if Assigned(TrayPicture) then TrayPicture.Free;
   if Assigned(MailPictures) then MailPictures.Free;
+  if Assigned(LaunchPicture) then LaunchPicture.Free;
   if Assigned(slLastFires) then slLastFires.Free;
   if Assigned(slNextFires) then slNextFires.Free;
 end;
@@ -1080,12 +1119,17 @@ begin
   if ndx >= 0 then
   begin
     BtnGetAccMail.Enabled:= FAccounts.Accounts.GetItem(ndx).enabled;
+    MnuGetAccMail.Enabled:= BtnGetAccMail.Enabled;
     LVAccounts.PopupMenu:= MnuAccount;
     AccName:= FAccounts.Accounts.GetItem(ndx).Name;
     BtnAccountLog.Hint:= Format(sBtnLogHint, [AccName]);
+    MnuAccountLog.Caption:= BtnAccountLog.Hint;
     BtnGetAccMail.Hint:= Format(sBtnGetAccMailHint, [AccName]);
-    BtnDelete.Hint:= Format(sBtnDeleteHint, [AccName]);
+    MnuGetAccMail.Caption:= BtnGetAccMail.Hint;
+    BtnDeleteAcc.Hint:= Format(sBtnDeleteHint, [AccName]);
+    MnuDeleteAcc.Caption:= BtnDeleteAcc.Hint;
     BtnEditAcc.Hint:= Format(sBtnEditAccHint, [AccName]);
+    MnuEditAcc.Caption:= BtnEditAcc.Hint;
     UpdateInfos;
   end else LVAccounts.PopupMenu:= nil;
   PopulateMailsList(ndx);
@@ -1108,14 +1152,14 @@ var
 begin
   uidfnd:= false;
   result:= 0;
-  if mode=fmLast then cnt:= slLastFires.count
-  else cnt:= slNextFires.count;
+  if mode=fmLast then cnt:= FSettings.Settings.LastFires.count
+  else cnt:= FSettings.Settings.NextFires.count;
   if cnt> 0 then
   begin
     for i:= 0 to cnt-1 do
     begin
-      if mode=fmlast then s:= slLastFires.Strings[i]
-      else s:= slNextFires.Strings[i];
+      if mode=fmlast then s:= FSettings.Settings.LastFires.Strings[i]
+      else s:= FSettings.Settings.NextFires.Strings[i];
       if pos(InttoStr(CurAcc.UID), s) >0 then
       begin
         A:= s.split('|');
@@ -1201,9 +1245,13 @@ end;
 procedure TFMailsInBox.MnuAccountPopup(Sender: TObject);
 begin
   MnuMoveUp.Enabled:= not (LVAccounts.ItemIndex=0);
-  if MnuMoveUp.Enabled then MnuMoveUp.ImageIndex:=0 else MnuMoveUp.ImageIndex:=1 ;
+  if MnuAccountLog.Enabled then MnuAccountLog.ImageIndex:=0 else MnuAccountLog.ImageIndex:=1;
+  if MnuGetAccMail.Enabled then MnuGetAccMail.ImageIndex:=2 else MnuGetAccMail.ImageIndex:=3;
+  if MnuDeleteAcc.Enabled then MnuDeleteAcc.ImageIndex:=4 else MnuDeleteAcc.ImageIndex:=5 ;
+  if MnuEditAcc.Enabled then MnuEditAcc.ImageIndex:=6 else MnuEditAcc.ImageIndex:=7;
+  if MnuMoveUp.Enabled then MnuMoveUp.ImageIndex:=8 else MnuMoveUp.ImageIndex:=9 ;
   MnuMoveDown.Enabled:= not (LVAccounts.ItemIndex=LVAccounts.Items.count-1);
-  if MnuMoveDown.Enabled then MnuMoveDown.ImageIndex:=2 else MnuMoveDown.ImageIndex:=3;
+  if MnuMoveDown.Enabled then MnuMoveDown.ImageIndex:=10 else MnuMoveDown.ImageIndex:=11;
 end;
 
 procedure TFMailsInBox.MnuAnswerMsgClick(Sender: TObject);
@@ -1262,13 +1310,13 @@ begin
   if andx <0 then exit;
   mndx:= SGMails.row-1;
   mail:= FAccounts.Accounts.GetItem(andx).Mails.GetItem(mndx);
-  s:= 'De : ';
-  if length(Mail.MessageFrom)<0 then s:=s+Mail.MessageFrom+' ';
+  s:= SGMails.Columns[0].Title.Caption+': ';
+  if length(Mail.MessageFrom)>0 then s:=s+Mail.MessageFrom+' ';
   s:=s+'('+mail.FromAddress+')'+#10;
-  s:=s+'A : '+ FAccounts.Accounts.GetItem(andx).Name+'('+Mail.ToAddress+')'+#10;
-  s:=s+'Sujet : '+Mail.MessageSubject+#10;
-  s:=s+'Date : '+TimeDateToString(Mail.MessageDate)+#10;
-  s:=s+'Taille : '+IntToStr(Mail.MessageSize)+#10;
+  s:=s+SGMails.Columns[1].Title.Caption+': '+FAccounts.Accounts.GetItem(andx).Name+' ('+Mail.ToAddress+')'+#10;
+  s:=s+SGMails.Columns[2].Title.Caption+': '+Mail.MessageSubject+#10;
+  s:=s+SGMails.Columns[3].Title.Caption+': '+SGMails.Cells[3,SGMails.row]+#10;
+  s:=s+SGMails.Columns[4].Title.Caption+': '+SGMails.Cells[4,SGMails.row]+#10;
   s:=s+'UID : '+Mail.MessageUIDL;
   ShowMessage(s);
 end;
@@ -1301,37 +1349,28 @@ begin
   Application.Minimize;
 end;
 
-procedure TFMailsInBox.MnuMoveDownClick(Sender: TObject);
+procedure TFMailsInBox.MnuMoveClick(Sender: TObject);
 var
   oldndx: integer;
+  incr: integer;
 begin
   oldndx:= LVAccounts.ItemIndex;
-  if oldndx<0 then exit;
-  if oldndx<LVAccounts.Items.count-1 then
+  if TMenuItem(Sender).Name='MnuMoveDown' then
   begin
-    FAccounts.Accounts.sorttype:= cdcNone;
-    FAccounts.Accounts.ModifyField(oldndx, 'index', oldndx+1);
-    FAccounts.Accounts.ModifyField(oldndx+1, 'index', oldndx);
-    FAccounts.Accounts.sorttype:= cdcIndex;
-    PopulateAccountsList(false);
-    LVAccounts.ItemIndex:= oldndx+1;
+    if (oldndx<0) or (oldndx>LVAccounts.Items.count-2) then exit;
+    incr:= 1;
   end;
-end;
-
-procedure TFMailsInBox.MnuMoveUpClick(Sender: TObject);
-var
-  oldndx: integer;
-begin
-  oldndx:= LVAccounts.ItemIndex;
-  if oldndx>0 then
+  if TMenuItem(Sender).Name='MnuMoveUp' then
   begin
-    FAccounts.Accounts.sorttype:= cdcNone;
-    FAccounts.Accounts.ModifyField(oldndx, 'index', oldndx-1);
-    FAccounts.Accounts.ModifyField(oldndx-1, 'index', oldndx);
-    FAccounts.Accounts.sorttype:= cdcIndex;
-    PopulateAccountsList(false);
-    LVAccounts.ItemIndex:= oldndx-1;
+    if (oldndx<=0) then exit;
+    incr:= -1;
   end;
+  FAccounts.Accounts.sorttype:= cdcNone;
+  FAccounts.Accounts.ModifyField(oldndx, 'index', oldndx+incr);
+  FAccounts.Accounts.ModifyField(oldndx+incr, 'index', oldndx);
+  FAccounts.Accounts.sorttype:= cdcIndex;
+  PopulateAccountsList(false);
+  LVAccounts.ItemIndex:= oldndx+incr;
 end;
 
 procedure TFMailsInBox.MnuQuitClick(Sender: TObject);
@@ -1365,8 +1404,9 @@ begin
   MnuIconize.Enabled:= not (WindowState=wsMinimized);
   if MnuIconize.Enabled then MnuIconize.ImageIndex:= 4 else MnuIconize.ImageIndex:=5;
   if MnuGetAllMail.Enabled then MnuGetAllMail.ImageIndex:=6 else MnuGetAllMail.ImageIndex:=7;
-  if MnuAbout.Enabled then MnuAbout.ImageIndex:=8 else MnuAbout.ImageIndex:=9;
-  if MnuQuit.Enabled then MnuQuit.ImageIndex:=10 else MnuQuit.ImageIndex:=11;
+  if MnuLaunchClient.Enabled then MnuLaunchClient.ImageIndex:=8 else MnuLaunchClient.ImageIndex:=9;
+  if MnuAbout.Enabled then MnuAbout.ImageIndex:=10 else MnuAbout.ImageIndex:=11;
+  if MnuQuit.Enabled then MnuQuit.ImageIndex:=12 else MnuQuit.ImageIndex:=13;
 end;
 
 procedure TFMailsInBox.TimeTimerTimer(Sender: TObject);
@@ -1557,14 +1597,18 @@ begin
       Settings.SaveLogs:= CBSaveLogs.Checked;
       Settings.NoChkNewVer := CBNoChkNewVer.Checked;
       Settings.StartupCheck:= CBStartupCheck.Checked;
-      if Settings.SmallBtns <> CBSmallBtns.Checked then  // Buttons size has changed
-      SetSmallBtns(CBSmallBtns.Checked);
+      if Settings.SmallBtns <> CBSmallBtns.Checked then
+      SetSmallBtns(TBtnSize(integer(CBSmallBtns.Checked)));
       Settings.Notifications:= CBNotifications.Checked;
       Settings.NoCloseAlert:= CBNoCloseAlert.Checked;
       Settings.NoQuitAlert:= CBNoQuitAlert.Checked;
       Settings.SmallBtns:= CBSmallBtns.Checked;
       Settings.MailClient:= MailClients[CBMailClient.ItemIndex].Command;
-      Settings.MailClientName:= MailClients[CBMailClient.ItemIndex].Name;
+      if Settings.MailClientName <> MailClients[CBMailClient.ItemIndex].Name then
+      begin
+        Settings.MailClientName:= MailClients[CBMailClient.ItemIndex].Name;
+        SetSmallBtns(bzNone);
+      end;
       Settings.MailClientIsUrl:= CBUrl.Checked;
       Settings.SoundFile:= ESoundFile.Text;
       Settings.LangStr := LangNums.Strings[CBLangue.ItemIndex];
@@ -1596,9 +1640,9 @@ begin
   end;
 end;
 
-procedure TFMailsInBox.BtnDeleteClick(Sender: TObject);
+procedure TFMailsInBox.BtnDeleteAccClick(Sender: TObject);
 begin
- AlertDlg (Caption, 'Todo: delete selected account' ,[OKBtn, CancelBtn, sAlertBoxCBNoShowAlert]) ;
+  AlertDlg (Caption, 'Feature not yet immplemented' ,[OKBtn, CancelBtn, sAlertBoxCBNoShowAlert]) ;
 
 end;
 
@@ -1659,13 +1703,11 @@ end;
 
 function TFMailsInBox.MailChecking(status: boolean): boolean;
 var
-//  CurAcc: TAccount;
   ndx: integer;
 begin
   ndx:= LVAccounts.ItemIndex;
   if ndx<0 then exit;
   CheckingMail:= status;
-//  CurAcc:= FAccounts.Accounts.GetItem(ndx);
   EnableControls(not status);
   if status then
   begin
@@ -1703,7 +1745,6 @@ var
   ErrStr, ErrorsStr: string;
   sUIDL: string;
   slUIDL: TStringList;
-  uidfnd: boolean;
 begin
   result:= 0;
   msgs:= 0;
@@ -1917,16 +1958,12 @@ begin
   end;
   // Update account checkmail dates
   Setfire(curacc, now, fmLast);
-  //FAccounts.Accounts.ModifyField(index, 'LASTFIRE', now);
   Application.ProcessMessages;
   min:= EncodeTime(0,FAccounts.Accounts.GetItem(index).interval,0,0);
   SetFire(CurAcc, now+min, fmNext);
-  //FAccounts.Accounts.ModifyField(index, 'NEXTFIRE', now+min);
-  //FAccounts.Accounts.ModifyField(index, 'ERROR', Err);
-  TAccount(FAccounts.Accounts.Items[index]^).Error:= Err;  // do not fire event
-  //FAccounts.Accounts.ModifyField(index, 'ERRORSTR', ErrorsStr);
-  TAccount(FAccounts.Accounts.Items[index]^).ErrorStr:= ErrorsStr;   // do not fire event
-  TAccount(FAccounts.Accounts.Items[index]^).Mails.Reset;
+  TAccount(FAccounts.Accounts.Items[index]^).Error:= Err;          // do not fire event
+  TAccount(FAccounts.Accounts.Items[index]^).ErrorStr:= ErrorsStr; // do not fire event
+  TAccount(FAccounts.Accounts.Items[index]^).Mails.Reset;          // do not fire event
   if Mails.count > 0 then
     for i:=0 to Mails.count-1 do
     begin
@@ -1940,6 +1977,9 @@ begin
   result:= msgs;
 end;
 
+// store lastfire and nextfire dates in the settings
+// format : UID string '|' Unix time string
+
 procedure TFMailsInBox.SetFire(Curacc: TAccount; datim: TDateTime; mode: TFireMode);
 var
   uidfnd: integer;
@@ -1950,14 +1990,14 @@ begin
   //if not CurAcc.Enabled then exit;
   uidfnd:= -1;
   s1:= InttoStr(CurAcc.UID)+'|'+ IntToStr(DateTimeToUnix(datim)); //TimeDateToString(datim, 'dd/mm/yyyy hh:nn:ss'); ;
-  if mode= fmLast then cnt:= slLastFires.count
-  else cnt:= slNextFires.count;
+  if mode= fmLast then cnt:= FSettings.Settings.LastFires.count
+  else cnt:= FSettings.Settings.NextFires.count;
   if  cnt >0 then
    begin
      for i:= 0 to cnt-1 do
      begin
-       if mode= fmLast then s:= slLastFires.Strings[i]
-       else s:= slNextFires.Strings[i];
+       if mode= fmLast then s:= FSettings.Settings.LastFires.Strings[i]
+       else s:= FSettings.Settings.NextFires.Strings[i];
        if pos(InttoStr(CurAcc.UID), s) >0 then
        begin
          uidfnd:= i;
@@ -1967,12 +2007,12 @@ begin
    end;
    if (mode= fmLast)then
    begin
-     if uidfnd>=0 then slLastFires.strings[uidfnd]:= s1
-     else slLastFires.add(s1);
+     if uidfnd>=0 then FSettings.Settings.LastFires.Strings[uidfnd]:= s1
+     else FSettings.Settings.LastFires.add(s1);
    end else
    begin
-     if uidfnd>=0 then slNextFires.strings[uidfnd]:= s1
-     else slNextFires.add(s1);
+     if uidfnd>=0 then FSettings.Settings.NextFires.strings[uidfnd]:= s1
+    else FSettings.Settings.NextFires.add(s1);
   end;
 end;
 
@@ -2001,8 +2041,9 @@ begin
 end;
 
 // Import external accounts
-// Currently : complete mailattente accounts
-//             Outlook 2007-2013 accounts (password is not retrieved)
+// mailattente accounts
+// Outlook 2007-2013 accounts (password is not retrieved)
+// Thunderbird accounts (password is not retrieved)
 
 procedure TFMailsInBox.BtnImportClick(Sender: TObject);
 var
@@ -2070,7 +2111,7 @@ var
   logdoc: TStringList;
   i: integer;
   s: string;
-  //A: TStringArray;
+  sendername: string;
   // parse function
   function parseline(st:String; filter: string=''):String;
   var
@@ -2091,18 +2132,20 @@ begin
   else logdoc.Text:= SessionLog.text;
   s:='';
   CurAcc:= FAccounts.Accounts.GetItem(LVAccounts.ItemIndex);
-  if TBitBtn(Sender).Name= 'BtnAccountLog' then
+  sendername:= UpperCase(Tcomponent(sender).name);
+  if (sendername= 'BTNACCOUNTLOG') or (sendername= 'MNUACCOUNTLOG') then
   begin
     if LVAccounts.ItemIndex>=0 then
        for i:= 0 to logdoc.Count- 1 do s:=s+parseline(logdoc.strings[i], IntToStr(Curacc.UID));
   end;
-  if TBitBtn(Sender).Name= 'BtnLog' then
+  if sendername= 'BTNLOG' then
   begin
     for i:= 0 to logdoc.Count -1  do s:=s+parseline(logdoc.strings[i]);
   end;
   With FLogView do
   begin
-    Caption:= TBitBtn(Sender).Hint;
+    if Copy(sendername,1,3)='BTN' then Caption:= TSpeedButton(Sender).Hint;
+    if Copy(sendername,1,3)='MNU' then Caption:= TMenuItem(Sender).Caption;
     RMLog.rtf:='';
     RMLog.Text:=s;
     RMLog.SelStart:=0;
@@ -2150,13 +2193,17 @@ begin
   SGMails.Enabled:= enable;
   BtnImport.Enabled:= enable;
   BtnAccountLog.Enabled:= enable;
+  MnuAccountLog.Enabled:= enable;
   BtnGetAllMail.Enabled:= enable;
   MnuGetAllMail.Enabled:= enable;
   MnuDeleteMsg.Enabled:= Enable;
   BtnGetAccMail.Enabled:= enable;
-  BtnDelete.Enabled:= enable;
+  MnuGetAccMail.Enabled:= enable;
+  BtnDeleteAcc.Enabled:= enable;
+  MnuDeleteAcc.Enabled:= enable;
   BtnAddAcc.Enabled:= enable;
   BtnEditAcc.Enabled:= enable;
+  MnuEditAcc.Enabled:= enable;
   BtnSettings.Enabled:= enable;
   BtnLog.Enabled:= enable;
   BtnAbout.Enabled:= enable;
@@ -2218,7 +2265,6 @@ begin
   Bmp.Assign(tmpBmp);
   if Assigned(tmpBmp) then tmpBmp.free;
 end;
-
 
 
 // Load control captions and text variable translations
@@ -2312,7 +2358,9 @@ begin
     sBytes:=ReadString(LangStr,'Bytes','octets');
     sKBytes:=ReadString(LangStr,'KBytes','Ko');
     SMBytes:=ReadString(LangStr,'MBytes','Mo');
-    sNeverChecked:=ReadString(LangStr,'NeverChecked','Pas encore vérifié'); ;
+    sNeverChecked:=ReadString(LangStr,'NeverChecked','Pas encore vérifié');
+    sUse64bit:=ReadString(LangStr,'Use64bit','Utilisez la version 64 bits de ce programme');
+
     // About
     sNoLongerChkUpdates:=ReadString(LangStr,'NoLongerChkUpdates','Ne plus rechercher les mises à jour');
     sLastUpdateSearch:=ReadString(LangStr,'LastUpdateSearch','Dernière recherche de mise à jour');

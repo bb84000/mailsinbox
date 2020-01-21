@@ -1,3 +1,9 @@
+{*******************************************************************************}
+{ mailclient : Unit to find mail client(s)                                      }
+{ for mailsinbox application                                                    }
+{ bb -sdtp - january 2020                                                       }
+{*******************************************************************************}
+
 unit mailclients1;
 
 {$mode objfpc}{$H+}
@@ -40,11 +46,6 @@ implementation
 
 {$R *.lfm}
 
-
-
-
-
-
 { TFMailClientChoose }
 
 procedure TFMailClientChoose.CBUrlChange(Sender: TObject);
@@ -56,7 +57,6 @@ procedure TFMailClientChoose.BtnMailClientClick(Sender: TObject);
 begin
   if OD1.Execute then
   ECommand.text:= OD1.FileName;
-
 end;
 
 end.

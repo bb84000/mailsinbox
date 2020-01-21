@@ -8,10 +8,23 @@ XATT3         ICON "images\\getmail3.ico"
 XATT4         ICON "images\\getmail4.ico"
 XATT5         ICON "images\\getmail5.ico"
 
+// general images
 ACCOUNT216    RCDATA "images\\account216.png"
 MAIL16        RCDATA "images\\mail16.png"
 MAILSTATES    RCDATA "images\\mailstates.png"
 ABOUTIMG      RCDATA "images\\mainicon32.png"
+LAUNCHDEF     RCDATA "images/launchclient.png"
+LAUNCHOUTL24  RCDATA "images\\launchoutl.png"
+LAUNCHOUTL16  RCDATA "images\\launchoutl216.png"
+LAUNCHTHUN24  RCDATA "images\\launchthun.png"
+LAUNCHTHUN16  RCDATA "images\\launchthun216.png"
+LAUNCHGMAIL24 RCDATA "images\\launchgmail.png"
+LAUNCHGMAIL16 RCDATA "images\\launchgmail216.png"
+LAUNCHWMAIL24 RCDATA "images\\launchwmail.png"
+LAUNCHWMAIL16 RCDATA "images\\launchwmail216.png"
+LAUNCHOUTLC24 RCDATA "images\\launchoutlc.png"
+LAUNCHOUTLC16 RCDATA "images\\launchoutlc216.png"
+
 
 // Small buttons glyphs (same name as buttons/menus suffix)
 
@@ -24,7 +37,7 @@ ACCOUNTLOG16  RCDATA "images\\accountlog216.png"
 GETALLMAIL16  RCDATA "images\\getallmail216.png"
 GETACCMAIL16  RCDATA "images\\getaccmail216.png"
 LAUNCHCLIENT16  RCDATA "images\\launchclient216.png"
-DELETE16      RCDATA "images\\deleteaccount216.png"
+DELETEACC16   RCDATA "images\\deleteaccount216.png"
 ADDACC16      RCDATA "images\\addaccount216.png"
 EDITACC16     RCDATA "images\\editaccount216.png"
 SETTINGS16    RCDATA "images\\settings216.png"
