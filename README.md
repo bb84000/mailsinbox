@@ -14,4 +14,4 @@ Uses OpenSSL libraries.
 
 My units lazbbunits are available here : https://github.com/bb84000/lazbbunits.
 
-
+Outlook, Microsoft, Mozilla marks and logos are property of their respective owners.
