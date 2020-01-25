@@ -19,8 +19,9 @@
       <UseVersionInfo Value="True"/>
       <MinorVersionNr Value="7"/>
       <RevisionNr Value="5"/>
+      <BuildNr Value="1"/>
       <Attributes pvaPreRelease="True"/>
-      <StringTable Comments="www.sdtp.com" CompanyName="sdtp" FileDescription="Courrier en attente - Mails in Box" InternalName="mailsinbox" LegalCopyright="sdtp - bb - january 2020" LegalTrademarks="sdtp - bb - january 2020" OriginalFilename="mailsinbox" ProductName="Mails In Box - Courriels en attente" ProductVersion="0.7.5.0"/>
+      <StringTable Comments="www.sdtp.com" CompanyName="sdtp" FileDescription="Courrier en attente - Mails in Box" InternalName="mailsinbox" LegalCopyright="sdtp - bb - january 2020" LegalTrademarks="sdtp - bb - january 2020" OriginalFilename="mailsinbox" ProductName="Mails In Box - Courriels en attente" ProductVersion="0.7.5.1"/>
     </VersionInfo>
     <BuildModes Count="1">
       <Item1 Name="Default" Default="True"/>

@@ -33,6 +33,7 @@ type
     PnlButtons: TPanel;
     procedure BtnMailClientClick(Sender: TObject);
     procedure CBUrlChange(Sender: TObject);
+    procedure FormActivate(Sender: TObject);
   private
 
   public
@@ -51,6 +52,13 @@ implementation
 procedure TFMailClientChoose.CBUrlChange(Sender: TObject);
 begin
   BtnMailClient.Enabled:= not CBUrl.checked;
+end;
+
+procedure TFMailClientChoose.FormActivate(Sender: TObject);
+begin
+  // Center buttons in case of width change
+  BtnOK.Left:= (PnlButtons.ClientWidth-BtnOK.width*2-20) div 2;
+  BtnCancel.Left:= BtnOK.Left+BtnOK.Width+20;
 end;
 
 procedure TFMailClientChoose.BtnMailClientClick(Sender: TObject);

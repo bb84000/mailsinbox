@@ -25,7 +25,7 @@ type
     LBImpex: TListBox;
     LFileName: TLabel;
     ODImpex: TOpenDialog;
-    Panel2: TPanel;
+    PnlButtons: TPanel;
     BtnAccFile: TSpeedButton;
     SGImpex: TStringGrid;
     procedure BtnOKClick(Sender: TObject);
@@ -102,6 +102,9 @@ begin
   if IsTBird then CBAccType.Items.add('Thunderbird');
   CBAccType.ItemIndex:= 0;
   CBAccTypeChange(Sender);
+  // Center buttons in case of width change
+  BtnOK.Left:= (PnlButtons.ClientWidth-BtnOK.width*2-20) div 2;
+  BtnCancel.Left:= BtnOK.Left+BtnOK.Width+20;
 end;
 
 // Get Thunderbird current profile path

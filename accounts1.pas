@@ -172,11 +172,12 @@ type
     LSoundFile: TLabel;
     LSSL: TLabel;
     LUserName: TLabel;
-    PnlAccButtons: TPanel;
+    PnlButtons: TPanel;
     BtnSoundFile: TSpeedButton;
     BtnPlaySound: TSpeedButton;
     procedure CBShowPassClick(Sender: TObject);
     procedure ESoundFileChange(Sender: TObject);
+    procedure FormActivate(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
   private
@@ -707,6 +708,13 @@ end;
 procedure TFAccounts.ESoundFileChange(Sender: TObject);
 begin
   BtnPlaySound.Enabled:= not (length(ESoundFile.Text)=0);
+end;
+
+procedure TFAccounts.FormActivate(Sender: TObject);
+begin
+  // Center buttons in case of width change
+  BtnOK.Left:= (PnlButtons.ClientWidth-BtnOK.width*2-20) div 2;
+  BtnCancel.Left:= BtnOK.Left+BtnOK.Width+20;
 end;
 
 procedure TFAccounts.FormDestroy(Sender: TObject);

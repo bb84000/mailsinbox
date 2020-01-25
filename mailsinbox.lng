@@ -29,6 +29,8 @@ BtnLogHint=%s Account log
 BtnGetAllMail.Hint=Check all accounts
 BtnGetAccMailHint=Check account %s
 BtnLaunchClient.Hint=Launch Email client
+BtnLaunchClientDef=Launch mail client
+BtnLaunchClientCust=Launch %s
 BtnDeleteHint=Delete account %s
 BtnAddAcc.Hint=Add new account
 BtnEditAccHint=Modify account %s
@@ -93,6 +95,7 @@ KBytes=KB
 MBytes=MB
 NeverChecked= Not yet checked
 Use64bit=Use the 64bit version of the program
+DeleteAccount=The account %s will be deleted. Are you sure ?
 
 ;About
 Aboutbox.Caption=About Mails In Box
@@ -214,6 +217,8 @@ BtnLogHint=Journal du compte %s
 BtnGetAllMail.Hint=Vérifier tous les comptes
 BtnGetAccMailHint=Vérifier le compte %s
 BtnLaunchClient.Hint=Lancer le client courrier
+BtnLaunchClientDef=Lancer le client courrier
+BtnLaunchClientCust=Lancer %s
 BtnDeleteHint=Supprimer le compte %s
 BtnAddAcc.Hint=Ajouter un nouveau compte
 BtnEditAccHint=Modifier le compte %s
@@ -275,6 +280,7 @@ KBytes=Ko
 MBytes=Mo
 NeverChecked=Pas encore vérifié
 Use64bit=Utilisez la version 64 bits de ce programme
+DeleteAccount=Voulez-vous vraiment supprimer le compte %s ?
 
 ;About
 Aboutbox.Caption=A propos de Courrier en attente

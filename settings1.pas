@@ -177,6 +177,7 @@ end;
     GMailWeb, OutlookWeb, Win10Mail: string;
     MailClients: Array of TmailClient;
     function GetDefaultMailCllient: string;
+    procedure GetMailClientNames(frst: boolean);
   end;
 
 var
@@ -558,6 +559,9 @@ begin
   begin
     GetDefaultMailCllient;
     first:= false;
+    // Center buttons in case of width change
+    BtnOK.Left:= (PnlButtons.ClientWidth-BtnOK.width*2-20) div 2;
+    BtnCancel.Left:= BtnOK.Left+BtnOK.Width+20;
   end;
 end;
 
@@ -658,6 +662,36 @@ begin
   sl.free;
 end;
 
+
+procedure TFSettings.GetMailClientNames(frst: boolean);
+var
+   FixedCount: integer;
+begin
+  // Add fixed clients
+  FixedCount:= 2;
+  if frst then SetLength(MailClients, FixedCount);
+  MailClients[0]:= Default(TmailClient);
+  MailClients[0].Name:=GMailWeb;
+  MailClients[0].Command:=GmailUrl;
+  MailClients[0].Url:=true;
+  MailClients[1]:= Default(TmailClient);
+  MailClients[1].Name:=OutlookWeb;
+  MailClients[1].Command:=OutlookUrl;
+  MailClients[1].Url:=true;
+  {$IFDEF WINDOWS}
+  //If Windows 10
+  if FMailsInBox.OsInfo.VerMaj=10 then
+  begin
+    inc (FixedCount);
+    if frst then SetLength(MailClients, FixedCount);
+    MailClients[FixedCount-1]:= Default(TmailClient);
+    MailClients[FixedCount-1].Name:=Win10Mail;
+    MailClients[FixedCount-1].Command:=Win10MailCmd;
+    MailClients[FixedCount-1].Url:=false;
+  end;
+  {$ENDIF}
+end;
+
 // Retrieve default mail client and all available mail clients
 
 function TFSettings.GetDefaultMailCllient: string;
@@ -680,8 +714,9 @@ begin
   selfound:= false;
   CliCount:=0;
   // Add fixed clients
-  FixedCount:= 2;
-  SetLength(MailClients, FixedCount);
+
+  GetMailClientNames(true);
+  {SetLength(MailClients, FixedCount);
   MailClients[0]:= Default(TmailClient);
   MailClients[0].Name:=GMailWeb;
   MailClients[0].Command:=GmailUrl;
@@ -689,10 +724,10 @@ begin
   MailClients[1]:= Default(TmailClient);
   MailClients[1].Name:=OutlookWeb;
   MailClients[1].Command:=OutlookUrl;
-  MailClients[1].Url:=true;
+  MailClients[1].Url:=true; }
   {$IFDEF WINDOWS}
     //If Windows 10
-    if FMailsInBox.OsInfo.VerMaj=10 then
+  {  if FMailsInBox.OsInfo.VerMaj=10 then
     begin
       inc (FixedCount);
       SetLength(MailClients, FixedCount);
@@ -700,7 +735,8 @@ begin
       MailClients[FixedCount-1].Name:=Win10Mail;
       MailClients[FixedCount-1].Command:=Win10MailCmd;
       MailClients[FixedCount-1].Url:=false;
-    end;
+    end; }
+    FixedCount:= length(MailClients);
     Reg:= TRegistry.Create;
     SubKeyNames:= TStringList.Create;
     // D'abord dans HKCU, sinon dans HKLM
@@ -745,6 +781,7 @@ begin
   {$ENDIF}
   {$IFDEF Linux}
     // Linux return .desktop file, can be executed w/o path info
+    FixedCount:= length(MailClients);
     HomeDir:= GetUserDir;
     Setlength(AppListArr, 9);
     AppListArr[0]:= HomeDir+'.local/share/applications/mimeapps.list';

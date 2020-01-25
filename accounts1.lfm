@@ -8,11 +8,12 @@ object FAccounts: TFAccounts
   Caption = 'FAccounts'
   ClientHeight = 272
   ClientWidth = 539
+  OnActivate = FormActivate
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   Position = poMainFormCenter
   LCLVersion = '2.0.6.0'
-  object PnlAccButtons: TPanel
+  object PnlButtons: TPanel
     Left = 0
     Height = 43
     Top = 229
