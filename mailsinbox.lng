@@ -90,12 +90,13 @@ ClosingProg=Closing Mails In Box
 SettingsChange=Settings changed
 MsgDeleted=%s : Message #%u deleted
 MsgNotDeleted=%s : Message #%u not deleted
-Bytes=bytes
-KBytes=KB
-MBytes=MB
+Bytes=Bytes
+KBytes=KBytes
+MBytes=MBytes
 NeverChecked= Not yet checked
 Use64bit=Use the 64bit version of the program
 DeleteAccount=The account %s will be deleted. Are you sure ?
+DataPath=Program data path: %s
 
 ;About
 Aboutbox.Caption=About Mails In Box
@@ -276,11 +277,12 @@ SettingsChange=Configuration modifiée
 MsgDeleted=%s : Message #%u supprimé
 MsgNotDeleted=%s : Message #%u non supprimé
 Bytes=octets
-KBytes=Ko
-MBytes=Mo
+KBytes=Koctets
+MBytes=Moctets
 NeverChecked=Pas encore vérifié
 Use64bit=Utilisez la version 64 bits de ce programme
 DeleteAccount=Voulez-vous vraiment supprimer le compte %s ?
+DataPath=Répertoire de données du programme : %s
 
 ;About
 Aboutbox.Caption=A propos de Courrier en attente

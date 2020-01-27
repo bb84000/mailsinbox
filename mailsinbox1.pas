@@ -49,6 +49,7 @@ type
     ILLargeBtns: TImageList;
     ILSmallBtns: TImageList;
     ImgAccounts: TImageList;
+    Label1: TLabel;
     LNow: TLabel;
     LStatus: TLabel;
     LVAccounts: TListView;
@@ -115,7 +116,6 @@ type
       const AStatusText: string);
     procedure LVAccountsSelectItem(Sender: TObject; Item: TListItem;
       Selected: Boolean);
-    procedure MnuAboutClick(Sender: TObject);
     procedure MnuAccountPopup(Sender: TObject);
     procedure MnuAnswerMsgClick(Sender: TObject);
     procedure MnuDeleteMsgClick(Sender: TObject);
@@ -127,6 +127,7 @@ type
     procedure MnuQuitClick(Sender: TObject);
     procedure MnuRestoreClick(Sender: TObject);
     procedure MnuTrayPopup(Sender: TObject);
+    procedure PnlToolbarClick(Sender: TObject);
     procedure TimeTimerTimer(Sender: TObject);
     procedure SGMailsBeforeSelection(Sender: TObject; aCol, aRow: Integer);
     procedure SGMailsClick(Sender: TObject);
@@ -134,7 +135,6 @@ type
       aRect: TRect; aState: TGridDrawState);
     procedure SGMailsEnter(Sender: TObject);
     procedure SGMailsExit(Sender: TObject);
-    procedure SGMailsKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure SGMailsMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure OnTimeTimer(Sender: TObject);
@@ -156,7 +156,6 @@ type
     ChkMailTimerTick: integer;
     CanClose: boolean;
     BaseUpdateUrl, ChkVerURL, version: string;
-    //sAccountCaption,
     sEmailCaption, sLastCheckCaption, sNextCheckCaption : string;
     sNoLongerChkUpdates, sLastUpdateSearch, sUpdateAvailable, sUpdateAlertBox: string;
     OKBtn, YesBtn, NoBtn, CancelBtn: string;
@@ -205,9 +204,11 @@ type
     slLastFires, slNextFires: TStringList;
     sNeverChecked: string;
     sUse64bit: string;
+    sDataPath: string;
     sBtnLaunchClientDef, sBtnLaunchClientCust: string;
     sDeleteAccount: string;
     BtnsArr : array of TSpeedButton;
+    DisplayMails: TMailsList;
     procedure Initialize;
     procedure LoadCfgFile(filename: string);
     procedure SettingsOnChange(Sender: TObject);
@@ -224,7 +225,7 @@ type
     procedure UpdateInfos;
     procedure DrawTheIcon(Bmp: TBitmap; NewCount: integer; CircleColor: TColor);
     function MailChecking(status: boolean): boolean;
-    procedure GetMailInfos(CurName: String; var Mail: TMail; IdMsg: TIdMessage; siz: Integer);
+    procedure GetMailInfos(CurAcc: TAccount; var Mail: TMail; IdMsg: TIdMessage; siz: Integer);
     function LogAddLine(acc: integer; dat: TDateTime; evnt: string): integer;
     procedure GetAccMail(ndx: integer);
     function HideOnTaskbar: boolean;
@@ -234,6 +235,7 @@ type
     function GetFire(CurAcc: Taccount; mode: TFireMode): TDateTime;
     procedure SetFire(Curacc: TAccount; datim: TDateTime; mode: TFireMode);
     procedure InitButtons;
+    function AccFromMail(rw: integer): Integer;
   public
     OsInfo: TOSInfo;           //used by Settings1
     UserAppsDataPath: string;  //used by Impex1
@@ -255,7 +257,6 @@ Const
   glLog= 9;
   glAbout= 10;
   glQuit= 11;
-  //glClose= 12;
   glLaunchOutlook= 12;
   glLaunchTbird= 13;
   glLaunchGmail= 14;
@@ -309,13 +310,13 @@ begin
       reg.WriteString(RunRegKeyVal, RunRegKeySz) ;
       reg.CloseKey;
       reg.free;
-      Application.ProcessMessages;
-      caClose:= caFree;
-      FormClose(self, caClose);
     {$ENDIF}
     {$IFDEF Linux}
        SetAutostart(ProgName, Application.exename);
     {$ENDIF}
+    Application.ProcessMessages;
+    caClose:= caFree;
+    FormClose(self, caClose);
   end;
 end;
 
@@ -388,11 +389,13 @@ begin
   LangFile := TBbIniFile.Create(ExtractFilePath(Application.ExeName) + LowerCase(ProgName)+'.lng');
   // Cannot call Modlang as components are not yet created, use default language
   sOpenProgram:=LangFile.ReadString(LangStr,'OpenProgram','Ouverture de Courrier en attente');
+  sDatapath:=LangFile.ReadString(LangStr,'DataPath','Répertoire de données du programme : %s');
   LogAddLine(-1, now, sOpenProgram+' - Version '+Version+ ' (' + OS + OSTarget + ')');
   LogAddLine(-1, now, OsInfo.VerDetail);
   LangNums := TStringList.Create;
   MIBAppDataPath := UserAppsDataPath + PathDelim + ProgName + PathDelim;
   if not DirectoryExists(MIBAppDataPath) then CreateDir(MIBAppDataPath);
+  LogAddLine(-1, now, Format(sDataPath, [MIBAppDataPath]));
   LogFileName:= MIBAppDataPath+ProgName+'.log';
   // Mail checking process flag
   CheckingMail:= false;
@@ -402,6 +405,7 @@ begin
   StatusFmtSets.ShortDateFormat:= DefaultFormatSettings.LongDateFormat;
   slLastFires:= TstringList.Create;
   slNextFires:=TstringList.Create;
+  DisplayMails:= TMailsList.Create;
 end;
 
 // Add a line to log file. quote char is '|' to preserve real double quotes in log
@@ -517,7 +521,6 @@ begin
   GetMnuImage(ILMnuAccounts, glEditAccount, true, ILSmallBtns);
   GetMnuImage(ILMnuAccounts, 'ARROWUP16');
   GetMnuImage(ILMnuAccounts, 'ARROWDN16');
-
 end;
 
 
@@ -532,7 +535,6 @@ var
   tmplog: TstringList;
   CurAcc: TAccount;
   FilNamWoExt: string;
-
 begin
   if initialized then exit;
   InitButtons;
@@ -546,7 +548,6 @@ begin
   TrayPicture.LoadFromResourceName(HInstance, 'MAIL16');
   // General pictures
   LaunchPicture:= Tpicture.Create;
-
   // Now, main settings
   FSettings.Settings.AppName:= LowerCase(ProgName);
   FAccounts.Accounts.AppName := LowerCase(ProgName);
@@ -593,7 +594,6 @@ begin
   {$IFDEF Linux}
      if not FSettings.Settings.Startup  then UnsetAutostart(ProgName);
   {$ENDIF}
-
   // AboutBox.UrlUpdate, AboutBox.LUpdate.Caption and Aboutbox.Caption
   // are done in ModLangue procedure
   AboutBox.Width:= 300; // to have more place for the long product name
@@ -1129,6 +1129,7 @@ begin
   if Assigned(LaunchPicture) then LaunchPicture.Free;
   if Assigned(slLastFires) then slLastFires.Free;
   if Assigned(slNextFires) then slNextFires.Free;
+  if Assigned(DisplayMails) then DisplayMails.Free;
 end;
 
 // Timer firing periodic mail checking
@@ -1146,7 +1147,6 @@ begin
   begin
     // current account is enabled and interval defined
     CurAcc:= FAccounts.Accounts.GetItem(i);
-    //if CurAcc.Enabled and (CurAcc.Interval>0) and (now> CurAcc.NextFire) then
     if CurAcc.Enabled and (CurAcc.Interval>0) and (now> GetFire(CurAcc, fmNext)) then
     begin
       min:= EncodeTime(0,CurAcc.interval,0,0);
@@ -1211,13 +1211,6 @@ begin
   PopulateMailsList(ndx);
 end;
 
-
-
-procedure TFMailsInBox.MnuAboutClick(Sender: TObject);
-begin
-
-end;
-
 function TFMailsInBox.GetFire(CurAcc: Taccount; mode: TFireMode): TDateTime;
 var
   uidfnd: boolean;
@@ -1277,10 +1270,7 @@ begin
       else msgsfnd:= Format(sMsgFound, [msgs]);
       RMInfos.Lines.Add(msgsfnd);
       LStatus.Caption:= Format(sLStatusCaption, [msgsfnd, CurAcc.Name, slastfire]);
-                   //FAccounts.Accounts.GetItem(ndx).Name, slastfire]);
-      //RMInfos.Lines.add(Format(sNextCheckCaption, [TimeDateToString(CurAcc.NextFire)]));
       RMInfos.Lines.add(Format(sNextCheckCaption, [TimeDateToString(GetFire(CurAcc, fmNext))]));
-                   //FAccounts.Accounts.GetItem(ndx).NextFire)]));
     end else
     begin
       LStatus.Caption:= Format(sAccountDisabled, [CurAcc.Name]);
@@ -1290,32 +1280,54 @@ end;
 
 procedure TFMailsInBox.PopulateMailsList(index: integer);
 var
-  i: integer;
+  i, j: integer;
   siz: integer;
   CurAcc: TAccount;
   s: string;
+  AUID: integer;
 begin
-  //SGMails.Clear;
+  // All accounts mail list for future version
+  DisplayMails.Reset;
   SGMails.RowCount:=1;
-  if (index<0) or (FAccounts.Accounts.GetItem(index).Mails.Count=0) then exit;
-  CurAcc:= FAccounts.Accounts.GetItem(index);
-  SGMails.RowCount:= CurAcc.Mails.Count+1;
-  for i:= 0 to SGMails.RowCount-2 do
+  For i:=0 to FAccounts.Accounts.count-1 do
   begin
-    SGMails.Cells[0,i+1]:= CurAcc.Mails.GetItem(i).MessageFrom;
-    SGMails.Cells[1,i+1]:= CurAcc.Mails.GetItem(i).AccountName;
-    //SGMails.Cells[1,i+1]:= CurAcc.Mails.GetItem(i).MessageFrom;
-    SGMails.Cells[2,i+1]:= CurAcc.Mails.GetItem(i).MessageSubject;
-    SGMails.Cells[3,i+1]:= TimeDateToString(CurAcc.Mails.GetItem(i).MessageDate);
-    // Change unit with size value
-    siz:= CurAcc.Mails.GetItem(i).MessageSize;
-    if siz<20480 then s:= InttoStr(siz)+' '+sBytes;
-    if (siz>=20480) and (siz<100480) then s:= Format('%.1n '+sKBytes, [siz/1048]);
-    if (siz>=100480) and (siz<1048576) then s:= Format('%u '+sKBytes, [siz div 1048]);
-    if siz>=1048576  then s:= Format('%.1n '+SMBytes, [siz/1048576]);
-    SGMails.Cells[4,i+1]:= s;
+    CurAcc:= FAccounts.Accounts.GetItem(i);
+    if (CurAcc.Mails.count> 0) then
+    begin
+      for j:= 0 to CurAcc.Mails.count-1 do
+        DisplayMails.AddMail(CurAcc.Mails.GetItem(j));
+    end;
   end;
-
+  DisplayMails.SortDirection:= descend;
+  DisplayMails.SortType:=cdcMessageDate ;
+  //DisplayMails.DoSort;
+  if DisplayMails.count=0 then exit;
+  // If we display only selected accout messages
+  if not FSettings.Settings.DisplayAllAccMsgs then
+  begin
+    if index<0 then exit;
+    AUID:= FAccounts.Accounts.GetItem(index).UID;
+  end else AUID:=0;
+  j:=SGMails.RowCount;
+  for i:=0 to DisplayMails.Count-1 do
+  begin
+    if (AUID=0) or (AUID=DisplayMails.GetItem(i).AccountUID) then
+    begin
+      inc(j);
+      SGMails.RowCount:= j;
+      SGMails.Cells[0,j-1]:= DisplayMails.GetItem(i).MessageFrom;
+      SGMails.Cells[1,j-1]:= DisplayMails.GetItem(i).AccountName;
+      SGMails.Cells[2,j-1]:= DisplayMails.GetItem(i).MessageSubject;
+      SGMails.Cells[3,j-1]:= TimeDateToString(DisplayMails.GetItem(i).MessageDate);
+      // Change unit with size value
+      siz:= DisplayMails.GetItem(i).MessageSize;
+      if siz<20480 then s:= InttoStr(siz)+' '+sBytes;
+      if (siz>=20480) and (siz<100480) then s:= Format('%.1n '+sKBytes, [siz/1048]);
+      if (siz>=100480) and (siz<1048576) then s:= Format('%u '+sKBytes, [siz div 1048]);
+      if siz>=1048576  then s:= Format('%.1n '+SMBytes, [siz/1048576]);
+      SGMails.Cells[4,j-1]:= s;
+    end;
+   end;
 end;
 
 procedure TFMailsInBox.MnuAccountPopup(Sender: TObject);
@@ -1332,86 +1344,120 @@ end;
 
 procedure TFMailsInBox.MnuAnswerMsgClick(Sender: TObject);
 var
-  andx, mndx: integer;
-  CurAcc: TAccount;
+  mndx: integer;
 begin
-  andx:= LVAccounts.ItemIndex;
-  if andx<0 then exit;
   mndx:= SGMails.row-1;
-  if andx <0 then exit;
-  CurAcc:= FAccounts.Accounts.GetItem(andx);
-
-  OpenURL('mailto:'+CurAcc.Mails.GetItem(mndx).FromAddress+'?subject=re:'+CurAcc.Mails.GetItem(mndx).MessageSubject);
+  if mndx <1 then exit;
+  OpenURL('mailto:'+DisplayMails.GetItem(mndx).FromAddress+'?subject=re:'+DisplayMails.GetItem(mndx).MessageSubject);
 end;
 
 procedure TFMailsInBox.MnuDeleteMsgClick(Sender: TObject);
 var
   andx: integer;
   mndx: integer;
+  amndx: integer;
   //mail:TMail;
   uid2del: integer;
   CurAcc: TAccount;
   Subj: string;
+  i: integer;
 begin
-  andx:= LVAccounts.ItemIndex;
+  //  andx:= LVAccounts.ItemIndex;
+  amndx:= 0;
+  andx:= AccFromMail(SGMails.Row);
   if andx<0 then exit;
   mndx:= SGMails.row-1;
   if andx <0 then exit;
   CurAcc:= FAccounts.Accounts.GetItem(andx);
-  Subj:= Copy(CurAcc.Mails.GetItem(mndx).MessageSubject,1, 15)+'...';
+  Subj:= Copy(DisplayMails.GetItem(mndx).MessageSubject,1, 15)+'...';
+  // Alarm before deleting
+  if MsgDlg(Caption, Format(sAlertDelMmsg, [Subj]), mtWarning,
+             [mbYes,mbNo], [YesBtn,NoBtn])= mrYes then
+  begin
+    // Add our new UID only if not already marked
+    //if CurAcc.Mails.GetItem(mndx).MessageToDelete then exit;
+    //TAccount(FAccounts.Accounts.Items[andx]^).Mails.ModifyField(mndx, 'MessageToDelete', true);
+    for i:= 0 to  CurAcc.Mails.Count-1 do
+    begin
+       if CurAcc.Mails.GetItem(i).MessageUIDL= DisplayMails.GetItem(mndx).MessageUIDL then
+       begin
+         amndx:= i;
+         TAccount(FAccounts.Accounts.Items[andx]^).Mails.ModifyField(amndx, 'MessageToDelete', true);
+         break;
+       end;
+    end;
+    DisplayMails.ModifyField (mndx, 'MessageToDelete', true);
+    // Add UID to array
+    uid2del:= length(CurAcc.UIDLToDel);
+    Setlength(TAccount(FAccounts.Accounts.Items[andx]^).UIDLToDel, uid2del+1);
+    TAccount(FAccounts.Accounts.Items[andx]^).UIDLToDel[uid2del]:= DisplayMails.GetItem(mndx).MessageUIDL;
+    SGMails.Invalidate;
+  end;
+  {AccUID:= DisplayMails.getItem(SGMails.row-1).AccountUID;
+  for andx:=0 to FAccounts.Accounts.Count-1 do
+  begin
+    if FAccounts.Accounts.GetItem(andx).UID=AccUID then
+    begin
+      fnd:= true;
+      break;
+    end;
+  end;
+
+  //andx:= LVAccounts.ItemIndex;
+  //if andx<0 then exit;
+  if not fnd then exit;
+  mndx:= SGMails.row-1;
+  if andx <0 then exit;
+  CurAcc:= FAccounts.Accounts.GetItem(andx);
+  Subj:= Copy(DisplayMails.GetItem(mndx).MessageSubject,1, 15)+'...';
   // Alarm before deleting
   if MsgDlg(Caption, Format(sAlertDelMmsg, [Subj]), mtWarning,
              [mbYes,mbNo], [YesBtn,NoBtn])= mrYes then
   begin
      // Add our new UID only if not already marked
-    if CurAcc.Mails.GetItem(mndx).MessageToDelete then exit;
+    if DisplayMails.GetItem(mndx).MessageToDelete then exit;
     TAccount(FAccounts.Accounts.Items[andx]^).Mails.ModifyField(mndx, 'MessageToDelete', true);
     // Add UID to array
     uid2del:= length(CurAcc.UIDLToDel);
     Setlength(TAccount(FAccounts.Accounts.Items[andx]^).UIDLToDel, uid2del+1);
     TAccount(FAccounts.Accounts.Items[andx]^).UIDLToDel[uid2del]:= CurAcc.Mails.GetItem(mndx).MessageUIDL;
     SGMails.Invalidate;
-  end;
+  end;}
 end;
 
 procedure TFMailsInBox.MnuInfosClick(Sender: TObject);
 var
-  andx: integer;
   mndx: integer;
   mail:TMail;
   s: string;
-
 begin
-  andx:= LVAccounts.ItemIndex;
-  if andx <0 then exit;
   mndx:= SGMails.row-1;
-  mail:= FAccounts.Accounts.GetItem(andx).Mails.GetItem(mndx);
+  if mndx<1 then exit;
+  mail:= DisplayMails.GetItem(mndx);
   s:= SGMails.Columns[0].Title.Caption+': ';
   if length(Mail.MessageFrom)>0 then s:=s+Mail.MessageFrom+' ';
-  s:=s+'('+mail.FromAddress+')'+#10;
-  s:=s+SGMails.Columns[1].Title.Caption+': '+FAccounts.Accounts.GetItem(andx).Name+' ('+Mail.ToAddress+')'+#10;
-  s:=s+SGMails.Columns[2].Title.Caption+': '+Mail.MessageSubject+#10;
-  s:=s+SGMails.Columns[3].Title.Caption+': '+SGMails.Cells[3,SGMails.row]+#10;
-  s:=s+SGMails.Columns[4].Title.Caption+': '+SGMails.Cells[4,SGMails.row]+#10;
+  s:=s+'('+mail.FromAddress+')'+LineEnding;
+  s:=s+SGMails.Columns[1].Title.Caption+': '+Mail.AccountName+LineEnding;
+  s:=s+SGMails.Columns[2].Title.Caption+': '+Mail.MessageSubject+LineEnding;
+  s:=s+SGMails.Columns[3].Title.Caption+': '+SGMails.Cells[3,SGMails.row]+LineEnding;
+  s:=s+SGMails.Columns[4].Title.Caption+': '+SGMails.Cells[4,SGMails.row]+LineEnding;
   s:=s+'UID : '+Mail.MessageUIDL;
   ShowMessage(s);
 end;
 
 procedure TFMailsInBox.MnuMailsPopup(Sender: TObject);
 var
-  CurAcc: TAccount;
   Subj: string;
   ndx: integer;
 begin
-  ndx:= LVAccounts.ItemIndex;
+  ndx:= AccFromMail(SGMails.row);
   if ndx<0 then exit;
-  CurAcc:= FAccounts.Accounts.GetItem(ndx);
-  Subj:= Copy(CurAcc.Mails.GetItem(SGMails.row-1).MessageSubject,1, 15)+'...';
+  Subj:= Copy(DisplayMails.GetItem(SGMails.row-1).MessageSubject,1, 15)+'...';
   MnuDeleteMsg.Caption:= Format(sMnuDelMsg, [Subj]);
   MnuAnswerMsg.Caption:= Format(sMnuAnswerMsg, [Subj]);
   if MnuInfos.Enabled then MnuInfos.ImageIndex:=0 else MnuInfos.ImageIndex:=1 ;
-  if MnuDeleteMsg.Enabled then MnuDeleteMsg.ImageIndex:=2 else MnuMaximize.ImageIndex:=3;
-  if MnuAnswerMsg.Enabled then MnuAnswerMsg.ImageIndex:=4 else MnuAnswerMsg.ImageIndex:=5 ;
+  if MnuAnswerMsg.Enabled then MnuAnswerMsg.ImageIndex:=2 else MnuAnswerMsg.ImageIndex:=3 ;
+  if MnuDeleteMsg.Enabled then MnuDeleteMsg.ImageIndex:=4 else MnuMaximize.ImageIndex:=5;
 end;
 
 procedure TFMailsInBox.MnuMaximizeClick(Sender: TObject);
@@ -1495,6 +1541,13 @@ begin
   MnuLaunchClient.Caption:= BtnLaunchClient.Hint;
 end;
 
+procedure TFMailsInBox.PnlToolbarClick(Sender: TObject);
+begin
+
+end;
+
+
+
 procedure TFMailsInBox.TimeTimerTimer(Sender: TObject);
 begin
   if ClickCnt=1 then ClickCnt:=0;
@@ -1508,8 +1561,28 @@ end;
 
 procedure TFMailsInBox.SGMailsClick(Sender: TObject);
 begin
-  ShowMessage('Test');
+  if SGMails.row= 0 then ShowMessage('Test');
 end;
+
+// retrive account index from row in mail grid
+function TFMailsInBox.AccFromMail(rw: integer): Integer;
+var
+  AccUID: integer;
+  ndx: integer;
+begin
+  result:= -1;
+  AccUID:= DisplayMails.getItem(rw-1).AccountUID;
+  for ndx:=0 to FAccounts.Accounts.Count-1 do
+  begin
+    if FAccounts.Accounts.GetItem(ndx).UID=AccUID then
+    begin
+      result:= ndx;
+      break;
+    end;
+  end;
+end;
+
+
 
 procedure TFMailsInBox.SGMailsDrawCell(Sender: TObject; aCol, aRow: Integer;
   aRect: TRect; aState: TGridDrawState);
@@ -1517,11 +1590,8 @@ var
   R: TRect;
   bmp: Tbitmap;
   bmppos: integer;
-  ndx: integer;
 begin
   if arow=0 then exit;
-  ndx:= LVAccounts.ItemIndex;
-  if ndx<0 then exit;
   // remove selection highlight if the control has not the focus
   if not SGHasFocus then
   begin
@@ -1538,11 +1608,11 @@ begin
     R.Right:=R.Left+18;
     R.Bottom:=R.Top+16;
     Bmp:= Tbitmap.Create;
-    if FAccounts.Accounts.GetItem(ndx).Mails.GetItem(aRow-1).MessageNew then
-      bmppos:= 1;
-    if Pos ('multipart', FAccounts.Accounts.GetItem(ndx).Mails.GetItem(aRow-1).MessageContentType) >0 then
+     if DisplayMails.GetItem(aRow-1).MessageNew then
+    bmppos:= 1;
+    if Pos ('multipart', DisplayMails.GetItem(aRow-1).MessageContentType) >0 then
        bmppos:= bmppos+2;
-    if FAccounts.Accounts.GetItem(ndx).Mails.GetItem(aRow-1).MessageToDelete then
+    if DisplayMails.GetItem(aRow-1).MessageToDelete then
        bmppos:= 4;
     CropBitmap(MailPictures.Bitmap, bmp, bmppos );
     SGMails.Canvas.StretchDraw(R, bmp);
@@ -1567,25 +1637,19 @@ begin
   //SGMails.Invalidate;
 end;
 
-procedure TFMailsInBox.SGMailsKeyUp(Sender: TObject; var Key: Word;
-  Shift: TShiftState);
-begin
-
-end;
-
 procedure TFMailsInBox.SGMailsMouseDown(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 var
   pf: TPoint;
   col1, row1: integer;
 begin
+  Col1:=0;
+  Row1:=0;
+  SGMails.MouseToCell(X, Y, Col1, Row1);
   if Button = TMouseButton.mbRight then
   begin
-    Col1:=0;
-    Row1:=0;
     if SGMails.RowCount<2 then exit;
     if visible then SGMails.SetFocus;
-    SGMails.MouseToCell(X, Y, Col1, Row1);
     pf := SGMails.ClientToScreen(Point(X, Y));
     if row1>0 then
     begin
@@ -1657,6 +1721,7 @@ begin
     CBNotifications.Checked:= Settings.Notifications;
     CBNoCloseAlert.checked:= Settings.NoCloseAlert;
     CBNoQuitAlert.Checked:= Settings.NoQuitAlert;
+    CBDisplayAllAccMsgs.checked:= Settings.DisplayAllAccMsgs;
     GetDefaultMailCllient;    // and get mail clientrs list
     CBMailClient.Items.Clear; //Reset list of mail clients
     for i:=0 to length(MailClients)-1 do
@@ -1688,6 +1753,7 @@ begin
       Settings.Notifications:= CBNotifications.Checked;
       Settings.NoCloseAlert:= CBNoCloseAlert.Checked;
       Settings.NoQuitAlert:= CBNoQuitAlert.Checked;
+      Settings.DisplayAllAccMsgs:= CBDisplayAllAccMsgs.Checked;
       Settings.MailClient:= MailClients[CBMailClient.ItemIndex].Command;
       Settings.MailClientIsUrl:= CBUrl.Checked;
       Settings.SoundFile:= ESoundFile.Text;
@@ -1747,11 +1813,10 @@ begin
   ndx:= LVAccounts.ItemIndex;
   if ndx<0 then exit;
   if AlertDlg (Caption, Format(sDeleteAccount, [FAccounts.Accounts.GetItem(ndx).name]), [OKBtn, CancelBtn, sAlertBoxCBNoShowAlert], false, mtWarning)= mrOK then
- begin
+  begin
    FAccounts.Accounts.Delete(ndx);
    PopulateAccountsList(false);
- end;
-
+  end;
 end;
 
 procedure TFMailsInBox.BtnGetAllMailClick(Sender: TObject);
@@ -1863,6 +1928,7 @@ begin
   sUIDL:='';
   slUIDL:= TStringList.Create;
   mails:= TMailsList.create;
+  FAccounts.Accounts.GetItem(index).Mails.Reset;
   idMsgList:= TIdMessageCollection.create;
   AMailBoxList:= TStringList.Create;
   CurAcc:= FAccounts.Accounts.GetItem(index);
@@ -1891,6 +1957,7 @@ begin
         else IdIMAP4_1.AuthType:= iatUserPass;
       end;
   end;
+  // Connection to mail server
   try
     LStatus.Caption:= Format(sConnectToServer, [Curacc.Name, CurAcc.Server]);
     LogAddLine(CurAcc.UID, now, LStatus.Caption );
@@ -1913,7 +1980,7 @@ begin
               LStatus.Caption:= CurAcc.Name+': '+ErrStr;
               LogAddLine(CurAcc.UID, now, LStatus.Caption);
               if ErrorsStr='' then ErrorsStr:= ErrStr
-              else ErrorsStr:= ErrorsStr+#10+ErrStr;
+              else ErrorsStr:= ErrorsStr+LineEnding+ErrStr;
               Err:= true;
             end;
           end;
@@ -1938,7 +2005,7 @@ begin
               LStatus.Caption:= CurAcc.Name+': '+ErrStr;
               LogAddLine(CurAcc.UID, now, LStatus.Caption);
               if ErrorsStr='' then ErrorsStr:= ErrStr
-              else ErrorsStr:= ErrorsStr+#10+ErrStr;
+              else ErrorsStr:= ErrorsStr+LineEnding+ErrStr;
               Err:= true;
             end;
           end;
@@ -1993,7 +2060,7 @@ begin
             end;
         end;
         Application.ProcessMessages;
-        GetMailInfos(CurName, Mail, IdMsg, siz);
+        GetMailInfos(CurAcc, Mail, IdMsg, siz);
         if CurAcc.Mails.FindUIDL(Mail.MessageUIDL)>=0 then
         Mail.MessageNew:= false else Mail.MessageNew:= true;
         Mails.AddMail(Mail);
@@ -2008,13 +2075,14 @@ begin
           begin
             for j:= 0 to length(CurAcc.UIDLToDel)-1 do
             begin
-              if CurAcc.Mails.GetItem(i).MessageUIDL= CurAcc.UIDLToDel[j]  then
-                 if IdPOP3_1.Delete(i) then
+              if Mails.GetItem(i).MessageUIDL= CurAcc.UIDLToDel[j]  then
+                // Msgs are counted from 1 on the server
+                if IdPOP3_1.Delete(i+1) then
                  begin
                    Mails.Delete(i);
                    LogAddLine(CurAcc.UID, now, Format(sMsgDeleted, [CurAcc.Name, i+1]));
-                end else LogAddLine(CurAcc.UID, now, Format(sMsgNotDeleted, [CurAcc.Name, i+1]));
-            end;
+                 end else LogAddLine(CurAcc.UID, now, Format(sMsgNotDeleted, [CurAcc.Name, i+1]));
+             end;
           end;
         end;
         LStatus.Caption:= Format(sDisconnectServer, [Curacc.Name, CurAcc.Server]);
@@ -2030,12 +2098,12 @@ begin
           begin
             for j:=0 to length(CurAcc.UIDLToDel)-1 do
             begin
-              if CurAcc.Mails.GetItem(i).MessageUIDL= CurAcc.UIDLToDel[j]  then
-              if IdIMAP4_1.UIDDeleteMsg(idMsg.UID) then
-              begin
-                Mails.Delete(i);
+             if Mails.GetItem(i).MessageUIDL= CurAcc.UIDLToDel[j]  then
+               if IdIMAP4_1.UIDDeleteMsg(idMsg.UID) then
+               begin
+                 //Mails.Delete(i);
                  LogAddLine(CurAcc.UID, now, Format(sMsgDeleted, [CurAcc.Name, i+1]));
-              end else LogAddLine(CurAcc.UID, now, Format(sMsgNotDeleted, [CurAcc.Name, i+1]));
+               end else LogAddLine(CurAcc.UID, now, Format(sMsgNotDeleted, [CurAcc.Name, i+1]));
             end;
           end;
         end;
@@ -2075,7 +2143,7 @@ begin
   if Mails.count > 0 then
     for i:=0 to Mails.count-1 do
     begin
-      //if length(Mails.GetItem(i).MessageUIDL)> 0 then
+      if length(Mails.GetItem(i).MessageUIDL)> 0 then
         TAccount(FAccounts.Accounts.Items[index]^).Mails.AddMail(Mails.GetItem(i));
       Application.ProcessMessages;
     end;
@@ -2126,14 +2194,15 @@ end;
 
 // retrieve infos from mail header
 
-procedure TFMailsInBox.GetMailInfos(CurName: String; var Mail: TMail; IdMsg: TIdMessage; siz: Integer);
+procedure TFMailsInBox.GetMailInfos(CurAcc: TAccount; var Mail: TMail; IdMsg: TIdMessage; siz: Integer);
 var
   sfrom: string;
 begin
   try
   sfrom:= IdMsg.From.Name;
   if length(sfrom)=0 then sfrom:= idMsg.From.Address;
-  Mail.AccountName:= CurName;
+  Mail.AccountName:= CurAcc.Name;
+  Mail.AccountUID:= CurAcc.UID;
   Mail.MessageFrom:= sfrom;
   Mail.FromAddress:= idMsg.From.Address;
   Mail.MessageUIDL:= idMsg.UID;
@@ -2156,7 +2225,7 @@ end;
 procedure TFMailsInBox.BtnImportClick(Sender: TObject);
 var
   i, j: integer;
-  s: string;
+  s, s1: string;
 begin
   with FImpex do
   begin
@@ -2174,8 +2243,9 @@ begin
       FAccounts.Accounts.DoSort;
       PopulateAccountsList(false);
       if j>1 then s:= sAccountsImported else s:= sAccountImported;
-      MsgDlg(Caption, Format(s, [j, CBAccType.Items[CBAccType.ItemIndex]]),
-        mtInformation, [mbOK], [OKBtn], 0);
+      s1:= Format(s, [j, CBAccType.Items[CBAccType.ItemIndex]]) ;
+      MsgDlg(Caption, s1, mtInformation, [mbOK], [OKBtn], 0);
+      LogAddLine(-1, now, s1);
     end;
   end;
 end;
@@ -2472,7 +2542,7 @@ begin
     sBtnLaunchClientDef:=ReadString(LangStr,'BtnLaunchClientDef', 'Lancer le client courrier');
     sBtnLaunchClientCust:=ReadString(LangStr,'BtnLaunchClientCust', 'Lancer %s');
     sDeleteAccount:=ReadString(LangStr,'DeleteAccount','Voulez-vous vraiment supprimer le compte %s ?');
-
+    sDatapath:=ReadString(LangStr,'DataPath','Répertoire de données du programme : %s');
 
     // About
     sNoLongerChkUpdates:=ReadString(LangStr,'NoLongerChkUpdates','Ne plus rechercher les mises à jour');

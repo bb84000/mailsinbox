@@ -4,7 +4,7 @@ program mailsinbox;
 
 uses
   {$IFDEF UNIX}{$IFDEF UseCThreads}
-  cthreads,
+  cthreads, cmem,
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
   Forms, indylaz, accounts1, settings1, lazbbabout,

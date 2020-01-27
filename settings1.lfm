@@ -1,7 +1,7 @@
 object FSettings: TFSettings
-  Left = 817
+  Left = 763
   Height = 327
-  Top = 299
+  Top = 146
   Width = 589
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
@@ -456,6 +456,15 @@ object FSettings: TFSettings
       AutoSize = False
       Caption = 'Ne pas afficher l''alerte d''arrêt du programme'
       TabOrder = 16
+    end
+    object CBDisplayAllAccMsgs: TCheckBox
+      Left = 300
+      Height = 19
+      Top = 132
+      Width = 280
+      AutoSize = False
+      Caption = 'Afficher les messages de tous les comptes'
+      TabOrder = 17
     end
   end
 end
