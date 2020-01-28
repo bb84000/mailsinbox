@@ -12,7 +12,8 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ExtCtrls, StdCtrls,
-  Buttons, laz2_DOM, laz2_XMLRead, laz2_XMLWrite, lazbbutils, registry, mailclients1, Types;
+  Buttons, laz2_DOM, laz2_XMLRead, laz2_XMLWrite, lazbbutils, registry, mailclients1,
+  Types, accounts1;
 
 type
 
@@ -60,7 +61,12 @@ type
     FVersion: String;
     FLastFires: TStringList;
     FNextFires: TstringList;
+    FMailSortDir: TSortDirections;
+    FMailSortTyp: TChampsCompare;
     function SaveItem(iNode: TDOMNode; sname, svalue: string): TDOMNode;
+    procedure SetMailSortTyp (Value: TChampsCompare);
+    procedure SetMailSortDir(Value: TSortDirections);
+
   public
 
     constructor Create (AppName: string);
@@ -125,6 +131,9 @@ type
     // separator is '|'
     property LastFires: TstringList read FLastFires write SetLastFires;
     property NextFires: TstringList read FNextFires write SetNextFires;
+    property MailSortTyp : TChampsCompare read FMailSortTyp write SetMailSortTyp default cdcNone;
+    property MailSortDir: TSortDirections read FMailSortDir write SetMailSortDir;
+
 end;
 
   { TFSettings }
@@ -387,6 +396,20 @@ begin
 end;
 
 
+procedure TConfig.SetMailSortDir(Value: TSortDirections);
+begin
+  if FMailSortDir=value then exit;
+  FMailSortDir:= Value;
+  if Assigned(FOnChange) then FOnChange(Self);
+end;
+
+procedure TConfig.SetMailSortTyp (Value: TChampsCompare);
+begin
+  if  FMailSortTyp= Value then exit;
+  FMailSortTyp:= Value;
+  if Assigned(FOnChange) then FOnChange(Self);
+end;
+
 function TConfig.SaveItem(iNode: TDOMNode; sname, svalue: string): TDOMNode;
 begin
   result:= iNode.OwnerDocument.CreateElement(sname);
@@ -424,6 +447,8 @@ begin
     iNode.AppendChild(SaveItem(iNode, 'mailclientname', FMailClientName));
     iNode.AppendChild(SaveItem(iNode, 'mailclientisurl', BoolToString(FMailClientIsUrl)));
     iNode.AppendChild(SaveItem(iNode, 'restart', BoolToString(FRestart)));
+    iNode.AppendChild(SaveItem(iNode, 'fmailsorttyp',InttoStr(Ord(FMailSortTyp))));
+    iNode.AppendChild(SaveItem(iNode, 'fmailsortdir',InttoStr(Ord(FMailSortDir))));
     jnode:= iNode.AppendChild(SaveItem(iNode, 'lastfires', ''));
     if FLastFires.count > 0 then
        for j:=0 to FLastFires.count-1 do jNode.AppendChild(SaveItem(jNode, 'lastfire', FLastFires.Strings[j]));  ;
@@ -504,6 +529,8 @@ begin
       if upCaseSetting = 'MAILCLIENTNAME' then FMailClientName:= s;
       if upCaseSetting = 'MAILCLIENTISURL' then FMailClientIsUrl:= StringToBool(s);
       if upCaseSetting = 'RESTART' then FRestart:= StringToBool(s);
+      if upCaseSetting = 'FMAILSORTTYP' then FMailSortTyp:= TChampsCompare(StringToInt(s));
+      if upCaseSetting = 'FMAILSORTDIR' then FMailSortDir:= TSortDirections(StringToInt(s));
       // parse child nodes
       if upCaseSetting = 'LASTFIRES' then
       begin

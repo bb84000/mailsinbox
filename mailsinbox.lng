@@ -62,7 +62,6 @@ ConnectToServer=%s: Connection on server %s
 ConnectedToServer=%s: Connected on server %s
 ConnectErrorMsg=Connection error: %s
 HeaderErrorMsg=Header retreival error: %s
-
 DisconnectServer=%s: Disconnection from server %s
 DisconnectedServer=%s: Disconnected from server %s
 AccountChanged=Account %s has been changed
@@ -90,13 +89,13 @@ ClosingProg=Closing Mails In Box
 SettingsChange=Settings changed
 MsgDeleted=%s : Message #%u deleted
 MsgNotDeleted=%s : Message #%u not deleted
-Bytes=Bytes
-KBytes=KBytes
-MBytes=MBytes
+Bytes=bytes
+KBytes=KB
+MBytes=MB
 NeverChecked= Not yet checked
 Use64bit=Use the 64bit version of the program
 DeleteAccount=The account %s will be deleted. Are you sure ?
-DataPath=Program data path: %s
+CannotGetNewVerList=Cannot get new versions list
 
 ;About
 Aboutbox.Caption=About Mails In Box
@@ -119,7 +118,6 @@ FAccounts.LUserName.Caption=Email identifiant
 FAccounts.LPassword.Caption=Password
 FAccounts.LEmail.Caption=Email address
 FAccounts.LColor.Caption=Color
-FAccounts.LMailClient.Caption=Email client
 FAccounts.LSound.Caption=Sound file
 FAccounts.LSSL.Caption=Security
 FAccounts.CBSSL.Items_0=None
@@ -131,9 +129,7 @@ FAccounts.LInterval.Caption=Interval
 FAccounts.CBShowPass.Caption=Show password
 FAccounts.LReply.Caption=Reply address
 FAccounts.CBEnabledAcc.Caption=Active account
-FAccounts.BtnMailClient.Hint=Click to select an email client
 FAccounts.LSoundFile.Caption=Sound file
-FAccounts.BtnPlaySound.Hint=Play selected sound file
 FAccounts.BtnSoundFile.Hint=Click to select a sound file
 
 ;Settings
@@ -153,6 +149,9 @@ FSettings.CBNoCloseAlert.Caption=Don't display hide window alert
 FSettings.CBNoQuitAlert.Caption=Don't display exit program alert
 FSettings.CBStartupCheck.Caption=Check mail on startup
 FSettings.LLangue.Caption=Language
+FSettings.LMailClient.Caption=Email client
+FSettings.BtnMailClient.Hint=Click to select an email client
+FSettings.BtnPlaySound.Hint=Play selected sound file
 FSettings.CBUrl.Hint=Check if it is a Web address (Url)
 FSettings.GMailWeb=GMail Web site
 FSettings.OutlookWeb=Outlook.com Web site
@@ -185,21 +184,37 @@ FImpex.xmlFilter=XML files|*.xml|All files|*.*
 FImpex.jsFilter=Javascript files|*.js|All files|*.*
 FImpex.sBtnAccFileHint=Clicl to open a %s settings file
 
-// Tray
+; Tray
 MnuRestore.Caption=Restore
 MnuMaximize.Caption=Maximize
 MnuMinimize.Caption=Minimize
 MnuQuit.Caption=Quit Mails In Box
 
+;Http error messages
+SErrInvalidProtocol=Invalid protocol "%s"
+SErrReadingSocket=Error reading data from socket
+SErrInvalidProtocolVersion=Invalid protocol version in response: %s
+SErrInvalidStatusCode=Invalid response status code: %s
+SErrUnexpectedResponse=Unexpected response status code: %s
+SErrChunkTooBig=Chunk too big
+SErrChunkLineEndMissing=Chunk line end missing
+SErrMaxRedirectsReached=Maximum allowed redirects reached: %s
+
+;Socket error messages
+strHostNotFound=Host name resolution for "%s" failed.
+strSocketCreationFailed=Creation of socket failed: %s
+strSocketBindFailed=Binding of socket failed: %s
+strSocketListenFailed=Listening on port #%s failed, error: %s
+strSocketConnectFailed=Connect to %s failed
+strSocketAcceptFailed=Could not accept a client connection on socket: %s, error %s
+strSocketAcceptWouldBlock=Accept would block on socket: %s
+strSocketIOTimeOut=Failed to set IO Timeout to %s
+strErrNoStream=Socket stream not assigned
+
 ;Français
 [fr]
 ;General
 Language=Français
-Caption=Courrier en attente
-OKBtn=OK
-YesBtn=Oui
-NoBtn=Non
-CancelBtn=Annuler
 
 ;Main form
 OpenProgram=Ouverture de Courrier en attente
@@ -277,12 +292,12 @@ SettingsChange=Configuration modifiée
 MsgDeleted=%s : Message #%u supprimé
 MsgNotDeleted=%s : Message #%u non supprimé
 Bytes=octets
-KBytes=Koctets
-MBytes=Moctets
+KBytes=Ko
+MBytes=Mo
 NeverChecked=Pas encore vérifié
 Use64bit=Utilisez la version 64 bits de ce programme
 DeleteAccount=Voulez-vous vraiment supprimer le compte %s ?
-DataPath=Répertoire de données du programme : %s
+CannotGetNewVerList=Liste des nouvelles versions indisponible
 
 ;About
 Aboutbox.Caption=A propos de Courrier en attente
@@ -304,7 +319,6 @@ FAccounts.LUserName.Caption=Identifiant courriel
 FAccounts.LPassword.Caption=Mot de passe
 FAccounts.LEmail.Caption=Adresse courriel
 FAccounts.LColor.Caption=Couleur
-FAccounts.LMailClient.Caption=Client courriel
 FAccounts.LSound.Caption=Fichier son
 FAccounts.LSSL.Caption=Sécurité
 FAccounts.CBSSL.Items_0=Aucune
@@ -316,9 +330,7 @@ FAccounts.LInterval.Caption=Intervalle
 FAccounts.CBShowPass.Caption=Montre le mot de passe
 FAccounts.LReply.Caption=Adresse de réponse
 FAccounts.CBEnabledAcc.Caption=Compte actif
-FAccounts.BtnMailClient.Hint=Cliquer pour sélectionner un client courriel
 FAccounts.LSoundFile.Caption=Fichier son
-FAccounts.BtnPlaySound.Hint=Ecouter le son sélectionné
 FAccounts.BtnSoundFile.Hint=Cliquer pour sélectionner un fichier son
 
 ;Settings
@@ -334,6 +346,9 @@ FSettings.CBSaveLogs.Caption=Conserver le journal du compte
 FSettings.CBNoChkNewVer.Caption.Caption=Ne pas rechercher de mise à jour
 FSettings.CBStartupCheck.Caption=Vérifier le courrier au démarrage
 FSettings.LLangue.Caption=Langue
+FSettings.LMailClient.Caption=Client courriel
+FSettings.BtnMailClient.Hint=Cliquer pour sélectionner un client courriel
+FSettings.BtnPlaySound.Hint=Ecouter le son sélectionné
 FSettings.CBSmallBtns.Caption=Petits boutons dans la barre de boutons
 FSettings.CBNotifications.Caption=Activer les notifications
 FSettings.CBUrl.Hint=Cocher s'il s'agit d'une adresse Web (Url)
@@ -370,10 +385,30 @@ FImpex.xmlFilter=Fichiers XML|*.xml|Tous les fichiers|*.*
 FImpex.jsFilter=Fichiers Javascript|*.js|Tous les fichiers|*.*
 FImpex.sBtnAccFileHint=Cliquer pour ouvrir un fichier de configuration %s
 
-// Tray
+; Tray
 MnuRestore.Caption=Restaurer
 MnuMaximize.Caption=Agrandir
 MnuMinimize.Caption=Réduire
 MnuQuit.Caption=Quitter Courriels en attente
 
+;Http error messages
+SErrInvalidProtocol=Protocole "%s" invalide
+SErrReadingSocket=Erreur de lecture des données à partir du socket
+SErrInvalidProtocolVersion=Version de protocole invalide en réponse: %s
+SErrInvalidStatusCode=Code de statut de réponse invalide: %s
+SErrUnexpectedResponse=Code de statut de réponse non prévu: %s
+SErrChunkTooBig=Bloc trop grand
+SErrChunkLineEndMissing=Fin de ligne du bloc manquante
+SErrMaxRedirectsReached=Nombre maximum de redirections atteint: %s
+
+;Socket error messages
+strHostNotFound=Résolution du nom d'hôte pour "%s" impossible.
+strSocketCreationFailed=Echec de la création du socket: %s
+strSocketBindFailed=Echec de liaison du socket: %s
+strSocketListenFailed=Echec de l'écoute sur le port n° %s, erreur %s
+strSocketConnectFailed=Echec de la connexion à %s
+strSocketAcceptFailed=Connexion refusée d'un client sur le socket: %s, erreur %s
+strSocketAcceptWouldBlock=La connexion pourrait bloquer le socket: %s
+strSocketIOTimeOut=Impossible de fixer le timeout E/S à %s
+strErrNoStream=Flux du socket non assigné
 

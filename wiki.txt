@@ -13,17 +13,18 @@ On first run, you must create new account(s), or import account from previous Ma
 
 The program can be run at windows start and minimized, click the Settings button.
 
-In regular conditions, **Mails In Bo**x can run minimized in the system tray.
+In regular conditions, **Mails In Box** can run minimized in the system tray.
 It can onbly be closed by right click on its icon and choose _Quit_, or in its main windows,
 with _Quit_ button.
 
 ### UNINSTALL
 Use control panel's program management system to uninstall the program.
+
 ### NOTICE
 **Mails In Box** software can be used fee of charge.
 Use the program at your own risks. Take care, mail delete on server is irreversible.
 OpenSSL license http://www.openssl.org .
-Outlook and Windows trademarks and logos are property of Microsoft Corporation, Thunderbird name and logo are property ogf Mozilla Fundation, and are represented to indocate the mail client launched by the program.
+Outlook and Windows trademarks and logos are property of Microsoft Corporation, Thunderbird name and logo are property of Mozilla Fundation, and are represented to indocate the mail client launched by the program.
 
 Sources (Windows and Linux) are available on [GitHub](https://github.com/bb84000/mailsinbox)
 

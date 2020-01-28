@@ -19,7 +19,7 @@ uses
 type
   TChampsCompare = (cdcNone, cdcName, cdcIndex, cdcAccountUID, cdcMessageDate, cdcMessageNum, cdcMessageSize, cdcMessageUIDL,
                         cdcMessageFrom, cdcMessageTo, cdcMessageSubject, cdcMessageContentType);
-  TSortDirections = (ascend, descend);
+  TSortDirections = (sdAscend, sdDescend);
   TProtocols = (ptcNone, ptcPOP3, ptcIMAP);
   TSaveType = (selection, all);
 
@@ -70,8 +70,9 @@ type
     //procedure SaveXML(FileName: String);
     procedure DoSort;
     property OnChange: TNotifyEvent read FOnChange write FOnChange;
-    Property SortType : TChampsCompare read FSortType write SetSortType default cdcMessageDate;
-    property SortDirection: TSortDirections read FSortDirection write SetSortDirection default ascend;
+    property SortType : TChampsCompare read FSortType write SetSortType default cdcNone;
+    property SortDirection: TSortDirections read FSortDirection write SetSortDirection;
+
   end;
 
   // Account record
@@ -146,7 +147,6 @@ type
   TFAccounts = class(TForm)
     BtnCancel: TBitBtn;
     BtnOK: TBitBtn;
-    BtnMailClient: TSpeedButton;
     CBEnabledAcc: TCheckBox;
     CBSecureAuth: TCheckBox;
     CBColorAcc: TColorBox;
@@ -155,7 +155,6 @@ type
     CBShowPass: TCheckBox;
     EEmail: TEdit;
     EInterval: TSpinEdit;
-    EMailCli: TEdit;
     EName: TEdit;
     EPassword: TEdit;
     EPort: TEdit;
@@ -168,7 +167,6 @@ type
     LEmail: TLabel;
     LHost: TLabel;
     LInterval: TLabel;
-    LMailClient: TLabel;
     LMin: TLabel;
     LPassword: TLabel;
     LPort: TLabel;
@@ -215,19 +213,17 @@ begin
   else result := -1;
 end;
 
-function CompareMultiMail(Item1, Item2: Pointer): Integer;
+function CompareMultiA(Item1, Item2: Pointer): Integer;
 var
-  Entry1, Entry2: PMail;
+  Entry1, Entry2: PAccount;
   R, J: integer;
   ResComp: array[TChampsCompare] of integer;
 begin
-  Entry1:= PMail(Item1);
-  Entry2:= PMail(Item2);
+  Entry1:= PAccount(Item1);
+  Entry2:= PAccount(Item2);
   ResComp[cdcNone]  := 0;
-  ResComp[cdcName]  := StringCompare(Entry1^.AccountName, Entry2^.AccountName);
-  ResComp[cdcIndex] := NumericCompare(Entry1^.AccountIndex, Entry2^.AccountIndex);
-  ResComp[cdcAccountUID] := NumericCompare(Entry1^.AccountUID, Entry2^.AccountUID);
-  ResComp[cdcMessageDate] := NumericCompare(Entry1^.MessageDate, Entry2^.MessageDate);
+  ResComp[cdcName]  := StringCompare(Entry1^.Name, Entry2^.Name);
+  ResComp[cdcIndex] := NumericCompare(Entry1^.Index, Entry2^.Index);
   R := 0;
   for J := 0 to 10 do
   begin
@@ -240,19 +236,23 @@ begin
   result :=  R;
 end;
 
-function CompareMultiAcc(Item1, Item2: Pointer): Integer;
+function CompareMultiM(Item1, Item2: Pointer): Integer;
 var
-  Entry1, Entry2: PAccount;
+  Entry1, Entry2: PMail;
   R, J: integer;
   ResComp: array[TChampsCompare] of integer;
 begin
-  Entry1:= PAccount(Item1);
-  Entry2:= PAccount(Item2);
+  Entry1:= PMail(Item1);
+  Entry2:= PMail(Item2);
   ResComp[cdcNone]  := 0;
-  ResComp[cdcName]  := StringCompare(Entry1^.Name, Entry2^.Name);
-  ResComp[cdcIndex] := NumericCompare(Entry1^.Index, Entry2^.Index);
-  //ResComp[cdcAccountUID] := NumericCompare(Entry1^.AccountUID, Entry2^.AccountUID);
-  //ResComp[cdcMessageDate] := NumericCompare(Entry1^.MessageDate, Entry2^.MessageDate);
+  ResComp[cdcName]  := StringCompare(Entry1^.AccountName, Entry2^.AccountName);
+  ResComp[cdcIndex] := NumericCompare(Entry1^.AccountIndex, Entry2^.AccountIndex);
+  ResComp[cdcAccountUID] := NumericCompare(Entry1^.AccountUID, Entry2^.AccountUID);
+  ResComp[cdcMessageDate] := NumericCompare(Entry1^.MessageDate, Entry2^.MessageDate);
+  ResComp[cdcMessageFrom] := StringCompare(Entry1^.MessageFrom, Entry2^.MessageFrom);
+  ResComp[cdcMessageTo] := StringCompare(Entry1^.MessageTo, Entry2^.MessageTo);
+  ResComp[cdcMessageSubject] := StringCompare(Entry1^.MessageSubject, Entry2^.MessageSubject);
+  ResComp[cdcMessageSize] := NumericCompare(Entry1^.MessageSize, Entry2^.MessageSize);
   R := 0;
   for J := 0 to 10 do
   begin
@@ -267,7 +267,7 @@ end;
 
 function CompareMultiDesc(Item1, Item2: Pointer): Integer;
 begin
-  result:=  -CompareMultiMail(Item1, Item2);
+  result:=  -CompareMultiM(Item1, Item2);
 end;
 
 { TMailsList }
@@ -275,7 +275,7 @@ end;
 procedure TMailsList.SetSortDirection(Value: TSortDirections);
 begin
   FSortDirection:= Value;
-  if FSortDirection = ascend then sort(@CompareMultiMail) else sort(@comparemultidesc);
+  if FSortDirection = sdAscend then sort(@CompareMultiM) else sort(@comparemultidesc);
 end;
 
 procedure TMailsList.SetSortType (Value: TChampsCompare);
@@ -382,8 +382,7 @@ begin
     ClesTri[1] := FSortType;
     //ClesTri[2] := cdcName;
     //ClesTri[3] := cdcDur;
-    if FSortDirection = ascend then sort(@comparemultiMail) else sort(@comparemultidesc);
-
+    sort(@comparemultiM);
   end;
 end;
 
@@ -518,7 +517,7 @@ begin
     ClesTri[1] := FSortType;
     //ClesTri[2] := cdcName;
     //ClesTri[3] := cdcDur;
-    sort(@CompareMultiAcc);
+    sort(@comparemultiA);
   end;
 end;
 
