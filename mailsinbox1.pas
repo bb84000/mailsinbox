@@ -1,6 +1,6 @@
 {******************************************************************************}
 { MailInBox main unit                                                          }
-{ bb - sdtp - january 2020                                                     }
+{ bb - sdtp - february 2020                                                     }
 { Check mails on pop3 and imap servers                                         }
 {******************************************************************************}
 
@@ -16,20 +16,26 @@ uses
   {$ENDIF} Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ExtCtrls,
   StdCtrls, Grids, ComCtrls, Buttons, Menus, IdPOP3, IdSSLOpenSSL, LCLIntf,
   IdExplicitTLSClientServerBase, IdMessage, IdIMAP4, accounts1, lazbbutils,
-  lazbbinifiles, lazbbosversion, LazUTF8, settings1, lazbbautostart, lazbbabout,
-  Impex1, mailclients1, uxtheme, Types, IdComponent, fptimer, RichMemo, variants,
-  IdMessageCollection, UniqueInstance, log1, registry, dateutils, strutils,
-  lazbbchknewver;
+  lazbbinifiles, lazbbosversion, LazUTF8, settings1, lazbbautostart,
+  lazbbabout, Impex1, mailclients1, uxtheme, Types, IdComponent, fptimer,
+  RichMemo, variants, IdMessageCollection, UniqueInstance, log1, registry,
+  dateutils, strutils, lazbbchknewver;
 
 type
   TSaveMode = (None, Setting, All);
   TBtnSize=(bzLarge, bzSmall, bzNone);
   TCloseMode = (cmHide, cmQuit);
   TFireMode = (fmLast, fmNext);
+  TBtnProps = record
+    Btn: TSpeedButton;
+    Bmp: TBitmap;
+    Enabled: Boolean;
+  end;
 
   { TFMailsInBox }
   TFMailsInBox = class(TForm)
     BtnAbout: TSpeedButton;
+    BtnHelp: TSpeedButton;
     BtnAddAcc: TSpeedButton;
     BtnDeleteAcc: TSpeedButton;
     BtnEditAcc: TSpeedButton;
@@ -50,13 +56,36 @@ type
     ILLargeBtns: TImageList;
     ILSmallBtns: TImageList;
     ILSGTitles: TImageList;
+    ILMainMnu: TImageList;
     ImgAccounts: TImageList;
     LNow: TLabel;
     LStatus: TLabel;
     LVAccounts: TListView;
-    MainMenu1: TMainMenu;
+    MainMnu: TMainMenu;
     MenuItem1: TMenuItem;
     MenuItem3: TMenuItem;
+    MenuItem4: TMenuItem;
+    MenuItem5: TMenuItem;
+    MMnuLog: TMenuItem;
+    MMnuAbout: TMenuItem;
+    MMnuHelp: TMenuItem;
+    MMnuEditAcc: TMenuItem;
+    MMnuAddAcc: TMenuItem;
+    MMnuSettings: TMenuItem;
+    MMnuGetAccMails: TMenuItem;
+    MMnuGetAllMails: TMenuItem;
+    MMnuPrefs: TMenuItem;
+    MMnuInfos: TMenuItem;
+    MMnuMails: TMenuItem;
+    MMnuDisplayBar: TMenuItem;
+    MMnuDisplayMenu: TMenuItem;
+    MMnuDisplay: TMenuItem;
+    MnuDisplayMenu: TMenuItem;
+    MnuDisplayBar: TMenuItem;
+    MMmnuQuit: TMenuItem;
+    MMnuLaunchClient: TMenuItem;
+    MMnuFile: TMenuItem;
+    MMnuImport: TMenuItem;
     MnuLaunchClient: TMenuItem;
     MnuDeleteAcc: TMenuItem;
     MnuEditAcc: TMenuItem;
@@ -85,6 +114,7 @@ type
     MnuAccount: TPopupMenu;
     MnuMails: TPopupMenu;
     MnuTray: TPopupMenu;
+    MnuButtonBar: TPopupMenu;
     RMInfos: TRichMemo;
     SplitterV: TSplitter;
     SplitterH: TSplitter;
@@ -97,6 +127,7 @@ type
     procedure BtnDeleteAccClick(Sender: TObject);
     procedure BtnGetAccMailClick(Sender: TObject);
     procedure BtnGetAllMailClick(Sender: TObject);
+    procedure BtnHelpClick(Sender: TObject);
     procedure BtnImportClick(Sender: TObject);
     procedure BtnLaunchClientClick(Sender: TObject);
     procedure BtnLogClick(Sender: TObject);
@@ -117,10 +148,15 @@ type
       const AStatusText: string);
     procedure LVAccountsSelectItem(Sender: TObject; Item: TListItem;
       Selected: Boolean);
-    procedure MnuAboutClick(Sender: TObject);
+    procedure MMnuClick(Sender: TObject);
+    procedure MMnuImportClick(Sender: TObject);
+    procedure MMnuPrefsClick(Sender: TObject);
     procedure MnuAccountPopup(Sender: TObject);
     procedure MnuAnswerMsgClick(Sender: TObject);
+    procedure MnuButtonBarPopup(Sender: TObject);
     procedure MnuDeleteMsgClick(Sender: TObject);
+    procedure MnuDisplayBarClick(Sender: TObject);
+    procedure MnuDisplayMenuClick(Sender: TObject);
     procedure MnuInfosClick(Sender: TObject);
     procedure MnuMailsPopup(Sender: TObject);
     procedure MnuMaximizeClick(Sender: TObject);
@@ -129,7 +165,6 @@ type
     procedure MnuQuitClick(Sender: TObject);
     procedure MnuRestoreClick(Sender: TObject);
     procedure MnuTrayPopup(Sender: TObject);
-    procedure TimeTimerTimer(Sender: TObject);
     procedure SGMailsBeforeSelection(Sender: TObject; aCol, aRow: Integer);
     procedure SGMailsClick(Sender: TObject);
     procedure SGMailsDrawCell(Sender: TObject; aCol, aRow: Integer;
@@ -146,7 +181,7 @@ type
     Initialized: boolean;
     OS, OSTarget, CRLF: string;
     CompileDateTime: TDateTime;
-    UserPath, MIBAppDataPath: string;
+    MIBAppDataPath: string;
     ProgName: string;
     LangStr: string;
     LangFile: TBbIniFile;
@@ -162,7 +197,7 @@ type
     sNoLongerChkUpdates, sLastUpdateSearch, sUpdateAvailable, sUpdateAlertBox: string;
     OKBtn, YesBtn, NoBtn, CancelBtn: string;
     sBtnLogHint, sBtnGetAccMailHint, sBtnDeleteHint, sBtnEditAccHint: string;
-    BmpArray: array of TBitmap;
+    BtnsArr : array of TBtnProps;
     sAccountImported, sAccountsImported: string;
     CheckingMail: boolean;
     SGHasFocus: boolean;
@@ -200,7 +235,6 @@ type
     StatusFmtSets: TFormatSettings;
     sMnuDelMsg, sMnuAnswerMsg: string;
     sAlertDelMmsg: string;
-    ClickCnt: integer;
     sBytes, sKBytes, SMBytes: string;
     AccountPictures, TrayPicture, MailPictures, LaunchPicture: TPicture;
     slLastFires, slNextFires: TStringList;
@@ -208,10 +242,11 @@ type
     sUse64bit: string;
     sBtnLaunchClientDef, sBtnLaunchClientCust: string;
     sDeleteAccount: string;
-    BtnsArr : array of TSpeedButton;
+    sPlsSelectAcc, sToDisplayLog, sToDeleteAcc, sToEditAcc: string;
     DisplayMails: TMailsList;
     HttpErrMsgNames: array [0..16] of string;
     sCannotGetNewVerList: string;
+
     procedure Initialize;
     procedure LoadCfgFile(filename: string);
     procedure SettingsOnChange(Sender: TObject);
@@ -238,6 +273,7 @@ type
     function GetFire(CurAcc: Taccount; mode: TFireMode): TDateTime;
     procedure SetFire(Curacc: TAccount; datim: TDateTime; mode: TFireMode);
     procedure InitButtons;
+    procedure CheckUpdate;
     function AccFromMail(rw: integer): Integer;
     procedure SortMails(CurCol: integer);
   public
@@ -259,14 +295,15 @@ Const
   glEditAccount= 7;
   glSettings= 8;
   glLog= 9;
-  glAbout= 10;
-  glQuit= 11;
-  glLaunchOutlook= 12;
-  glLaunchTbird= 13;
-  glLaunchGmail= 14;
-  glLaunchWin10mail= 15;
-  glLaunchOutlkcom= 16;
-  glLaunchCustom=17; // Future version, can choose image
+  glHelp= 10;
+  glAbout= 11;
+  glQuit= 12;
+  glLaunchOutlook= 13;
+  glLaunchTbird= 14;
+  glLaunchGmail= 15;
+  glLaunchWin10mail= 16;
+  glLaunchOutlkcom= 17;
+  glLaunchCustom=18; // Future version, can choose image
 
 var
   FMailsInBox: TFMailsInBox;
@@ -301,7 +338,7 @@ var
     RunRegKeyVal, RunRegKeySz: string;
   {$ENDIF}
   caClose: TCloseAction;
-begin
+ begin
   if not FSettings.Settings.Startup then
   begin
     FSettings.Settings.Restart:= true;
@@ -329,9 +366,23 @@ end;
 procedure TFMailsInBox.FormCreate(Sender: TObject);
 var
   s: string;
+    i: integer;
 begin
+  // Variables initialization
   CanClose:= false;
-  ClickCnt:= 0;
+  Initialized := False;
+  MainLog:= '';
+  CompileDateTime:= StringToTimeDate({$I %DATE%}+' '+{$I %TIME%}, 'yyyy/mm/dd hh:nn:ss');
+  OS := 'Unk';
+  ProgName := 'MailsInBox';
+  CheckingMail:= false;     // Mail checking process flag
+  iconized:= false;
+  // DateTime settings for status bar
+  StatusFmtSets:= DefaultFormatSettings ;
+  StatusFmtSets.ShortDateFormat:= DefaultFormatSettings.LongDateFormat;
+  // Intercept minimize system command
+  Application.OnMinimize:=@OnAppMinimize;
+  Application.OnQueryEndSession:= @OnQueryendSession;
   // Initialize check mail timer
   ChkMailTimer:= TFPTimer.Create(self);
   ChkMailTimer.Interval:= 100;
@@ -346,19 +397,14 @@ begin
   TimeTimer.Enabled:= true;
   TimeTimer.OnTimer:= @OnTimeTimer;
   TimeTimer.StartTimer;
-  // Intercept minimize system command
-  Application.OnMinimize:=@OnAppMinimize;
-  Application.OnQueryEndSession:= @OnQueryendSession;
   TrayTimerTick:=0;
   TrayTimerBmp:= TBitmap.Create;
   // Flag needed to execute once some processes in Form activation
-  Initialized := False;
-  MainLog:= '';
+  LangNums := TStringList.Create;
   SessionLog:= TStringList.Create;
-  CompileDateTime:= StringToTimeDate({$I %DATE%}+' '+{$I %TIME%}, 'yyyy/mm/dd hh:nn:ss');
-  OS := 'Unk';
-  UserPath := GetUserDir;
-  UserAppsDataPath := UserPath;
+  slLastFires:= TstringList.Create;
+  slNextFires:=TstringList.Create;
+  DisplayMails:= TMailsList.Create;
   {$IFDEF Linux}
     OS := 'Linux';
     CRLF := #10;
@@ -367,6 +413,7 @@ begin
     LangStr := Copy(LangStr, 0, 2);
     wxbitsrun := 0;
     OSTarget:= '';
+    UserAppsDataPath := GetUserDir;
     // Get mail client
   {$ENDIF}
   {$IFDEF WINDOWS}
@@ -387,7 +434,6 @@ begin
     {$ENDIF}
   {$ENDIF}
   GetSysInfo(OsInfo);
-  ProgName := 'MailsInBox';
   version := GetVersionInfo.ProductVersion;
   // Chargement des chaînes de langue...
   LangFile := TBbIniFile.Create(ExtractFilePath(Application.ExeName) + LowerCase(ProgName)+'.lng');
@@ -395,19 +441,9 @@ begin
   sOpenProgram:=LangFile.ReadString(LangStr,'OpenProgram','Ouverture de Courrier en attente');
   LogAddLine(-1, now, sOpenProgram+' - Version '+Version+ ' (' + OS + OSTarget + ')');
   LogAddLine(-1, now, OsInfo.VerDetail);
-  LangNums := TStringList.Create;
   MIBAppDataPath := UserAppsDataPath + PathDelim + ProgName + PathDelim;
   if not DirectoryExists(MIBAppDataPath) then CreateDir(MIBAppDataPath);
   LogFileName:= MIBAppDataPath+ProgName+'.log';
-  // Mail checking process flag
-  CheckingMail:= false;
-  iconized:= false;
-  // DateTime settings for status bar
-  StatusFmtSets:= DefaultFormatSettings ;
-  StatusFmtSets.ShortDateFormat:= DefaultFormatSettings.LongDateFormat;
-  slLastFires:= TstringList.Create;
-  slNextFires:=TstringList.Create;
-  DisplayMails:= TMailsList.Create;
 end;
 
 // Add a line to log file. quote char is '|' to preserve real double quotes in log
@@ -423,7 +459,12 @@ end;
 
 procedure TFMailsInBox.FormActivate(Sender: TObject);
 begin
-  Initialize;
+ if not Initialized then
+ begin
+   InitButtons;
+   Initialize;
+   CheckUpdate;
+ end;
 end;
 
 // populate menu imagelist from resource name(value is a string)
@@ -474,28 +515,54 @@ begin
   // Create the array of buttons in order we need to palce them in the bar
   // The order must meet the order for small buttons glyphs,
   // Change if we add or modify buttons;
-  SetLength(BtnsArr, 12);
-  BtnsArr[0]:= BtnImport;
-  BtnsArr[1]:= BtnAccountLog;
-  BtnsArr[2]:= BtnGetAllMail;
-  BtnsArr[3]:= BtnGetAccMail;
-  BtnsArr[4]:= BtnLaunchClient;
-  BtnsArr[5]:= BtnDeleteAcc;
-  BtnsArr[6]:= BtnAddAcc;
-  BtnsArr[7]:= BtnEditAcc;
-  BtnsArr[8]:= BtnSettings;
-  BtnsArr[9]:= BtnLog;
-  BtnsArr[10]:= BtnAbout;
-  BtnsArr[11]:= BtnQuit;
+  SetLength(BtnsArr, 13);
+  BtnsArr[glImport].Btn:= BtnImport;
+  BtnsArr[glAccountLog].Btn:= BtnAccountLog;
+  BtnsArr[glGetAllMail].Btn:= BtnGetAllMail;
+  BtnsArr[glGetAccMail].Btn:= BtnGetAccMail;
+  BtnsArr[glLaunchClient].Btn:= BtnLaunchClient;
+  BtnsArr[glDeleteAccount].Btn:= BtnDeleteAcc;
+  BtnsArr[glAddAccount].Btn:= BtnAddAcc;
+  BtnsArr[glEditAccount].Btn:= BtnEditAcc;
+  BtnsArr[glSettings].Btn:= BtnSettings;
+  BtnsArr[glLog].Btn:= BtnLog;
+  BtnsArr[glHelp].Btn:= BtnHelp;
+  BtnsArr[glAbout].Btn:= BtnAbout;
+  BtnsArr[glQuit].Btn:= BtnQuit;
+  // Initalise buttons record array
+  //SetLength(BmpArray, length(BtnsArr);
+  for i:=0 to PnlToolbar.ControlCount-1 do
+  begin
+   BtnsArr[i].Bmp:= TBitmap.create;
+   BtnsArr[i].Bmp.Assign(BtnsArr[i].Btn.Glyph);
+   BtnsArr[i].Enabled:= false;
+  end;
   // Large buttons. Copy buttons images in image list
   ILLargeBtns.clear;
-  for i:=0 to length(BtnsArr)-1 do ILLargeBtns.AddMasked(BtnsArr[i].Glyph, $FF00FF) ;
+  for i:=0 to length(BtnsArr)-1 do ILLargeBtns.AddMasked(BtnsArr[i].Btn.Glyph, $FF00FF) ;
   // Add mail clients defined images
   GetMnuImage(ILLargeBtns, 'LAUNCHOUTL', false);
   GetMnuImage(ILLargeBtns, 'LAUNCHTBIRD', false);
   GetMnuImage(ILLargeBtns, 'LAUNCHGMAIL', false);
   GetMnuImage(ILLargeBtns, 'LAUNCHWMAIL', false);
   GetMnuImage(ILLargeBtns, 'LAUNCHOUTLC', false);
+  // Main Menu images
+  GetMnuImage(ILMainMnu, glImport, true, ILSmallBtns);
+  GetMnuImage(ILMainMnu, glLaunchClient, true, ILSmallBtns);
+  GetMnuImage(ILMainMnu, glQuit, true, ILSmallBtns);
+  GetMnuImage(ILMainMnu, glGetAllMail, true, ILSmallBtns);
+  GetMnuImage(ILMainMnu, glGetAccMail, true, ILSmallBtns);
+  GetMnuImage(ILMainMnu, glSettings, true, ILSmallBtns);
+  GetMnuImage(ILMainMnu, glAddAccount, true, ILSmallBtns);
+  GetMnuImage(ILMainMnu, glEditAccount, true, ILSmallBtns);
+  GetMnuImage(ILMainMnu, glLog, true, ILSmallBtns);
+  GetMnuImage(ILMainMnu, glHelp, true, ILSmallBtns);
+  GetMnuImage(ILMainMnu, glAbout, true, ILSmallBtns);
+  GetMnuImage(ILMainMnu, glLaunchOutlook, true, ILSmallBtns);
+  GetMnuImage(ILMainMnu, glLaunchTbird, true, ILSmallBtns);
+  GetMnuImage(ILMainMnu, glLaunchGmail, true, ILSmallBtns);
+  GetMnuImage(ILMainMnu, glLaunchWin10mail, true, ILSmallBtns);
+  GetMnuImage(ILMainMnu, glLaunchOutlkcom, true, ILSmallBtns);
   // Add tray menu images
   ILMnuTray.Clear;
   GetMnuImage(ILMnuTray, 'RESTORE16');
@@ -526,7 +593,47 @@ begin
 
 end;
 
+procedure TFMailsInBox.CheckUpdate;
+var
+  errmsg: string;
+  sNewVer: string;
+  CurVer, NewVer: int64;
+  alertpos: TPosition;
+begin
+  //Dernière recherche il y a plus de 7 jours ?
+   errmsg := '';
+   if (Trunc(Now)>Trunc(FSettings.Settings.LastUpdChk+7)) and (not FSettings.Settings.NoChkNewVer) then
+   begin
+     FSettings.Settings.LastUpdChk := Trunc(Now);
+     sNewVer:= GetLastVersion(ChkVerURL, 'mailsinbox', errmsg);
+     if length(sNewVer)=0 then
+     begin
+       if length(errmsg)=0 then MsgDlg(Caption, sCannotGetNewVerList,
+           mtError,  [mbOK], [OKBtn])
+       else MsgDlg(Caption, TranslateHttpErrorMsg(errmsg, HttpErrMsgNames ),
+           mtError,  [mbOK], [OKBtn]);
+       exit;
+     end;
+     NewVer := VersionToInt(sNewVer);
+     // Cannot get new version
+     if NewVer < 0 then exit;
+     CurVer := VersionToInt(version);
+     if NewVer > CurVer then
+     begin
+       AboutBox.LUpdate.Caption := Format(sUpdateAvailable, [sNewVer]);
+       if not visible then alertpos:= poDesktopCenter
+       else alertpos:= poMainFormCenter;
+       Case AlertDlg(Caption, Format(sUpdateAlertBox,[version+LineEnding, sNewVer]), [OKBtn, CancelBtn, sNoLongerChkUpdates], true, mtInformation, alertpos) of
+         mrOK: OpenURL(Format(BaseUpdateURl, [version, FSettings.Settings.LangStr]));
+         mrAll: begin
+           FSettings.Settings.NoChkNewVer := true;
+           OpenURL(Format(BaseUpdateURl, [version, FSettings.Settings.LangStr]));
+         end;
+       end;
+     end;
+   end;
 
+end;
 
 // Initializing stuff
 
@@ -538,14 +645,9 @@ var
   tmplog: TstringList;
   CurAcc: TAccount;
   FilNamWoExt: string;
-  errmsg: string;
-  sNewVer: string;
-  CurVer, NewVer: int64;
-  alertpos: TPosition;
   curcol: integer;
 begin
   if initialized then exit;
-  InitButtons;
   // Mail list images
   AccountPictures:= TPicture.Create;
   AccountPictures.LoadFromResourceName(HInstance, 'ACCOUNT216');
@@ -556,7 +658,6 @@ begin
   TrayPicture.LoadFromResourceName(HInstance, 'MAIL16');
   // General pictures
   LaunchPicture:= Tpicture.Create;
-
   // Now, main settings
   FSettings.Settings.AppName:= LowerCase(ProgName);
   FAccounts.Accounts.AppName := LowerCase(ProgName);
@@ -646,13 +747,7 @@ begin
   UpdateInfos;
   // OS version in Settings dialog status line
   FSettings.LStatus.Caption := OsInfo.VerDetail;
-  //Save large buttons glyphs in an array
-  SetLength(BmpArray, PnlToolbar.ControlCount);
-  for i:=0 to PnlToolbar.ControlCount-1 do
-  begin
-    BmpArray[i]:= TBitmap.create;
-    BmpArray[i].Assign(TSpeedButton(PnlToolbar.Controls[i]).Glyph);
-  end;
+
   // set small buttons only if asked
   if FSettings.Settings.SmallBtns then SetSmallBtns(bzSmall)
   else SetSmallBtns(bzNone); // customize only launchmail button
@@ -687,38 +782,6 @@ begin
   end;
   SGMails.Columns[CurCol].Title.ImageIndex:= Ord(FSettings.Settings.MailSortDir)+1;
   Initialized:= true;
-  //Dernière recherche il y a plus de 7 jours ?
-   errmsg := '';
-   if (Trunc(Now)>Trunc(FSettings.Settings.LastUpdChk+7)) and (not FSettings.Settings.NoChkNewVer) then
-   begin
-     FSettings.Settings.LastUpdChk := Trunc(Now);
-     sNewVer:= GetLastVersion(ChkVerURL, 'mailsinbox', errmsg);
-     if length(sNewVer)=0 then
-     begin
-       if length(errmsg)=0 then MsgDlg(Caption, sCannotGetNewVerList,
-           mtError,  [mbOK], [OKBtn])
-       else MsgDlg(Caption, TranslateHttpErrorMsg(errmsg, HttpErrMsgNames ),
-           mtError,  [mbOK], [OKBtn]);
-       exit;
-     end;
-     NewVer := VersionToInt(sNewVer);
-     // Cannot get new version
-     if NewVer < 0 then exit;
-     CurVer := VersionToInt(version);
-     if NewVer > CurVer then
-     begin
-       AboutBox.LUpdate.Caption := Format(sUpdateAvailable, [sNewVer]);
-       if not visible then alertpos:= poDesktopCenter
-       else alertpos:= poMainFormCenter;
-       Case AlertDlg(Caption, Format(sUpdateAlertBox,[version+LineEnding, sNewVer]), [OKBtn, CancelBtn, sNoLongerChkUpdates], true, mtInformation, alertpos) of
-         mrOK: OpenURL(Format(BaseUpdateURl, [version, FSettings.Settings.LangStr]));
-         mrAll: begin
-           FSettings.Settings.NoChkNewVer := true;
-           OpenURL(Format(BaseUpdateURl, [version, FSettings.Settings.LangStr]));
-         end;
-       end;
-     end;
-   end;
 
 end;
 
@@ -785,11 +848,11 @@ begin
   if not (small=bzNone) then
     for i:=0 to length(BtnsArr)-1 do
     begin
-      BtnsArr[i].Height:= btnsiz;
-      BtnsArr[i].Width:= btnsiz;
-      BtnsArr[i].Left:= 10+(i)*(btnsiz+8);
-      if Small=bzSmall then ILSmallBtns.GetBitmap(i, BtnsArr[i].Glyph)
-      else ILLargeBtns.GetBitmap(i, BtnsArr[i].Glyph);
+      BtnsArr[i].Btn.Height:= btnsiz;
+      BtnsArr[i].Btn.Width:= btnsiz;
+      BtnsArr[i].Btn.Left:= 10+(i)*(btnsiz+8);
+      if Small=bzSmall then ILSmallBtns.GetBitmap(i, BtnsArr[i].Btn.Glyph)
+      else ILLargeBtns.GetBitmap(i, BtnsArr[i].Btn.Glyph);
     end;
   // customize mail client image
   if not FSEttings.Settings.SmallBtns then              // large buttons
@@ -837,6 +900,20 @@ begin
       end;
     except
     end;
+    // Display buttons bar and/or menu bar
+    if Settings.MenuBar then
+    begin
+      self.Menu:= MainMnu;
+    end else
+    begin
+      self.Menu:= nil;
+    end;
+    PnlToolbar.visible:= Settings.ButtonBar;
+    if not PnlToolbar.visible then self.Menu:= MainMnu;
+    MnuDisplayMenu.checked:= (self.Menu=MainMnu);
+    MMnuDisplayMenu.Checked:= MnuDisplayMenu.checked;
+    MnuDisplayBar.Checked:= PnlToolbar.visible;
+    MMnuDisplayBar.checked:= MnuDisplayBar.Checked;
     // Get columns width to use at application close
     sColumnswidth:='';
     For i:= 0 to 4 do  sColumnswidth:= sColumnswidth+IntToHex(self.SGMails.Columns [i].Width, 4);
@@ -1101,16 +1178,21 @@ var
   ndx: integer;
 begin
   ndx:= LVAccounts.ItemIndex;
-  if ndx <0 then exit;
+  if ndx <0 then
+  begin
+     ShowMessage(Format(sPlsSelectAcc, [sToEditAcc]));
+    exit;
+  end;
   with FAccounts do
   begin
-    if (TSpeedButton(Sender).Name='BtnAddAcc') then
+    if (TSpeedButton(Sender).Name='BtnAddAcc') or (TMenuItem(Sender).Name='MMnuAddAcc') then
     begin
       Account:= Default(TAccount);
       Account.UID:=0;
       Caption:= BtnAddAcc.Hint;
     end;
-    if ((TSpeedButton(Sender).Name='BtnEditAcc') or (TMenuItem(Sender).Name='MnuEditAcc')) and  (ndx>=0) then
+    if ((TSpeedButton(Sender).Name='BtnEditAcc') or (TMenuItem(Sender).Name='MnuEditAcc')
+         or (TMenuItem(Sender).Name='MMnuEditAcc')) and  (ndx>=0) then
     begin
       Account:= Accounts.GetItem(ndx);
       Caption:= BtnEditAcc.Hint;
@@ -1174,7 +1256,7 @@ begin
   if Assigned(TrayTimerBmp) then TrayTimerBmp.free;
   if Assigned(LangNums) then LangNums.free;
   if Assigned(LangFile) then LangFile.free;
-  for i:=0 to length(BmpArray)-1 do if Assigned(BmpArray[i]) then BmpArray[i].free;
+  for i:=0 to length(BtnsArr)-1 do if Assigned(BtnsArr[i].Bmp) then BtnsArr[i].Bmp.free;
   if Assigned(ChkMailTimer) then ChkMailTimer.Destroy;
   if Assigned(SessionLog) then SessionLog.free;
   if Assigned(AccountPictures) then AccountPictures.Free;
@@ -1266,12 +1348,57 @@ begin
   PopulateMailsList(ndx);
 end;
 
+procedure TFMailsInBox.MMnuClick(Sender: TObject);
+var
+  imgndx: integer;
+begin
+  imgndx:= 2;
+  MMnuImport.Caption:= BtnImport.Hint;
+  if MMnuImport.Enabled then MMnuImport.ImageIndex:= 0 else MMnuImport.ImageIndex:=1;
+  MMnuLaunchClient.Caption:= MnuLaunchClient.Caption;
+  MMmnuQuit.Caption:= MnuQuit.Caption;
+  if MMmnuQuit.Enabled then MMmnuQuit.ImageIndex:= 4 else MMmnuQuit.ImageIndex:= 5;
+  MMnuGetAllMails.Caption:= BtnGetAllMail.Hint;
+  if MMnuGetAllMails.Enabled then MMnuGetAllMails.ImageIndex:= 6 else MMnuGetAllMails.ImageIndex:= 7;
+  MMnuGetAccMails.Caption:= BtnGetAccMail.Hint;
+  if MMnuGetAccMails.Enabled then MMnuGetAccMails.ImageIndex:= 8 else MMnuGetAccMails.ImageIndex:= 9;
+  MMnuGetAccMails.Enabled:= BtnGetAccMail.Enabled;
+  MMnuSettings.Caption:= BtnSettings.Hint;
+  if MMnuSettings.Enabled then MMnuSettings.ImageIndex:= 10 else MMnuSettings.ImageIndex:= 11;
+  MMnuAddAcc.Caption:= BtnAddAcc.Hint;
+  if MMnuAddAcc.Enabled then MMnuAddAcc.ImageIndex:= 12 else MMnuAddAcc.ImageIndex:= 13;
+  MMnuEditAcc.Caption:= BtnEditAcc.Hint;
+  if MMnuEditAcc.Enabled then MMnuEditAcc.ImageIndex:= 14 else MMnuEditAcc.ImageIndex:= 15;
+   MMnuLog.Caption:= BtnLog.Hint;
+  if MMnuLog.Enabled then MMnuLog.ImageIndex:= 16 else MMnuLog.ImageIndex:= 17;
+  MMnuHelp.Caption:= BtnHelp.Hint;
+  if MMnuHelp.Enabled then MMnuHelp.ImageIndex:= 18 else MMnuHelp.ImageIndex:= 19;
+  MMnuAbout.Caption:= BtnAbout.Hint;
+  if MMnuAbout.Enabled then MMnuAbout.ImageIndex:= 20 else MMnuAbout.ImageIndex:= 21;
+    // Change images for mail client
+  if AnsiContainsText(FSettings.Settings.MailClientName, 'outlook') then imgndx:= 22;
+  if AnsiContainsText(FSettings.Settings.MailClientName, 'thunder') then imgndx:= 24;
+  if AnsiContainsText(FSettings.Settings.MailClientName, 'gmail') then imgndx:= 26;
+  if AnsiContainsText(FSettings.Settings.MailClientName, 'windows') then imgndx:= 28;
+  if AnsiContainsText(FSettings.Settings.MailClientName, 'outlook.com') then imgndx:= 30;
+  if MMnuLaunchClient.Enabled then MMnuLaunchClient.ImageIndex:=imgndx else MMnuLaunchClient.ImageIndex:=imgndx+1;
 
 
-procedure TFMailsInBox.MnuAboutClick(Sender: TObject);
+end;
+
+
+
+procedure TFMailsInBox.MMnuImportClick(Sender: TObject);
 begin
 
 end;
+
+procedure TFMailsInBox.MMnuPrefsClick(Sender: TObject);
+begin
+
+end;
+
+
 
 function TFMailsInBox.GetFire(CurAcc: Taccount; mode: TFireMode): TDateTime;
 var
@@ -1413,6 +1540,12 @@ begin
           '>?subject=re:'+DisplayMails.GetItem(mndx).MessageSubject);
 end;
 
+procedure TFMailsInBox.MnuButtonBarPopup(Sender: TObject);
+begin
+  MnuDisplayMenu.Caption:= MMnuDisplayMenu.Caption;
+  MnuDisplayBar.Caption:= MMnuDisplayBar.Caption;
+end;
+
 procedure TFMailsInBox.MnuDeleteMsgClick(Sender: TObject);
 var
   andx: integer;
@@ -1448,6 +1581,39 @@ begin
     PopulateMailsList(andx);
     //SGMails.Invalidate;
   end;
+end;
+
+procedure TFMailsInBox.MnuDisplayBarClick(Sender: TObject);
+begin
+  if TComponent(Sender)= MMnuDisplayBar then MnuDisplayBar.Checked:=  MMnuDisplayBar.Checked;
+  if TComponent(Sender)= MnuDisplayBar then MMnuDisplayBar.Checked:= MnuDisplayBar.Checked;
+  PnlToolbar.visible:= MnuDisplayBar.Checked;
+  if not PnlToolbar.visible then
+  begin
+     FMailsInBox.Menu:= MainMnu;
+     MnuDisplayMenu.checked:= true;
+     MMnuDisplayMenu.Checked:= true;
+     Fsettings.Settings.MenuBar:= true;
+  end;
+  Fsettings.Settings.ButtonBar:= PnlToolbar.visible;
+end;
+
+procedure TFMailsInBox.MnuDisplayMenuClick(Sender: TObject);
+begin
+  if TComponent(Sender)= MMnuDisplayMenu then MnuDisplayMenu.Checked:=  MMnuDisplayMenu.Checked;
+  if TComponent(Sender)= MnuDisplayMenu then MMnuDisplayMenu.Checked:= MnuDisplayMenu.Checked;
+  if MnuDisplayMenu.Checked then  FMailsInBox.Menu:= MainMnu else
+  begin
+    FMailsInBox.Menu:= nil;
+    if not PnlToolbar.visible then
+    begin
+      PnlToolbar.visible:= true;
+      Fsettings.Settings.ButtonBar:= true;
+      MnuDisplayBar.Checked:= true;
+      MMnuDisplayBar.Checked:= true;
+    end;
+  end;
+  Fsettings.Settings.MenuBar:=  not (FMailsInBox.Menu= nil);
 end;
 
 procedure TFMailsInBox.MnuInfosClick(Sender: TObject);
@@ -1587,10 +1753,7 @@ begin
   MnuLaunchClient.Caption:= BtnLaunchClient.Hint;
 end;
 
-procedure TFMailsInBox.TimeTimerTimer(Sender: TObject);
-begin
-  if ClickCnt=1 then ClickCnt:=0;
-end;
+
 
 procedure TFMailsInBox.SGMailsBeforeSelection(Sender: TObject; aCol,
   aRow: Integer);
@@ -1609,7 +1772,6 @@ var
   R: TRect;
   bmp: Tbitmap;
   bmppos: integer;
-  ndx: integer;
 begin
   if arow=0 then exit;
   // remove selection highlight if the control has not the focus
@@ -1672,7 +1834,7 @@ begin
   CurCol:=0;
   CurRow:=0;
   SGMails.MouseToCell(X, Y, CurCol, CurRow);
-  if SGMails.RowCount<2 then exit;
+  if (CurRow<0) or (CurCol<0) or (SGMails.RowCount<2) then exit;
   if Button = TMouseButton.mbRight then
   begin
     if visible then SGMails.SetFocus;
@@ -1729,6 +1891,8 @@ begin
     if ChkMailTimerTick > 5 then ChkMailTimerTick:=0;
   end;
 end;
+
+
 
 // Timer for time display (TFPTimer)
 
@@ -1867,7 +2031,11 @@ var
   ndx: Integer;
 begin
   ndx:= LVAccounts.ItemIndex;
-  if ndx<0 then exit;
+  if ndx<0 then
+  begin
+    ShowMessage(Format(sPlsSelectAcc, [sToDeleteAcc]));
+    exit;
+  end;
   if AlertDlg (Caption, Format(sDeleteAccount, [FAccounts.Accounts.GetItem(ndx).name]), [OKBtn, CancelBtn, sAlertBoxCBNoShowAlert], false, mtWarning)= mrOK then
  begin
    FAccounts.Accounts.Delete(ndx);
@@ -1904,6 +2072,11 @@ begin
   if visible then LVAccounts.SetFocus;
 end;
 
+procedure TFMailsInBox.BtnHelpClick(Sender: TObject);
+begin
+  OpenDocument('help'+PathDelim+ProgName+'.html');
+end;
+
 
 procedure TFMailsInBox.BtnGetAccMailClick(Sender: TObject);
 var
@@ -1935,15 +2108,18 @@ function TFMailsInBox.MailChecking(status: boolean): boolean;
 var
   ndx: integer;
 begin
+;
   ndx:= LVAccounts.ItemIndex;
   if ndx<0 then exit;
   CheckingMail:= status;
   EnableControls(not status);
   if status then
   begin
+    //Screen
+   // SGMails.Cursor:= crHourGlass;
+   // SGMails.BeginUpdate;
     ChkMailTimerTick:= 0;
     ChkMailTimer.StartTimer;
-    Screen.Cursor:= crHourGlass;
   end else
   begin
     ChkMailTimer.StopTimer;
@@ -1951,7 +2127,7 @@ begin
     ILTray.GetBitmap(TrayTimerTick, TrayTimerBmp);
     TrayMail.Icon.Assign(TrayTimerbmp);
     TrayMail.Hint:= sTrayHintNoMsg;
-    Screen.Cursor:= DefCursor;
+    //.. Screen.Cursor:= DefCursor;
   end;
   result:= status;
 end;
@@ -2367,12 +2543,18 @@ begin
   if FSettings.Settings.SaveLogs then logdoc.Text:= MainLog+SessionLog.text
   else logdoc.Text:= SessionLog.text;
   s:='';
-  CurAcc:= FAccounts.Accounts.GetItem(LVAccounts.ItemIndex);
   sendername:= UpperCase(Tcomponent(sender).name);
   if (sendername= 'BTNACCOUNTLOG') or (sendername= 'MNUACCOUNTLOG') then
   begin
     if LVAccounts.ItemIndex>=0 then
+    begin
+       CurAcc:= FAccounts.Accounts.GetItem(LVAccounts.ItemIndex);
        for i:= 0 to logdoc.Count- 1 do s:=s+parseline(logdoc.strings[i], IntToStr(Curacc.UID));
+    end else
+    begin
+      ShowMessage(Format(sPlsSelectAcc, [sToDisplayLog]));
+      exit;
+    end;
   end;
   if sendername= 'BTNLOG' then
   begin
@@ -2423,30 +2605,54 @@ end;
 // Display hourglass cursor
 
 procedure TFMailsInBox.EnableControls(Enable: boolean);
+var
+  i: integer;
 begin
+  if enable then
+  begin
+    PnlMails.Cursor:= crDefault;
+    PnlAccounts.Cursor:= crDefault;
+    for i:=0 to length(BtnsArr)-1 do BtnsArr[i].Btn.Enabled:=  BtnsArr[i].Enabled;
+  end else
+  begin
+   PnlMails.Cursor:= crHourGlass;
+   PnlAccounts.Cursor:= crHourGlass;
+   for i:=0 to length(BtnsArr)-1 do
+    begin
+      BtnsArr[i].Enabled:= BtnsArr[i].Btn.Enabled;
+      if (i=glHelp) or (i=glLaunchClient) then continue;
+      if BtnsArr[i].Btn.Enabled then BtnsArr[i].Btn.Enabled:= enable;
+    end;
+  end;
   LVAccounts.Enabled:= enable;
   SGMails.Enabled:= enable;
-  BtnImport.Enabled:= enable;
-  BtnAccountLog.Enabled:= enable;
-  MnuAccountLog.Enabled:= enable;
-  BtnLaunchClient.Enabled:= enable;
-  MnuLaunchClient.Enabled:= enable;
-  BtnGetAllMail.Enabled:= enable;
-  MnuGetAllMail.Enabled:= enable;
+  MnuAccountLog.Enabled:=BtnAccountLog.Enabled ;
+  MnuLaunchClient.Enabled:= BtnLaunchClient.Enabled;
+  MnuGetAllMail.Enabled:= BtnGetAllMail.Enabled;
   MnuDeleteMsg.Enabled:= Enable;
-  BtnGetAccMail.Enabled:= enable;
-  MnuGetAccMail.Enabled:= enable;
-  BtnDeleteAcc.Enabled:= enable;
-  MnuDeleteAcc.Enabled:= enable;
-  BtnAddAcc.Enabled:= enable;
-  BtnEditAcc.Enabled:= enable;
-  MnuEditAcc.Enabled:= enable;
-  BtnSettings.Enabled:= enable;
-  BtnLog.Enabled:= enable;
-  BtnAbout.Enabled:= enable;
-  BtnQuit.Enabled:= enable;
-  if enable then SCreen.Cursor:= DefCursor
-  else Screen.Cursor:= crHourGlass;
+  MnuGetAccMail.Enabled:= BtnGetAccMail.Enabled;
+  MnuDeleteAcc.Enabled:= BtnDeleteAcc.Enabled;
+  MMnuFile.enabled:= enable;
+  MMnuImport.Enabled:= BtnImport.Enabled;
+  MMnuLaunchClient.Enabled:= BtnLaunchClient.Enabled;
+  MMmnuQuit.Enabled:= BtnQuit.Enabled;
+  MMnuMails.Enabled:= enable;
+  MMnuGetAllMails.Enabled:= BtnGetAllMail.Enabled;
+  MMnuGetAccMails.Enabled:= BtnGetAccMail.Enabled;
+  MMnuDisplay.Enabled:= enable;
+  MMnuDisplayMenu.Enabled:= enable;
+  MMnuDisplayBar.Enabled:= enable;
+  MMnuPrefs.Enabled:= enable;
+  MMnuSettings.Enabled:= BtnSettings.Enabled;
+  MMnuAddAcc.Enabled:= BtnAddAcc.Enabled;
+  MMnuEditAcc.Enabled:= BtnEditAcc.Enabled;
+  MMnuLog.Enabled:= BtnLog.Enabled;
+  MMnuInfos.Enabled:= enable;
+  MMnuHelp.Enabled:= BtnHelp.Enabled ;
+  MMnuAbout.Enabled:= BtnAbout.Enabled;
+  MnuDisplayMenu.Enabled:= enable;
+  MnuDisplayBar.Enabled:= enable;
+
 end;
 
 // Draw a circle with messages count on the account and tray icon
@@ -2533,7 +2739,7 @@ begin
     sBtnEditAccHint:=ReadString(LangStr,'BtnEditAccHint','Modifier le compte %s');
     BtnSettings.Hint:=ReadString(LangStr,'BtnSettings.Hint',BtnSettings.Hint);
     BtnAbout.Hint:=ReadString(LangStr,'BtnAbout.Hint',BtnAbout.Hint);
-    //BtnClose.Hint:=Format(ReadString(LangStr,'BtnClose.Hint',BtnClose.Hint),[#10]);
+    BtnHelp.Hint:=ReadString(LangStr,'BtnHelp.Hint',BtnHelp.Hint);
     BtnQuit.Hint:=ReadString(LangStr,'BtnQuit.Hint',BtnQuit.Hint);
     SGMails.Columns[0].Title.Caption:=ReadString(LangStr,'SGMails.Columns_0.Title.Caption',SGMails.Columns[0].Title.Caption);
     SGMails.Columns[1].Title.Caption:=ReadString(LangStr,'SGMails.Columns_1.Title.Caption',SGMails.Columns[1].Title.Caption);
@@ -2601,13 +2807,25 @@ begin
     sBtnLaunchClientCust:=ReadString(LangStr,'BtnLaunchClientCust', 'Lancer %s');
     sDeleteAccount:=ReadString(LangStr,'DeleteAccount','Voulez-vous vraiment supprimer le compte %s ?');
     sCannotGetNewVerList:=ReadString(LangStr,'CannotGetNewVerList','Liste des nouvelles versions indisponible');
+    sPlsSelectAcc:=ReadString(LangStr,'PlsSelectAcc','Sélectionnez un compte pour %s');
+    sToDisplayLog:=ReadString(LangStr,'ToDisplayLog','pour pouvoir afficher son journal');
+    sToDeleteAcc:=ReadString(LangStr,'ToDeleteAcc','pour pouvoir le supprimer');
+    sToEditAcc:=ReadString(LangStr,'ToEditAcc','pour pouvoir le modifier');
+    // Main menu
+    MMnuFile.Caption:=ReadString(LangStr,'MMnuFile.Caption',MMnuFile.Caption);
+    MMnuMails.Caption:=ReadString(LangStr,'MMnuMails.Caption',MMnuMails.Caption);
+    MMnuDisplay.Caption:=ReadString(LangStr,'MMnuDisplay.Caption',MMnuDisplay.Caption);
+    MMnuDisplayMenu.Caption:=ReadString(LangStr,'MMnuDisplayMenu.Caption',MMnuDisplayMenu.Caption);
+    MMnuDisplayBar.Caption:=ReadString(LangStr,'MMnuDisplayBar.Caption',MMnuDisplayBar.Caption);
+    MMnuPrefs.Caption:=ReadString(LangStr,'MMnuPrefs.Caption', MMnuPrefs.Caption);
+    MMnuInfos.Caption:=ReadString(LangStr,'MMnuInfos.Caption',MMnuInfos.Caption);
 
     // About
     sNoLongerChkUpdates:=ReadString(LangStr,'NoLongerChkUpdates','Ne plus rechercher les mises à jour');
     sLastUpdateSearch:=ReadString(LangStr,'LastUpdateSearch','Dernière recherche de mise à jour');
     sUpdateAvailable:=ReadString(LangStr,'UpdateAvailable','Nouvelle version %s disponible');
     sUpdateAlertBox:=ReadString(LangStr,'UpdateAlertBox','Version actuelle: %sUne nouvelle version %s est disponible');
-    Aboutbox.Caption:=ReadString(LangStr,'Aboutbox.Caption','A propos du Gestionnaire de Contacts');
+    Aboutbox.Caption:=ReadString(LangStr,'Aboutbox.Caption','A propos de Courriels en attente');
     AboutBox.LUpdate.Caption:=ReadString(LangStr,'AboutBox.LUpdate.Caption','Recherche de mise à jour');
     AboutBox.UrlUpdate:=Format(BaseUpdateURl,[Version,LangStr]);
 

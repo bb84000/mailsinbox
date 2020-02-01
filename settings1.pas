@@ -63,6 +63,8 @@ type
     FNextFires: TstringList;
     FMailSortDir: TSortDirections;
     FMailSortTyp: TChampsCompare;
+    FButtonBar: Boolean;
+    FMenuBar: Boolean;
     function SaveItem(iNode: TDOMNode; sname, svalue: string): TDOMNode;
     procedure SetMailSortTyp (Value: TChampsCompare);
     procedure SetMailSortDir(Value: TSortDirections);
@@ -95,6 +97,9 @@ type
     procedure SetRestart(b: boolean);
     procedure SetLastFires(sl: TStringList);
     procedure SetNextFires(sl: TStringList);
+    procedure SetButtonBar(b: Boolean);
+    procedure SetMenuBar(b: Boolean);
+
     function saveXMLnode(iNode: TDOMNode): Boolean;
     function SaveToXMLfile(filename: string): Boolean;
     function LoadXMLNode(iNode: TDOMNode): Boolean;
@@ -133,7 +138,8 @@ type
     property NextFires: TstringList read FNextFires write SetNextFires;
     property MailSortTyp : TChampsCompare read FMailSortTyp write SetMailSortTyp default cdcNone;
     property MailSortDir: TSortDirections read FMailSortDir write SetMailSortDir;
-
+    property ButtonBar: Boolean read FButtonBar write SetButtonBar default true;
+    property MenuBar: Boolean read FMenuBar write SetMenuBar default false;
 end;
 
   { TFSettings }
@@ -410,6 +416,20 @@ begin
   if Assigned(FOnChange) then FOnChange(Self);
 end;
 
+procedure TConfig.SetButtonBar(b:boolean);
+begin
+  if FButtonBar=b then exit;
+  FButtonBar:= b;
+  if Assigned(FOnChange) then FOnChange(Self);
+end;
+
+procedure TConfig.SetMenuBar(b:boolean);
+begin
+  if FMenuBar=b then exit;
+  FMenuBar:= b;
+  if Assigned(FOnChange) then FOnChange(Self);
+end;
+
 function TConfig.SaveItem(iNode: TDOMNode; sname, svalue: string): TDOMNode;
 begin
   result:= iNode.OwnerDocument.CreateElement(sname);
@@ -447,8 +467,10 @@ begin
     iNode.AppendChild(SaveItem(iNode, 'mailclientname', FMailClientName));
     iNode.AppendChild(SaveItem(iNode, 'mailclientisurl', BoolToString(FMailClientIsUrl)));
     iNode.AppendChild(SaveItem(iNode, 'restart', BoolToString(FRestart)));
-    iNode.AppendChild(SaveItem(iNode, 'fmailsorttyp',InttoStr(Ord(FMailSortTyp))));
-    iNode.AppendChild(SaveItem(iNode, 'fmailsortdir',InttoStr(Ord(FMailSortDir))));
+    iNode.AppendChild(SaveItem(iNode, 'mailsorttyp',InttoStr(Ord(FMailSortTyp))));
+    iNode.AppendChild(SaveItem(iNode, 'mailsortdir',InttoStr(Ord(FMailSortDir))));
+    iNode.AppendChild(SaveItem(iNode, 'buttonbar', BoolToString(FButtonBar)));
+    iNode.AppendChild(SaveItem(iNode, 'menubar', BoolToString(FMenuBar)));
     jnode:= iNode.AppendChild(SaveItem(iNode, 'lastfires', ''));
     if FLastFires.count > 0 then
        for j:=0 to FLastFires.count-1 do jNode.AppendChild(SaveItem(jNode, 'lastfire', FLastFires.Strings[j]));  ;
@@ -529,8 +551,10 @@ begin
       if upCaseSetting = 'MAILCLIENTNAME' then FMailClientName:= s;
       if upCaseSetting = 'MAILCLIENTISURL' then FMailClientIsUrl:= StringToBool(s);
       if upCaseSetting = 'RESTART' then FRestart:= StringToBool(s);
-      if upCaseSetting = 'FMAILSORTTYP' then FMailSortTyp:= TChampsCompare(StringToInt(s));
-      if upCaseSetting = 'FMAILSORTDIR' then FMailSortDir:= TSortDirections(StringToInt(s));
+      if upCaseSetting = 'MAILSORTTYP' then FMailSortTyp:= TChampsCompare(StringToInt(s));
+      if upCaseSetting = 'MAILSORTDIR' then FMailSortDir:= TSortDirections(StringToInt(s));
+      if upCaseSetting = 'BUTTONBAR' then FButtonBar:= StringToBool(s);
+      if upCaseSetting = 'MENUBAR' then FMenuBar:= StringToBool(s);
       // parse child nodes
       if upCaseSetting = 'LASTFIRES' then
       begin

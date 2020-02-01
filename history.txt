@@ -93,4 +93,10 @@ Version 0.7.7.0 - 28/01/2020
 - Added mails sort features
 - Corrected french main form caption
 
+Version 0.7.8.0 - 01/02/2020
+- Some code optimization and simplification
+- Added help button and help file (html)
+- Added optinal menu bar (experimental)
+- Optimized management of buttons array, use a record of properties
+- Added warnings when no account is selected to display its log, delete it or edit it
 

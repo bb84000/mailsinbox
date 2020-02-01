@@ -7,7 +7,7 @@ uses
   cthreads,
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
-  Forms, indylaz, accounts1, settings1, lazbbabout,
+  Forms, lhelpcontrolpkg, indylaz, accounts1, settings1, lazbbabout,
   impex1, mailclients1, log1, mailsinbox1;
 
 {$R *.res}

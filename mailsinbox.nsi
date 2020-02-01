@@ -144,6 +144,7 @@ Section "" ;No components page, name is not important
   File "${source_dir}\mailsinbox.txt"
   File "${source_dir}\mailsinbox.lng"
   File "${source_dir}\mailsinbox.ini"
+  File /r "${source_dir}\help"
   Rename /REBOOTOK "$prg_to_inst" "$INSTDIR\mailsinbox.exe"
   Delete /REBOOTOK "$prg_to_del"
 
@@ -195,7 +196,7 @@ Delete "$INSTDIR\licensf.txt"
 Delete "$INSTDIR\license.txt"
 Delete "$INSTDIR\OpenSSL License.txt"
 Delete "$INSTDIR\uninst.exe"
-
+RMDir  "$INSTDIR\help"
 ; remove shortcuts, if any.
   Delete  "$SMPROGRAMS\mailsinbox\$(ProgramLnkStr)"
   Delete  "$SMPROGRAMS\mailsinbox\$(UninstLnkStr)"
