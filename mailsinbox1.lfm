@@ -2,10 +2,10 @@ object FMailsInBox: TFMailsInBox
   Left = 694
   Height = 476
   Top = 209
-  Width = 940
+  Width = 944
   Caption = 'FMailsInBox'
   ClientHeight = 476
-  ClientWidth = 940
+  ClientWidth = 944
   OnActivate = FormActivate
   OnChangeBounds = DoChangeBounds
   OnClose = FormClose
@@ -17,11 +17,11 @@ object FMailsInBox: TFMailsInBox
     Left = 0
     Height = 42
     Top = 0
-    Width = 940
+    Width = 944
     Align = alTop
     BevelInner = bvLowered
     ClientHeight = 42
-    ClientWidth = 940
+    ClientWidth = 944
     ParentShowHint = False
     PopupMenu = MnuButtonBar
     ShowHint = True
@@ -2074,17 +2074,17 @@ object FMailsInBox: TFMailsInBox
     Left = 0
     Height = 30
     Top = 446
-    Width = 940
+    Width = 944
     Align = alBottom
     BevelInner = bvLowered
     ClientHeight = 30
-    ClientWidth = 940
+    ClientWidth = 944
     TabOrder = 1
     object LStatus: TLabel
       Left = 8
       Height = 15
       Top = 8
-      Width = 568
+      Width = 544
       AutoSize = False
       ParentColor = False
     end
@@ -2200,17 +2200,17 @@ object FMailsInBox: TFMailsInBox
     Left = 223
     Height = 404
     Top = 42
-    Width = 717
+    Width = 721
     Align = alClient
     BevelInner = bvLowered
     ClientHeight = 404
-    ClientWidth = 717
+    ClientWidth = 721
     TabOrder = 4
     object SGMails: TStringGrid
       Left = 2
       Height = 400
       Top = 2
-      Width = 713
+      Width = 717
       Align = alClient
       Columns = <      
         item

@@ -100,3 +100,9 @@ Version 0.7.8.0 - 01/02/2020
 - Optimized management of buttons array, use a record of properties
 - Added warnings when no account is selected to display its log, delete it or edit it
 
+Version 0.7.8.1 - 03/02/2020
+- Added startup deletion in registry in uninstaller
+- Corrected exception bug in log display when log is empty
+- Change time display label position when window width change
+- Corrected mail list display when highligthed
+- Aded color indicator in To column of mails received

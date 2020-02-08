@@ -22,11 +22,11 @@ uses
   dateutils, strutils, lazbbchknewver;
 
 type
-  TSaveMode = (None, Setting, All);
-  TBtnSize=(bzLarge, bzSmall, bzNone);
-  TCloseMode = (cmHide, cmQuit);
-  TFireMode = (fmLast, fmNext);
-  TBtnProps = record
+  TSaveMode = (None, Setting, All);           // Save nothing, only settings, settings and accounts
+  TBtnSize=(bzLarge, bzSmall, bzNone);        // Large buttons, Small buttons, boting
+  TCloseMode = (cmHide, cmQuit);              // Hide window, close application
+  TFireMode = (fmLast, fmNext);               // last check, next chack
+  TBtnProps = record                          // Element of buttoons array to remember its state and glyph
     Btn: TSpeedButton;
     Bmp: TBitmap;
     Enabled: Boolean;
@@ -201,7 +201,6 @@ type
     sAccountImported, sAccountsImported: string;
     CheckingMail: boolean;
     SGHasFocus: boolean;
-    DefCursor: TCursor;
     sMsgFound, sMsgsFound: string;
     ChkMailTimer: TFPTimer;
     TimeTimer: TFPTimer;
@@ -246,9 +245,8 @@ type
     DisplayMails: TMailsList;
     HttpErrMsgNames: array [0..16] of string;
     sCannotGetNewVerList: string;
-
     procedure Initialize;
-    procedure LoadCfgFile(filename: string);
+    procedure LoadCfgFiles(SettsFilename, AccsFilename: string);
     procedure SettingsOnChange(Sender: TObject);
     procedure SettingsOnStateChange(Sender: TObject);
     procedure SettingsOnQuitAlertChange(Sender:Tobject);
@@ -283,7 +281,7 @@ type
 
   // Button glyphs constants
   // to better document code. Need change if add buttons and glyphs
-  // Buttons and glypg order must match
+  // Use to be sure buttons and glyphs match
 Const
   glImport= 0;
   glAccountLog= 1;
@@ -366,7 +364,6 @@ end;
 procedure TFMailsInBox.FormCreate(Sender: TObject);
 var
   s: string;
-    i: integer;
 begin
   // Variables initialization
   CanClose:= false;
@@ -512,7 +509,7 @@ procedure TFMailsInBox.InitButtons;
 var
   i: integer;
 begin
-  // Create the array of buttons in order we need to palce them in the bar
+  // Create the array of buttons in order we need to place them in the bar
   // The order must meet the order for small buttons glyphs,
   // Change if we add or modify buttons;
   SetLength(BtnsArr, 13);
@@ -530,8 +527,7 @@ begin
   BtnsArr[glAbout].Btn:= BtnAbout;
   BtnsArr[glQuit].Btn:= BtnQuit;
   // Initalise buttons record array
-  //SetLength(BmpArray, length(BtnsArr);
-  for i:=0 to PnlToolbar.ControlCount-1 do
+  for i:=0 to length(BtnsArr)-1 do
   begin
    BtnsArr[i].Bmp:= TBitmap.create;
    BtnsArr[i].Bmp.Assign(BtnsArr[i].Btn.Glyph);
@@ -632,7 +628,6 @@ begin
        end;
      end;
    end;
-
 end;
 
 // Initializing stuff
@@ -690,7 +685,7 @@ begin
   ChkVerURL := IniFile.ReadString('urls', 'ChkVerURL',
     'https://www.sdtp.com/versions/versions.csv');
   if Assigned(IniFile) then IniFile.free;
-  LoadCfgFile(ConfigFileName);
+  LoadCfgFiles(ConfigFileName, AccountsFileName);
   Application.Title:=Caption;
   if (OSINfo.Architecture = 'x86_64') and (OsTarget = '32 bits') then
      MsgDlg(Caption, sUse64bit, mtInformation,  [mbOK], [OKBtn]);
@@ -782,7 +777,6 @@ begin
   end;
   SGMails.Columns[CurCol].Title.ImageIndex:= Ord(FSettings.Settings.MailSortDir)+1;
   Initialized:= true;
-
 end;
 
 // Change BtnQuit behaviour: one click if alert enabled,
@@ -818,6 +812,8 @@ end;
 
 procedure TFMailsInBox.DoChangeBounds(Sender: TObject);
 begin
+  // Change time display label position when window width change
+  if Sender= self then LNow.left:= Clientwidth-LNow.width-10;
   SettingsChanged:= FSettings.Settings.SavSizePos;
 end;
 
@@ -870,7 +866,8 @@ end;
 
 // Load configuration and database from file
 
-procedure TFMailsInBox.LoadCfgFile(filename: string);
+//procedure TFMailsInBox.LoadCfgFile(filename: string);
+procedure TFMailsInBox.LoadCfgFiles(SettsFilename, AccsFilename: string);
 var
   winstate: TWindowState;
   i: integer;
@@ -878,7 +875,7 @@ begin
   with FSettings do
   begin
     LogAddLine(-1, now, sLoadConf);
-    Settings.LoadXMLFile(ConfigFileName);
+    Settings.LoadXMLFile(SettsFilename);
     if Settings.SavSizePos then
     try
       WinState := TWindowState(StrToInt('$' + Copy(Settings.WState, 1, 4)));
@@ -941,7 +938,7 @@ begin
   Modlangue;
   LogAddLine(-1, now, sLoadingAccounts);
   FAccounts.Accounts.Reset;
-  FAccounts.Accounts.LoadXMLfile(AccountsFileName);
+  FAccounts.Accounts.LoadXMLfile(AccsFilename);
   SettingsChanged := false;
 end;
 
@@ -1579,7 +1576,6 @@ begin
       TAccount(FAccounts.Accounts.Items[andx]^).UIDLToDel[uid2del]:= CurAcc.Mails.GetItem(amndx).MessageUIDL;
     end;
     PopulateMailsList(andx);
-    //SGMails.Invalidate;
   end;
 end;
 
@@ -1628,7 +1624,6 @@ begin
   s:= SGMails.Columns[0].Title.Caption+': ';
   if length(Mail.MessageFrom)>0 then s:=s+Mail.MessageFrom+' ';
   s:=s+'('+mail.FromAddress+')'+LineEnding;
-  //s:=s+SGMails.Columns[1].Title.Caption+': '+FAccounts.Accounts.GetItem(andx).Name+' ('+Mail.ToAddress+')'+LineEnding;
   s:=s+SGMails.Columns[1].Title.Caption+': '+Mail.AccountName+' ('+Mail.ToAddress+')'+LineEnding;
   s:=s+SGMails.Columns[2].Title.Caption+': '+Mail.MessageSubject+LineEnding;
   s:=s+SGMails.Columns[3].Title.Caption+': '+SGMails.Cells[3,SGMails.row]+LineEnding;
@@ -1660,10 +1655,8 @@ var
   Subj: string;
   ndx: integer;
 begin
-  //ndx:= LVAccounts.ItemIndex;
   ndx:= AccFromMail(SGMails.row);
   if ndx<0 then exit;
-  // Subj:= Copy(CurAcc.Mails.GetItem(SGMails.row-1).MessageSubject,1, 15)+'...';
   Subj:= Copy(DisplayMails.GetItem(SGMails.row-1).MessageSubject,1, 15)+'...';
   MnuDeleteMsg.Caption:= Format(sMnuDelMsg, [Subj]);
   MnuAnswerMsg.Caption:= Format(sMnuAnswerMsg, [Subj]);
@@ -1772,6 +1765,8 @@ var
   R: TRect;
   bmp: Tbitmap;
   bmppos: integer;
+  AccNdx: integer;
+  AccCol: TColor;
 begin
   if arow=0 then exit;
   // remove selection highlight if the control has not the focus
@@ -1780,30 +1775,45 @@ begin
     SGMails.Canvas.Brush.Color := clWindow;
     SGMails.Canvas.FillRect (ARect);
     SGMails.Canvas.font.Color:= clDefault;  ;
-  end;
-  // Add mail image
-  if acol=0 then
-  begin
-    bmppos:= 0;
-    R.Left:= ARect.Left+2;
-    R.Top:= ARect.Top+2;
-    R.Right:=R.Left+18;
-    R.Bottom:=R.Top+16;
-    Bmp:= Tbitmap.Create;
-    if DisplayMails.GetItem(aRow-1).MessageNew then
-     bmppos:= 1;
-    if Pos ('multipart', DisplayMails.GetItem(aRow-1).MessageContentType) >0 then
-       bmppos:= bmppos+2;
-    if DisplayMails.GetItem(aRow-1).MessageToDelete then
-       bmppos:= 4;
-    CropBitmap(MailPictures.Bitmap, bmp, bmppos );
-    SGMails.Canvas.StretchDraw(R, bmp);
-    bmp.free;
-    SGMails.Canvas.TextOut(ARect.Left+22,ARect.Top+3, SGMails.Cells[aCol, aRow]);
   end else
   begin
-    SGMails.Canvas.TextOut(ARect.Left+2,ARect.Top+3, SGMails.Cells[aCol, aRow]);
+   SGMails.Canvas.Brush.Color := clHighlight;
+   SGMails.Canvas.FillRect (ARect);
+   SGMails.Canvas.font.Color:= clHighlightText;
   end;
+  // Get curent account color
+  AccNdx:=DisplayMails.GetItem(aRow-1).AccountIndex;
+  if (AccNdx>=0) and (AccNdx<FAccounts.Accounts.Count)
+  then AccCol:= FAccounts.Accounts.GetItem(AccNdx).Color
+  else AccCol:= $FFFFFF;
+  // Add mail image
+  Case acol of
+    0: begin
+         bmppos:= 0;
+         R.Left:= ARect.Left+2;
+         R.Top:= ARect.Top+2;
+         R.Right:=R.Left+18;
+         R.Bottom:=R.Top+16;
+         Bmp:= Tbitmap.Create;
+         if DisplayMails.GetItem(aRow-1).MessageNew then bmppos:= 1;
+         if Pos ('multipart', DisplayMails.GetItem(aRow-1).MessageContentType) >0 then
+           bmppos:= bmppos+2;
+         if DisplayMails.GetItem(aRow-1).MessageToDelete then bmppos:= 4;
+         CropBitmap(MailPictures.Bitmap, bmp, bmppos );
+         SGMails.Canvas.StretchDraw(R, bmp);
+         bmp.free;
+         SGMails.Canvas.TextOut(ARect.Left+22,ARect.Top+3, SGMails.Cells[aCol, aRow]);
+      end;
+    1: begin
+        SGMails.Canvas.Brush.Color := AccCol;
+        SGMails.Canvas.Ellipse(Arect.Left,Arect.Top+5,Arect.Left+11, Arect.Top+16 );
+        if SGHasFocus then SGMails.Canvas.Brush.Color := clHighlight
+        else SGMails.Canvas.Brush.Color:= clWindow;
+        SGMails.Canvas.TextOut(ARect.Left+13,ARect.Top+3, SGMails.Cells[aCol, aRow]);
+       end
+    else SGMails.Canvas.TextOut(ARect.Left+2,ARect.Top+3, SGMails.Cells[aCol, aRow]);
+  end;
+
 end;
 
 // 3 next Procedures to remove selection highlight when the list has not the focus
@@ -1886,7 +1896,7 @@ procedure TFMailsInBox.OnChkMailTimer(Sender: TObject);
 begin
   if CheckingMail then
   begin;
-    TrayMail.Icon.LoadFromResourceName(HINSTANCE, 'XATT'+(InttoStr(ChkMailTimerTick)));
+    TrayMail.Icon.LoadFromResourceID(HINSTANCE, ChkMailTimerTick);
     inc (ChkMailTimerTick);
     if ChkMailTimerTick > 5 then ChkMailTimerTick:=0;
   end;
@@ -2520,28 +2530,39 @@ end;
 procedure TFMailsInBox.BtnLogClick(Sender: TObject);
 var
   Curacc:TAccount;
-  logdoc: TStringList;
+  LogDoc: TStringList;
   i: integer;
   s: string;
   sendername: string;
-  // parse function
+  LogText: string;
+  // parse function filter : account uid
   function parseline(st:String; filter: string=''):String;
   var
     A:TStringArray;
   begin
+    result:= '';
     A:= st.Split('|');
-    if pos('**', A[2]) >0 then
-    result:= A[2]+#10 else
-    if filter='' then result:= A[1]+' - '+A[2]+#10
+    if length(A)<3 then exit;   // must have 3 parts, avoid error if line is incomplete or empty
+    if pos('**', A[2]) >0 then result:= A[2]+LineEnding      // separation line
     else
     begin
-      if A[0]=filter then result:= A[1]+' - '+A[2]+#10 else result:='';
-    end  ;
+      if filter='' then
+      begin
+        result:= A[1]+' - '+A[2]+LineEnding;
+      end else
+      begin
+        if A[0]=filter then result:= A[1]+' - '+A[2]+LineEnding else result:='';
+      end;
+    end;
   end;
+  // End of parse function
 begin
-  logdoc:= TstringList.Create;
-  if FSettings.Settings.SaveLogs then logdoc.Text:= MainLog+SessionLog.text
-  else logdoc.Text:= SessionLog.text;
+  // Concatenate with previous log if exists
+  if FSettings.Settings.SaveLogs then LogText:= MainLog+SessionLog.text
+  else LogText:= SessionLog.text;
+  if Length(LogText)=0 then exit;
+  LogDoc:= TstringList.Create;
+  LogDoc.text:= LogText;
   s:='';
   sendername:= UpperCase(Tcomponent(sender).name);
   if (sendername= 'BTNACCOUNTLOG') or (sendername= 'MNUACCOUNTLOG') then
@@ -2570,6 +2591,7 @@ begin
     RMLog.Sellength:=0;
     showmodal;
   end;
+  if Assigned(LogDoc) then LogDoc.free;
 end;
 
 // Quit button click.

@@ -207,8 +207,12 @@ RMDir  "$INSTDIR\help"
   RMDir "$SMPROGRAMS\mailsinbox"
   RMDir "$INSTDIR"
 
+; Remove installed keys
 DeleteRegKey HKCU "Software\SDTP\mailsinbox"
 DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\mailsinbox"
+; remove also autostart settings if any
+DeleteRegKey HKCU "Software\Microsoft\Windows\CurentVersion\Run\MailsInBox"
+DeleteRegKey HKCU "Software\Microsoft\Windows\CurrentVersion\RunOnce\MailsInBox"
 
 SectionEnd ; end of uninstall section
 

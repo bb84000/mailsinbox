@@ -1,12 +1,12 @@
 // Icones (doivent être placées alphabétiquement après MAINICON
 
-TRAYICON      ICON "images\\trayicon.ico"
-XATT0         ICON "images\\getmail0.ico"
-XATT1         ICON "images\\getmail1.ico"
-XATT2         ICON "images\\getmail2.ico"
-XATT3         ICON "images\\getmail3.ico"
-XATT4         ICON "images\\getmail4.ico"
-XATT5         ICON "images\\getmail5.ico"
+TRAYICON  ICON "images\\trayicon.ico"
+0         ICON "images\\getmail0.ico"
+1         ICON "images\\getmail1.ico"
+2         ICON "images\\getmail2.ico"
+3         ICON "images\\getmail3.ico"
+4         ICON "images\\getmail4.ico"
+5         ICON "images\\getmail5.ico"
 
 // general images
 ACCOUNT216    RCDATA "images\\account216.png"
