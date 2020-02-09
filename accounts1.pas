@@ -731,7 +731,7 @@ begin
   AccountsNode:= RootNode.FindNode('accounts');
   if AccountsNode <> nil then RootNode.RemoveChild(AccountsNode);
   AccountsNode:= AccountsXML.CreateElement('accounts');
-  if Count > 0 then
+  //if Count > 0 then                           // Prevents first creation of file !!!
   begin
     SaveToXMLnode(AccountsNode);
     RootNode.Appendchild(AccountsNode);

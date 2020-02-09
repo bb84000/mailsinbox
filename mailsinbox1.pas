@@ -432,6 +432,7 @@ begin
   {$ENDIF}
   GetSysInfo(OsInfo);
   version := GetVersionInfo.ProductVersion;
+
   // Chargement des chaînes de langue...
   LangFile := TBbIniFile.Create(ExtractFilePath(Application.ExeName) + LowerCase(ProgName)+'.lng');
   // Cannot call Modlang as components are not yet created, use default language
@@ -656,9 +657,15 @@ begin
   // Now, main settings
   FSettings.Settings.AppName:= LowerCase(ProgName);
   FAccounts.Accounts.AppName := LowerCase(ProgName);
-  ConfigFileName:= MIBAppDataPath + ProgName + '_settings.xml';
-  AccountsFileName:= MIBAppDataPath + ProgName + '_accounts.xml';
+  ConfigFileName:= MIBAppDataPath+'settings.xml';
+  AccountsFileName:= MIBAppDataPath+'accounts.xml';
+  FSettings.Settings.LangStr:= LangStr;
   ModLangue;
+  //   PnlToolbar.visible:= true;
+  FSettings.Settings.ButtonBar:= true;
+
+
+
   if not FileExists(AccountsFileName) then
   begin
     FilNamWoExt:= TrimFileExt(AccountsFileName);
@@ -685,6 +692,7 @@ begin
   ChkVerURL := IniFile.ReadString('urls', 'ChkVerURL',
     'https://www.sdtp.com/versions/versions.csv');
   if Assigned(IniFile) then IniFile.free;
+
   LoadCfgFiles(ConfigFileName, AccountsFileName);
   Application.Title:=Caption;
   if (OSINfo.Architecture = 'x86_64') and (OsTarget = '32 bits') then
@@ -754,7 +762,7 @@ begin
   if length(FSettings.Settings.MailClient)=0 then
   begin
     FSettings.Settings.MailClient:= defmailcli;
-    BtnSettingsClick(self);
+    //BtnSettingsClick(self);
   end;
   LogAddLine(-1, now, 'Mail Client: '+FSettings.Settings.MailClientName);
   // TStringgrid MousetoCell give cell nearest the mouse click if
@@ -919,6 +927,8 @@ begin
     if Settings.LangStr = '' then Settings.LangStr := LangStr;
     LangFile.ReadSections(LangNums);
     if LangNums.Count > 1 then
+    begin
+      CBLangue.Clear;;
       for i := 0 to LangNums.Count - 1 do
       begin
         FSettings.CBLangue.Items.Add(LangFile.ReadString(LangNums.Strings[i], 'Language',
@@ -929,6 +939,9 @@ begin
           FSettings.CBLangue.ItemIndex:= i;
         end;
       end;
+    end;
+
+
     // Si la langue n'est pas traduite, alors on passe en Anglais
     if not LangFound then
     begin
@@ -1034,7 +1047,7 @@ begin
         For i:= 4 downto 0
         do if FileExists (FilNamWoExt+'.bk'+IntToStr(i))     // Renomme les précédentes si elles existent
            then  RenameFile(FilNamWoExt+'.bk'+IntToStr(i), FilNamWoExt+'.bk'+IntToStr(i+1));
-        RenameFile(ConfigFileName, FilNamWoExt+'.bk0');
+        RenameFile(AccountsFileName, FilNamWoExt+'.bk0');
         FAccounts.Accounts.SaveToXMLfile(AccountsFileName);
       end;
       // la base n'a pas changé, on ne fait pas de backup
@@ -1042,6 +1055,11 @@ begin
     end else
     begin
       FAccounts.Accounts.SaveToXMLfile(AccountsFileName);
+
+
+
+
+
       settings.SaveToXMLfile(ConfigFileName); ;
     end;
     result:= true;
@@ -1770,16 +1788,17 @@ var
 begin
   if arow=0 then exit;
   // remove selection highlight if the control has not the focus
-  if not SGHasFocus then
-  begin
-    SGMails.Canvas.Brush.Color := clWindow;
-    SGMails.Canvas.FillRect (ARect);
-    SGMails.Canvas.font.Color:= clDefault;  ;
-  end else
+  //if not SGHasFocus then
+  if SGMails.IsCellSelected[acol, arow] then
   begin
    SGMails.Canvas.Brush.Color := clHighlight;
    SGMails.Canvas.FillRect (ARect);
    SGMails.Canvas.font.Color:= clHighlightText;
+  end else
+  begin
+    SGMails.Canvas.Brush.Color := clWindow;
+    SGMails.Canvas.FillRect (ARect);
+    SGMails.Canvas.font.Color:= clDefault;  ;
   end;
   // Get curent account color
   AccNdx:=DisplayMails.GetItem(aRow-1).AccountIndex;
@@ -1807,8 +1826,20 @@ begin
     1: begin
         SGMails.Canvas.Brush.Color := AccCol;
         SGMails.Canvas.Ellipse(Arect.Left,Arect.Top+5,Arect.Left+11, Arect.Top+16 );
-        if SGHasFocus then SGMails.Canvas.Brush.Color := clHighlight
-        else SGMails.Canvas.Brush.Color:= clWindow;
+        if SGMails.IsCellSelected[acol, arow] then //SGHasFocus then
+        begin
+          SGMails.Canvas.Brush.Color := clHighlight
+          //SGMails.Canvas.FillRect (ARect);
+          //SGMails.Canvas.font.Color:= clHighlightText;
+        end else
+        begin
+          SGMails.Canvas.Brush.Color := clWindow;
+          //SGMails.Canvas.FillRect (ARect.left+12, Arect.Top, Arect.Right, Arect.Bottom);
+          //SGMails.Canvas.font.Color:= clDefault;  ;
+
+
+
+        end;
         SGMails.Canvas.TextOut(ARect.Left+13,ARect.Top+3, SGMails.Cells[aCol, aRow]);
        end
     else SGMails.Canvas.TextOut(ARect.Left+2,ARect.Top+3, SGMails.Cells[aCol, aRow]);
@@ -1952,6 +1983,7 @@ begin
     CBNoCloseAlert.checked:= Settings.NoCloseAlert;
     CBNoQuitAlert.Checked:= Settings.NoQuitAlert;
     CBDisplayAllAccMsgs.checked:= Settings.DisplayAllAccMsgs;
+
     GetDefaultMailCllient;    // and get mail clientrs list
     CBMailClient.Items.Clear; //Reset list of mail clients
     for i:=0 to length(MailClients)-1 do
@@ -2447,6 +2479,7 @@ begin
   sfrom:= IdMsg.From.Name;
   if length(sfrom)=0 then sfrom:= idMsg.From.Address;
   Mail.AccountName:= CurAcc.Name ;
+  Mail.AccountIndex:=CurAcc.Index;
   Mail.AccountUID:= CurAcc.UID;
   Mail.MessageFrom:= sfrom;
   Mail.FromAddress:= idMsg.From.Address;
