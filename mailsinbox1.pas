@@ -663,9 +663,6 @@ begin
   ModLangue;
   //   PnlToolbar.visible:= true;
   FSettings.Settings.ButtonBar:= true;
-
-
-
   if not FileExists(AccountsFileName) then
   begin
     FilNamWoExt:= TrimFileExt(AccountsFileName);
@@ -683,6 +680,8 @@ begin
     begin
       SaveConfig(All);
       LogAddLine(-1, now, sCreNewConf);
+      //BtnGetAccMail.Enabled:= false;
+      //BtnGetAllMail.Enabled:= False;
     end;
   end;
   // Check inifile with URLs, if not present, then use default
@@ -1081,7 +1080,15 @@ var
   //oldBallHint: string;
   totalNewMsgs: integer;
 Begin
-  if FAccounts.Accounts.Count = 0 then exit;
+  if FAccounts.Accounts.Count = 0 then
+  begin
+    BtnGetAllMail.Enabled:= false;
+    BtnGetAccMail.Enabled:= false;
+    exit;
+  end;
+  BtnGetAllMail.Enabled:= true;
+  BtnGetAccMail.Enabled:= true;
+
   sTrayNewHint:='';
   sTrayBallHint:='';
   TrayMail.Hint:= '';
@@ -1292,6 +1299,7 @@ var
   CurAcc: TAccount;
    ndx: integer;
 begin
+  if FAccounts.Accounts.Count=0 then exit;
   ndx:= LVAccounts.ItemIndex;
   if ndx <0 then exit;
   for i:=0 to FAccounts.Accounts.count-1 do
@@ -1774,7 +1782,7 @@ end;
 
 procedure TFMailsInBox.SGMailsClick(Sender: TObject);
 begin
-  ShowMessage('Test');
+
 end;
 
 procedure TFMailsInBox.SGMailsDrawCell(Sender: TObject; aCol, aRow: Integer;
@@ -2196,6 +2204,7 @@ var
 begin
   result:= 0;
   msgs:= 0;
+  if index<0 then exit;
   // reset error flag
   Err:= false;
   ErrStr:= '';

@@ -196,7 +196,7 @@ Delete "$INSTDIR\licensf.txt"
 Delete "$INSTDIR\license.txt"
 Delete "$INSTDIR\OpenSSL License.txt"
 Delete "$INSTDIR\uninst.exe"
-RMDir  "$INSTDIR\help"
+RMDir /r "$INSTDIR\help"
 ; remove shortcuts, if any.
   Delete  "$SMPROGRAMS\mailsinbox\$(ProgramLnkStr)"
   Delete  "$SMPROGRAMS\mailsinbox\$(UninstLnkStr)"

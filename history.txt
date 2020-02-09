@@ -113,3 +113,8 @@ Version 0.7.8.2 - 09/02/2020
 - Force default buttons displays
 - Fixed wrong higlighting of messages and false account clours on messages
 - Fixed error in accounts files backup
+
+Version 0.7.8.3 - 09/02/2020
+- Fixed uninstallation of help folder in program files
+- Removed a test message box
+- Double check of account presence when mail checking
