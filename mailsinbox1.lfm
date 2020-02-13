@@ -4487,6 +4487,7 @@ object FMailsInBox: TFMailsInBox
       end
       object MMnuEditAcc: TMenuItem
         Caption = 'Modifier le compte sélectionné'
+        Visible = False
         OnClick = BtnEditAccClick
       end
     end

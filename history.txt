@@ -118,3 +118,11 @@ Version 0.7.8.3 - 09/02/2020
 - Fixed uninstallation of help folder in program files
 - Removed a test message box
 - Double check of account presence when mail checking
+
+Version 0.7.8.4 - 13/02/2020
+- Fixed mails list display when mail is selected but not focused
+- Fixed import accounts list empty condition
+- Changed automatic version check, alertbox can disable check if error
+- Replaced function AccFromMail in main form by GetItemByUID in accounts unit
+- Changed accounts initialization routine to procedure
+- Hide modify current account in main menu

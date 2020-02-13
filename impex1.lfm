@@ -55,6 +55,7 @@ object FImpex: TFImpex
     Width = 160
     ItemHeight = 0
     MultiSelect = True
+    OnClick = LBImpexClick
     OnSelectionChange = LBImpexSelectionChange
     ParentShowHint = False
     ShowHint = True

@@ -1,7 +1,7 @@
 {******************************************************************************}
 { accounts1 unit                                                               }
 { Form and types for accounts management                                       }
-{ bb - sdtp - january 2020                                                     }
+{ bb - sdtp - february 2020                                                     }
 { key for imported passwords 14235                                             }
 { key for saved passwords 14236                                                }
 {******************************************************************************}
@@ -128,6 +128,7 @@ type
     procedure ModifyAccount (const i: integer; Account : TAccount);
     procedure ModifyField (const i: integer; field: string; value: variant);
     function GetItem(const i: Integer): TAccount;
+    function GetItemByUID(uid: Integer): TAccount;
     function LoadXMLnode(iNode: TDOMNode): Boolean;
     function LoadXMLfile(filename: string): Boolean;
     function SaveToXMLnode(iNode: TDOMNode; typ: TSaveType= all): Boolean;
@@ -178,6 +179,7 @@ type
     PnlButtons: TPanel;
     BtnSoundFile: TSpeedButton;
     BtnPlaySound: TSpeedButton;
+    procedure BtnOKClick(Sender: TObject);
     procedure CBShowPassClick(Sender: TObject);
     procedure ESoundFileChange(Sender: TObject);
     procedure FormActivate(Sender: TObject);
@@ -361,6 +363,8 @@ begin
  Result := TMail(Items[i]^);
 end;
 
+
+
 function TMailsList.FindUIDL(value: String): integer;
 var
  i: integer;
@@ -508,6 +512,23 @@ end;
 function TAccountsList.GetItem(const i: Integer): TAccount;
 begin
   Result := TAccount(Items[i]^);
+end;
+
+function TAccountsList.GetItemByUID(uid: Integer): TAccount;
+var
+  i: integer;
+ begin
+  Result:= Default(TAccount);
+  Result.Index:=-1;
+  for i:= 0 to count-1 do
+  try
+    if GetItem(i).UID=uid then
+    begin
+      result:= GetItem(i);
+      break;
+    end;
+  except
+  end;
 end;
 
 procedure TAccountsList.DoSort;
@@ -754,6 +775,11 @@ procedure TFAccounts.CBShowPassClick(Sender: TObject);
 begin
   if CBShowPass.checked then EPassword.PasswordChar:=#0
   else EPassword.PasswordChar:='*';
+end;
+
+procedure TFAccounts.BtnOKClick(Sender: TObject);
+begin
+
 end;
 
 procedure TFAccounts.ESoundFileChange(Sender: TObject);

@@ -1,7 +1,7 @@
 object FAccounts: TFAccounts
-  Left = 594
+  Left = 600
   Height = 246
-  Top = 338
+  Top = 267
   Width = 539
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
@@ -32,6 +32,7 @@ object FAccounts: TFAccounts
       DefaultCaption = True
       Kind = bkOK
       ModalResult = 1
+      OnClick = BtnOKClick
       TabOrder = 0
     end
     object BtnCancel: TBitBtn

@@ -16,6 +16,9 @@ uses
 
 type
   // Main Impex form
+
+  { TFImpex }
+
   TFImpex = class(TForm)
     BtnCancel: TBitBtn;
     BtnOK: TBitBtn;
@@ -34,6 +37,7 @@ type
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure BtnAccFileClick(Sender: TObject);
+    procedure LBImpexClick(Sender: TObject);
     procedure LBImpexSelectionChange(Sender: TObject; User: boolean);
   private
     Reg: Tregistry;
@@ -43,7 +47,7 @@ type
     MailAttentePath: string;
     TBirdPath, TbirdProfilePath: string;
     procedure ImportOutlook;
-    procedure ImportMailAttente(filename: string);
+    function ImportMailAttente(filename: string): boolean;
     procedure ImportTBird(filename: string);
     function BinToWideStr(a: array of word): widestring;
     function RegGetBinaryString(regkey: Tregistry; attr: string): string;
@@ -188,8 +192,8 @@ begin
          0: begin    // Old mailattente accounts
               LBImpex.Items.Clear;
               ImpAccounts.Reset;
-              ImportMailAttente(ODIMpex.FileName);
-              for i:= 0 to ImpAccounts.count-1 do LBImpex.Items.Add(ImpAccounts.GetItem(i).Name);
+              if ImportMailAttente(ODIMpex.FileName) then
+                for i:= 0 to ImpAccounts.count-1 do LBImpex.Items.Add(ImpAccounts.GetItem(i).Name);
             end;
          2: begin // external Thunderbird prefs.js file
               LBImpex.Items.Clear;
@@ -201,10 +205,17 @@ begin
      end;
 end;
 
+procedure TFImpex.LBImpexClick(Sender: TObject);
+begin
+
+end;
+
 procedure TFImpex.LBImpexSelectionChange(Sender: TObject; User: boolean);
 var
   CurAcc: TAccount;
 begin
+  // Clear valid cells
+  SGImpex.Clean(1,1,1,SGImpex.RowCount-1, [gzNormal]);
   if LBImpex.ItemIndex >= 0 then
   Begin
    CurAcc:=  ImpAccounts.GetItem(LBImpex.ItemIndex);
@@ -264,9 +275,11 @@ begin
         ImportTBird(TbirdProfilePath+'prefs.js');
       end;
   end;
+  LBImpex.OnSelectionChange(Self, true);
+  if ImpAccounts.count = 0 then exit;
   for i:= 0 to ImpAccounts.count-1 do LBImpex.Items.Add(ImpAccounts.GetItem(i).Name);
   LBImpex.ItemIndex:= 0;
-  LBImpex.OnSelectionChange(Self, true);
+
 end;
 
 
@@ -306,9 +319,9 @@ begin
   end;
 end;
 
-procedure TFImpex.ImportMailAttente(filename: string);
+function TFImpex.ImportMailAttente(filename: string): Boolean;
 begin
-  ImpAccounts.ImportOldXML(FileName);
+  result:= ImpAccounts.ImportOldXML(FileName);
 end;
 
 procedure TFImpex.ImportOutlook;
