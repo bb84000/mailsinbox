@@ -126,3 +126,11 @@ Version 0.7.8.4 - 13/02/2020
 - Replaced function AccFromMail in main form by GetItemByUID in accounts unit
 - Changed accounts initialization routine to procedure
 - Hide modify current account in main menu
+
+Version 0.7.9.0 - 15/02/2020
+- Replace some protocls "case" in GetPendingMail with separate functions
+- Clarified delete mails and disconnect routines
+- Remember last selected mail in list when change is done in sort or update list
+- Used full path for help file location
+- Replaced individual connection exceptions with function
+

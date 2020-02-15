@@ -1,7 +1,7 @@
 object FMailsInBox: TFMailsInBox
-  Left = 694
+  Left = 800
   Height = 476
-  Top = 209
+  Top = 186
   Width = 944
   Caption = 'FMailsInBox'
   ClientHeight = 476

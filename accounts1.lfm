@@ -159,6 +159,7 @@ object FAccounts: TFAccounts
     AutoSize = False
     Caption = 'Son'
     ParentColor = False
+    Visible = False
   end
   object LSSL: TLabel
     Left = 273
@@ -286,6 +287,7 @@ object FAccounts: TFAccounts
     AutoSize = False
     OnChange = ESoundFileChange
     TabOrder = 13
+    Visible = False
   end
   object CBProtocol: TComboBox
     Left = 118
@@ -324,6 +326,7 @@ object FAccounts: TFAccounts
       3373F333333333333373FFFFFFFFFFFFFFF3FFFFFFFFFFFFFFF3
     }
     NumGlyphs = 2
+    Visible = False
     ShowHint = True
     ParentShowHint = False
   end
@@ -403,6 +406,7 @@ object FAccounts: TFAccounts
     }
     Layout = blGlyphRight
     NumGlyphs = 2
+    Visible = False
     ShowHint = True
     ParentShowHint = False
   end

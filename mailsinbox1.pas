@@ -1,6 +1,6 @@
 {******************************************************************************}
 { MailInBox main unit                                                          }
-{ bb - sdtp - february 2020                                                     }
+{ bb - sdtp - february 2020                                                    }
 { Check mails on pop3 and imap servers                                         }
 {******************************************************************************}
 
@@ -182,6 +182,7 @@ type
     OS, OSTarget, CRLF: string;
     CompileDateTime: TDateTime;
     MIBAppDataPath: string;
+    MIBExecPath: string;
     ProgName: string;
     LangStr: string;
     LangFile: TBbIniFile;
@@ -246,6 +247,7 @@ type
     HttpErrMsgNames: array [0..16] of string;
     sCannotGetNewVerList: string;
     sNewAccount: string;
+    aMailsList: array of string;
     procedure Initialize;
     procedure LoadSettings(Filename: string);
     procedure SettingsOnChange(Sender: TObject);
@@ -257,7 +259,9 @@ type
     procedure ModLangue;
     procedure SetSmallBtns(small: TBtnSize);
     function GetPendingMail(index: integer): integer;
-    function InitPop3OrImap(CurAcc: TAccount): boolean;
+    procedure SetProtocolProperties(CurAcc: TAccount);
+    function ConnectServer(CurAcc: TAccount; var ErrorsStr: string): Integer;
+    function GetHeader(CurAcc: TAccount; MailIndex: integer; var mails: TMailsList; var ErrorsStr: string): boolean;
     procedure PopulateMailsList(index: integer);
     procedure EnableControls(Enable: boolean);
     procedure UpdateInfos;
@@ -276,6 +280,7 @@ type
     procedure CheckUpdate;
     procedure SortMails(CurCol: integer);
     procedure LoadAccounts(filename: string);
+    function SetError(E: Exception; ErrorStr: String; ErrorUID: Integer; ErrorCaption: String; var ErrorsStr: String): boolean;
   public
     OsInfo: TOSInfo;           //used by Settings1
     UserAppsDataPath: string;  //used by Impex1
@@ -434,9 +439,9 @@ begin
   {$ENDIF}
   GetSysInfo(OsInfo);
   version := GetVersionInfo.ProductVersion;
-
+  MIBExecPath:=ExtractFilePath(Application.ExeName);
   // Chargement des chaînes de langue...
-  LangFile := TBbIniFile.Create(ExtractFilePath(Application.ExeName) + LowerCase(ProgName)+'.lng');
+  LangFile := TBbIniFile.Create(MIBExecPath + LowerCase(ProgName)+'.lng');
   // Cannot call Modlang as components are not yet created, use default language
   sOpenProgram:=LangFile.ReadString(LangStr,'OpenProgram','Ouverture de Courrier en attente');
   LogAddLine(-1, now, sOpenProgram+' - Version '+Version+ ' (' + OS + OSTarget + ')');
@@ -1085,7 +1090,6 @@ var
   sTrayNewHint: string;
   sTrayBallHint: string;
   sLineEnd: string;
-  //oldBallHint: string;
   totalNewMsgs: integer;
 Begin
   if FAccounts.Accounts.Count = 0 then
@@ -1112,7 +1116,6 @@ Begin
   sTrayNewHint:='';
   sTrayBallHint:='';
   TrayMail.Hint:= '';
-  //oldBallHint:= TrayMail.BalloonHint;
   TrayMail.BalloonHint:='';
   sLineEnd:='';
   totalNewMsgs:=0;
@@ -1512,7 +1515,11 @@ var
   siz: integer;
   CurAcc: TAccount;
   s: string;
+  oldUIDL: string;
 begin
+  // remember uidl of previous selected message  , stored in aMailsList
+  if (SGMails.Row>0) and (SGMails.Row<=length(aMailsList)) then  oldUIDL:= aMailsList[SGMails.row-1]
+  else oldUIDL:= '';
   SGMails.RowCount:=1;
   DisplayMails.Reset;
   // If we display only selected accout messages
@@ -1536,6 +1543,8 @@ begin
   if DisplayMails.count=0 then exit;
   DisplayMails.SortType:= FSettings.Settings.MailSortTyp;
   DisplayMails.SortDirection:= FSettings.Settings.MailSortDir;
+  // array of mails uidl to retreive later previous selected mail
+  SetLength(aMailsList, DisplayMails.count);
   j:= DisplayMails.count+1;
   SGMails.RowCount:= j;
   for i:=0 to DisplayMails.Count-1 do
@@ -1544,6 +1553,7 @@ begin
     SGMails.Cells[1,i+1]:= DisplayMails.GetItem(i).AccountName;
     SGMails.Cells[2,i+1]:= DisplayMails.GetItem(i).MessageSubject;
     SGMails.Cells[3,i+1]:= TimeDateToString(DisplayMails.GetItem(i).MessageDate);
+    aMailsList[i]:= DisplayMails.GetItem(i).MessageUIDL;
     // Change unit with size value
     siz:= DisplayMails.GetItem(i).MessageSize;
     if siz<20480 then s:= InttoStr(siz)+' '+sBytes;
@@ -1551,7 +1561,10 @@ begin
     if (siz>=100480) and (siz<1048576) then s:= Format('%u '+sKBytes, [siz div 1048]);
     if siz>=1048576  then s:= Format('%.1n '+SMBytes, [siz/1048576]);
     SGMails.Cells[4,i+1]:= s;
+    // retrieve old selected message if still here to select it again
+    if DisplayMails.GetItem(i).MessageUIDL= oldUIDL then SGMails.row:= i+1;
   end;
+
 end;
 
 procedure TFMailsInBox.MnuAccountPopup(Sender: TObject);
@@ -2114,7 +2127,7 @@ end;
 
 procedure TFMailsInBox.BtnHelpClick(Sender: TObject);
 begin
-  OpenDocument('help'+PathDelim+ProgName+'.html');
+  OpenDocument(MIBExecPath+'help'+PathDelim+ProgName+'.html');
 end;
 
 
@@ -2167,232 +2180,105 @@ begin
   result:= status;
 end;
 
+function TFMailsInBox.SetError(E: Exception; ErrorStr: String; ErrorUID: Integer; ErrorCaption: String; var ErrorsStr: String): boolean;
+var
+  ErrStr: String;
+begin
+  try
+    ErrStr:= Format(ErrorStr, [E.Message]);
+  except
+    ErrStr:= Format(ErrorStr, ['Unknown error']);
+  end;
+  LStatus.Caption:= ErrorCaption+': '+ErrStr;
+  LogAddLine(ErrorUID, now, LStatus.Caption);
+  if ErrorsStr='' then ErrorsStr:= ErrStr
+  else ErrorsStr:= ErrorsStr+LineEnding+ErrStr;
+  result:= true;
+end;
+
 // retreive pop and imap mail
 
 function TFMailsInBox.GetPendingMail(index: integer): Integer;
 var
   msgs : Integer;
-  idMsg: TIdMessage;
-  i, j, siz: integer;
+  i, j: integer;
   CurName: string;
-  mail: TMail;
   mails: TMailsList;
   min: TTime;
-  HeaderOK: boolean;
   CurAcc: TAccount;
   idMsgList: TIdMessageCollection;
-  AMailBoxList: TStringList;
   Err: boolean;
-  ErrStr, ErrorsStr: string;
-  sUIDL: string;
+  ErrorsStr: string;
   slUIDL: TStringList;
+  maildeleted: boolean;
 begin
   result:= 0;
   msgs:= 0;
   if index<0 then exit;
   // reset error flag
   Err:= false;
-  ErrStr:= '';
   ErrorsStr:='';
-  sUIDL:='';
   slUIDL:= TStringList.Create;
   mails:= TMailsList.create;
   idMsgList:= TIdMessageCollection.create;
-  AMailBoxList:= TStringList.Create;
   CurAcc:= FAccounts.Accounts.GetItem(index);
   LogAddLine(CurAcc.UID, now, Format(sCheckingAccMail, [CurAcc.Name]));
   TrayMail.Hint:= Format(sCheckingAccMail, [CurAcc.Name]);
   CurName:= CurAcc.Name;
-  InitPop3OrImap(CurAcc);
-  {Case Curacc.Protocol of
-    ptcPOP3:
-      begin
-        IdPOP3_1.Host:= CurAcc.Server;
-        IdPOP3_1.Port:= CurAcc.Port;
-        IdPOP3_1.Username:= CurAcc.UserName;
-        IdPOP3_1.Password:= CurAcc.Password;
-        // Authentication method
-        if Curacc.SecureAuth then IdPOP3_1.AuthType:= patSASL
-        else IdPOP3_1.AuthType:= patUserPass;
-      end;
-    ptcIMAP:
-      begin
-        IdIMAP4_1.Host:= CurAcc.Server;
-        IdIMAP4_1.Port:= CurAcc.Port;
-        IdIMAP4_1.Username:= CurAcc.UserName;
-        IdIMAP4_1.Password:= CurAcc.Password;
-        // Authentication method
-        if Curacc.SecureAuth then IdIMAP4_1.AuthType:= iatSASL
-        else IdIMAP4_1.AuthType:= iatUserPass;
-      end;
-  end;}
+  // Init protocol properties
+  SetProtocolProperties(CurAcc);
   try
     LStatus.Caption:= Format(sConnectToServer, [Curacc.Name, CurAcc.Server]);
     LogAddLine(CurAcc.UID, now, LStatus.Caption );
     Application.ProcessMessages;
-    idMsg:= TIdMessage.Create(self);
-    idMsgList:= TIdMessageCollection.Create;
-    Case Curacc.Protocol of
-      ptcPOP3:
-        begin
-          IdPop3_1.IOHandler := TIdSSLIOHandlerSocketOpenSSL.Create(idPop3_1);
-          IdPop3_1.UseTLS := TIdUseTLS(CurAcc.SSL);
-          try
-            IdPOP3_1.Connect;
-            Application.ProcessMessages;
-            msgs := IdPop3_1.CheckMessages;
-           except
-            on E: Exception do
-            begin
-              ErrStr:= Format(sConnectErrorMsg, [E.Message]);
-              LStatus.Caption:= CurAcc.Name+': '+ErrStr;
-              LogAddLine(CurAcc.UID, now, LStatus.Caption);
-              if ErrorsStr='' then ErrorsStr:= ErrStr
-              else ErrorsStr:= ErrorsStr+#10+ErrStr;
-              Err:= true;
-            end;
-          end;
-       end;
-      ptcIMAP:
-        begin
-          IdIMAP4_1.IOHandler := TIdSSLIOHandlerSocketOpenSSL.Create(IdIMAP4_1);
-          IdIMAP4_1.UseTLS := TIdUseTLS(CurAcc.SSL);
-          try
-            if IdIMAP4_1.Connect then
-            IdIMAP4_1.ListSubscribedMailBoxes(AMailBoxList);
-            Application.ProcessMessages;
-            if not IdIMAP4_1.SelectMailBox('Inbox') then      // select proper mailbox
-            begin
-              // todo select proper mailbox
-            end;
-            msgs:= IdIMAP4_1.MailBox.TotalMsgs;
-          except
-            on E: Exception do
-            begin
-              ErrStr:= Format(sConnectErrorMsg, [E.Message]);
-              LStatus.Caption:= CurAcc.Name+': '+ErrStr;
-              LogAddLine(CurAcc.UID, now, LStatus.Caption);
-              if ErrorsStr='' then ErrorsStr:= ErrStr
-              else ErrorsStr:= ErrorsStr+#10+ErrStr;
-              Err:= true;
-            end;
-          end;
-        end;
-    end;
-    if msgs > 0 then
+    // Connect to server
+    msgs:= ConnectServer(CurAcc, ErrorsStr);
+    if msgs=-1 then
     begin
+      err:=true;
+      msgs:= 0;
+    end;
+    // Now retreive messages headers and mails infos
+    if msgs > 0 then
       for i:= 1 to msgs do
       begin
-        Mail:= Default(TMail);
-        Case Curacc.Protocol of
-          ptcPOP3:
-            begin
-              try
-                HeaderOK:= IdPop3_1.RetrieveHeader(i, idMsg);
-                if HeaderOK then siz:= IdPop3_1.RetrieveMsgSize(i) else exit;
-                IdPop3_1.UIDL(slUIDL, i);
-                idMsg.UID:= slUIDL.Strings[0];
-              except
-                on E: Exception do
-                begin
-                  ErrStr:= Format(sHeaderErrorMsg, [E.Message]);
-                  LStatus.Caption:= CurAcc.Name+': '+ErrStr;
-                  LogAddLine(CurAcc.UID, now, LStatus.Caption);
-                  if ErrorsStr='' then ErrorsStr:= ErrStr
-                  else ErrorsStr:= ErrorsStr+#10+ErrStr;
-                  Err:= true;
-                end;
-              end;
-            end;
-          ptcIMAP:
-            begin
-              try
-                siz:= IdIMAP4_1.RetrieveMsgSize(i);
-                IdIMAP4_1.RetrieveHeader(i, idMsg);
-
-                IdIMAP4_1.GetUID(i, sUIDL);
-                idMsg.UID:= sUIDL;
-                siz:= siz+length(idMsg.Headers.Text) ;
-                Application.ProcessMessages;
-             except
-                on E: Exception do
-                begin
-                  ErrStr:= Format(sHeaderErrorMsg, [E.Message]);
-                  LStatus.Caption:= CurAcc.Name+': '+ErrStr;
-                  LogAddLine(CurAcc.UID, now, LStatus.Caption);
-                  if ErrorsStr='' then ErrorsStr:= ErrStr
-                  else ErrorsStr:= ErrorsStr+#10+ErrStr;
-                  Err:= true;
-                end;
-              end;
-            end;
-        end;
-        Application.ProcessMessages;
-        GetMailInfos(CurAcc, Mail, IdMsg, siz);
-        if CurAcc.Mails.FindUIDL(Mail.MessageUIDL)>=0 then
-        Mail.MessageNew:= false else Mail.MessageNew:= true;
-        Mails.AddMail(Mail);
+        err:= not GetHeader(CurAcc, i, Mails, ErrorsStr);
+        if err then continue;
       end;
+    // delete and disconnect
+    for i:=0 to msgs-1 do
+    begin
+      // delete messages with uidl in array, begins at message 1 and not 0 in pop3 protocol
+      if length(CurAcc.UIDLToDel)>0 then
+        for j:= 0 to length(CurAcc.UIDLToDel)-1 do
+        begin
+          maildeleted:= false;
+          if CurAcc.Mails.GetItem(i).MessageUIDL= CurAcc.UIDLToDel[j]  then
+          begin
+            Case Curacc.Protocol of
+              ptcPOP3: maildeleted:= IdPOP3_1.Delete(i+1);
+              ptcIMAP: maildeleted:= IdIMAP4_1.UIDDeleteMsg(CurAcc.UIDLToDel[j]);
+            end;
+            if maildeleted then
+            begin
+              Mails.Delete(Mails.FindUIDL(CurAcc.UIDLToDel[j])) ;
+              LogAddLine(CurAcc.UID, now, Format(sMsgDeleted, [CurAcc.Name, i+1]));
+              TAccount(FAccounts.Accounts.Items[index]^).Mails.ModifyField(j, 'MessageToDelete',false);
+              TAccount(FAccounts.Accounts.Items[index]^).UIDLToDel[j]:= '';
+            end else LogAddLine(CurAcc.UID, now, Format(sMsgNotDeleted, [CurAcc.Name, i+1]));
+          end;
+        end;
     end;
+    LStatus.Caption:= Format(sDisconnectServer, [Curacc.Name, CurAcc.Server]);
+    LogAddLine(CurAcc.UID, now, LStatus.Caption );
     Case Curacc.Protocol of
-      ptcPOP3:
-      begin
-        for i:=0 to msgs-1 do
-        begin
-          // delete messages with uidl in array, begins at message 1 and not 0
-          if length(CurAcc.UIDLToDel)>0 then
-          begin
-            for j:= 0 to length(CurAcc.UIDLToDel)-1 do
-            begin
-              if CurAcc.Mails.GetItem(i).MessageUIDL= CurAcc.UIDLToDel[j]  then
-                if IdPOP3_1.Delete(i+1) then
-                begin
-                  Mails.Delete(Mails.FindUIDL(CurAcc.UIDLToDel[j])) ;
-                  LogAddLine(CurAcc.UID, now, Format(sMsgDeleted, [CurAcc.Name, i+1]));
-                  TAccount(FAccounts.Accounts.Items[index]^).Mails.ModifyField(j, 'MessageToDelete',false);
-                end else LogAddLine(CurAcc.UID, now, Format(sMsgNotDeleted, [CurAcc.Name, i+1]));
-            end;
-          end;
-        end;
-        Setlength(TAccount(FAccounts.Accounts.Items[index]^).UIDLToDel, 0);
-        LStatus.Caption:= Format(sDisconnectServer, [Curacc.Name, CurAcc.Server]);
-        LogAddLine(CurAcc.UID, now, LStatus.Caption );
-        IdPop3_1.Disconnect;
-      end;
-      ptcIMAP:
-      begin
-        for i:=0 to msgs-1 do
-        begin
-          //Message to delete ?
-          if length(CurAcc.UIDLToDel)>0 then            // delete messages with uidl in array
-          begin
-            for j:=0 to length(CurAcc.UIDLToDel)-1 do
-            begin
-              if CurAcc.Mails.GetItem(i).MessageUIDL= CurAcc.UIDLToDel[j]  then
-              if IdIMAP4_1.UIDDeleteMsg(CurAcc.UIDLToDel[j]) then
-              begin
-                Mails.Delete(Mails.FindUIDL(CurAcc.UIDLToDel[j])) ;
-                LogAddLine(CurAcc.UID, now, Format(sMsgDeleted, [CurAcc.Name, i+1]));
-                TAccount(FAccounts.Accounts.Items[index]^).Mails.ModifyField(j, 'MessageToDelete',false);
-              end else LogAddLine(CurAcc.UID, now, Format(sMsgNotDeleted, [CurAcc.Name, i+1]));
-            end;
-          end;
-        end;
-        Setlength(TAccount(FAccounts.Accounts.Items[index]^).UIDLToDel, 0);
-        LStatus.Caption:= Format(sDisconnectServer, [Curacc.Name, CurAcc.Server]);
-        LogAddLine(CurAcc.UID, now, LStatus.Caption );
-        IdIMAP4_1.Disconnect(true);
-      end;
+      ptcPOP3: IdPop3_1.Disconnect;
+      ptcIMAP: IdIMAP4_1.Disconnect(true);
     end;
   except
     on E: Exception do
     begin
-      ErrStr:= Format(sConnectErrorMsg, [E.Message]);
-      LStatus.Caption:= CurAcc.Name+': '+ErrStr;
-      LogAddLine(CurAcc.UID, now, LStatus.Caption);
-      if ErrorsStr='' then ErrorsStr:= ErrStr
-      else ErrorsStr:= ErrorsStr+#10+ErrStr;
-      err:= true;
+      err:= SetError(E, sConnectErrorMsg, CurAcc.UID, CurAcc.Name, ErrorsStr);
     end;
   end;
   Setlength(TAccount(FAccounts.Accounts.Items[index]^).UIDLToDel,0);
@@ -2415,8 +2301,7 @@ begin
   if Mails.count > 0 then
     for i:=0 to Mails.count-1 do
     begin
-      //if length(Mails.GetItem(i).MessageUIDL)> 0 then
-        TAccount(FAccounts.Accounts.Items[index]^).Mails.AddMail(Mails.GetItem(i));
+      TAccount(FAccounts.Accounts.Items[index]^).Mails.AddMail(Mails.GetItem(i));
       Application.ProcessMessages;
     end;
   if assigned (Mails) then Mails.free;
@@ -2425,9 +2310,8 @@ begin
   result:= msgs;
 end;
 
-function TFMailsInBox.InitPop3OrImap(CurAcc: TAccount): boolean;
+procedure TFMailsInBox.SetProtocolProperties(CurAcc: TAccount);
 begin
-  result:= false;
   Case Curacc.Protocol of
     ptcPOP3:
       begin
@@ -2450,6 +2334,112 @@ begin
         else IdIMAP4_1.AuthType:= iatUserPass;
       end;
   end;
+end;
+
+// Returns -1 on error and update Errorstr
+
+function TFMailsInBox.ConnectServer(CurAcc: TAccount; var ErrorsStr: string): integer;
+var
+  AMailBoxList: TStringList;
+begin
+  result:= -1;
+  Case Curacc.Protocol of
+    ptcPOP3:
+      begin
+        try
+          if CurAcc.SSL>0 then
+            IdPop3_1.IOHandler := TIdSSLIOHandlerSocketOpenSSL.Create(idPop3_1);
+          IdPop3_1.UseTLS := TIdUseTLS(CurAcc.SSL);
+          IdPOP3_1.Connect;
+          Application.ProcessMessages;
+          result := IdPop3_1.CheckMessages;
+         except
+          on E: Exception do
+          begin
+            SetError(E, sConnectErrorMsg, CurAcc.UID, CurAcc.Name, ErrorsStr);
+          end;
+        end;
+     end;
+    ptcIMAP:
+      begin
+        AMailBoxList:= TStringList.create;
+        try
+          if CurAcc.SSL>0 then IdIMAP4_1.IOHandler := TIdSSLIOHandlerSocketOpenSSL.Create(IdIMAP4_1);
+          IdIMAP4_1.UseTLS := TIdUseTLS(CurAcc.SSL);
+          if IdIMAP4_1.Connect then
+          IdIMAP4_1.ListSubscribedMailBoxes(AMailBoxList);
+          Application.ProcessMessages;
+          if not IdIMAP4_1.SelectMailBox('Inbox') then      // select proper mailbox
+          begin
+            // todo select another mailbox
+          end;
+          result:= IdIMAP4_1.MailBox.TotalMsgs;
+        except
+          on E: Exception do
+          begin
+            SetError(E, sConnectErrorMsg, CurAcc.UID, CurAcc.Name, ErrorsStr);
+          end;
+        end;
+        if Assigned(AMailBoxList) then AMailBoxList.free;
+      end;
+  end;
+end;
+
+// Reurns false on error
+
+function TFMailsInBox.GetHeader(CurAcc: TAccount; MailIndex: integer; var mails: TMailsList; var ErrorsStr: string): boolean;
+var
+  idMsg: TIdMessage;
+  sUIDL: string;
+  slUIDL: TStringList;
+  siz: Integer;
+  mail: Tmail;
+begin
+  result:= true;
+  idMsg:= TIdMessage.Create(self);
+  sUIDL:='';
+  slUIDL:= TStringList.Create;
+  mail:= Default(Tmail);
+  Case Curacc.Protocol of
+    ptcPOP3:
+      begin
+        try
+          Result:= IdPop3_1.RetrieveHeader(MailIndex, idMsg);
+          if Result then siz:= IdPop3_1.RetrieveMsgSize(MailIndex);
+          IdPop3_1.UIDL(slUIDL, MailIndex);
+          idMsg.UID:= slUIDL.Strings[0];
+        except
+          on E: Exception do
+          begin
+            result:= not SetError(E, sHeaderErrorMsg, CurAcc.UID, CurAcc.Name, ErrorsStr);
+          end;
+        end;
+      end;
+    ptcIMAP:
+      begin
+        try
+          siz:= IdIMAP4_1.RetrieveMsgSize(MailIndex);
+          IdIMAP4_1.RetrieveHeader(MailIndex, idMsg);
+
+          IdIMAP4_1.GetUID(MailIndex, sUIDL);
+          idMsg.UID:= sUIDL;
+          siz:= siz+length(idMsg.Headers.Text) ;
+          Application.ProcessMessages;
+       except
+          on E: Exception do
+          begin
+           result:= not SetError(E, sHeaderErrorMsg, CurAcc.UID, CurAcc.Name, ErrorsStr);
+          end;
+        end;
+      end;
+  end;
+  Application.ProcessMessages;
+  GetMailInfos(CurAcc, Mail, IdMsg, siz);
+  if CurAcc.Mails.FindUIDL(Mail.MessageUIDL)>=0 then
+    Mail.MessageNew:= false else Mail.MessageNew:= true;
+  Mails.AddMail(Mail);
+  if Assigned(idMsg) then idMsg.free;
+  if Assigned(slUIDL) then slUIDL.free;
 end;
 
 // store lastfire and nextfire dates in the settings
@@ -2826,7 +2816,6 @@ begin
     MnuDeleteMsg.Caption:=ReadString(LangStr,'MnuDeleteMsg.Caption',MnuDeleteMsg.Caption);
     MnuAnswerMsg.Caption:=ReadString(LangStr,'MnuAnswerMsg.Caption',MnuAnswerMsg.Caption);
     MnuInfos.Caption:=ReadString(LangStr,'MnuInfos.Caption',MnuInfos.Caption);
-    //sAccountCaption:=ReadString(LangStr,'AccountCaption','Compte: %s');
     sEmailCaption:=ReadString(LangStr,'EmailCaption','Courriel: %s');
     sLastCheckCaption:=ReadString(LangStr,'LastCheckCaption','Dernière vérification: %s');
     sNextCheckCaption:=ReadString(LangStr,'NextCheckCaption','Prochaine vérification: %s');
@@ -2919,7 +2908,6 @@ begin
     FAccounts.LPassword.Caption:=ReadString(LangStr,'FAccounts.LPassword.Caption',FAccounts.LPassword.Caption);
     FAccounts.LEmail.Caption:=ReadString(LangStr,'FAccounts.LEmail.Caption',FAccounts.LEmail.Caption);
     FAccounts.LColor.Caption:=ReadString(LangStr,'FAccounts.LColor.Caption',FAccounts.LColor.Caption);
-    //FAccounts.LMailClient.Caption:=ReadString(LangStr,'FAccounts.LMailClient.Caption',FAccounts.LMailClient.Caption);
     FAccounts.LSoundFile.Caption:=ReadString(LangStr,'FAccounts.LSoundFile.Caption',FAccounts.LSoundFile.Caption);
     FAccounts.LSSL.Caption:=ReadString(LangStr,'FAccounts.LSSL.Caption',FAccounts.LSSL.Caption);
     FAccounts.CBSSL.Items[0]:=ReadString(LangStr,'FAccounts.CBSSL.Items_0',FAccounts.CBSSL.Items[0]);

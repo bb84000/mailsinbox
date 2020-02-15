@@ -259,6 +259,7 @@ object FSettings: TFSettings
       AutoSize = False
       Caption = 'Fichier son'
       ParentColor = False
+      Visible = False
     end
     object ESoundFile: TEdit
       Left = 120
@@ -270,6 +271,7 @@ object FSettings: TFSettings
       ParentShowHint = False
       ShowHint = True
       TabOrder = 8
+      Visible = False
     end
     object BtnSoundFile: TSpeedButton
       Left = 544
@@ -347,6 +349,7 @@ object FSettings: TFSettings
       }
       Layout = blGlyphRight
       NumGlyphs = 2
+      Visible = False
       ShowHint = True
       ParentShowHint = False
     end
@@ -383,6 +386,7 @@ object FSettings: TFSettings
         3373F333333333333373FFFFFFFFFFFFFFF3FFFFFFFFFFFFFFF3
       }
       NumGlyphs = 2
+      Visible = False
       ShowHint = True
       ParentShowHint = False
     end
