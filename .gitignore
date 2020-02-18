@@ -3,3 +3,5 @@ lib/**
 libeay32.dll
 ssleay32.dll
 InstallMailsInBox.exe
+mailsinboxwin32.exe
+mailsinboxwin64.exe
