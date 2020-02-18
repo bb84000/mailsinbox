@@ -6,7 +6,7 @@ Can import Outlook 2007-2013, Thunderbird and Mailattente accounts.
 
 Developed on Lazarus - Free Pascal 
 
-Windows : binaries and installer availables.
+Windows : Installer available.
 
 Linux : Compile the sources
 
