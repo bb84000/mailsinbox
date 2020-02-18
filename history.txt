@@ -134,3 +134,9 @@ Version 0.7.9.0 - 15/02/2020
 - Used full path for help file location
 - Replaced individual connection exceptions with function
 
+Version 0.7.9.1 - 18/02/2020
+- Fixed difference between TChampsCompare elements count and ClésTri elements count
+- Added sort by username and server in accounts list for compatibility with future apps
+- Added log line when an update is available
+- Fixed bug in install program, did not install ssl libraries inf needed
+

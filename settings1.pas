@@ -1,7 +1,7 @@
 {****************************************************************************** }
 { settings1 - Modify settings form and record                                   }
 { for mailsinbox application                                                    }
-{ bb - sdtp -january 2020                                                       }
+{ bb - sdtp - february 2020                                                     }
 {*******************************************************************************}
 
 unit settings1;
@@ -777,29 +777,9 @@ begin
   first:= false;
   selfound:= false;
   CliCount:=0;
-  // Add fixed clients
-
   GetMailClientNames(true);
-  {SetLength(MailClients, FixedCount);
-  MailClients[0]:= Default(TmailClient);
-  MailClients[0].Name:=GMailWeb;
-  MailClients[0].Command:=GmailUrl;
-  MailClients[0].Url:=true;
-  MailClients[1]:= Default(TmailClient);
-  MailClients[1].Name:=OutlookWeb;
-  MailClients[1].Command:=OutlookUrl;
-  MailClients[1].Url:=true; }
   {$IFDEF WINDOWS}
     //If Windows 10
-  {  if FMailsInBox.OsInfo.VerMaj=10 then
-    begin
-      inc (FixedCount);
-      SetLength(MailClients, FixedCount);
-      MailClients[FixedCount-1]:= Default(TmailClient);
-      MailClients[FixedCount-1].Name:=Win10Mail;
-      MailClients[FixedCount-1].Command:=Win10MailCmd;
-      MailClients[FixedCount-1].Url:=false;
-    end; }
     FixedCount:= length(MailClients);
     Reg:= TRegistry.Create;
     SubKeyNames:= TStringList.Create;
@@ -902,9 +882,6 @@ begin
     MailClients[length(MailClients)-1].Tag:=true;
   end;
 end;
-
-
-
 
 end.
 

@@ -108,7 +108,7 @@ PlsSelectAcc=Select an account to %s
 ToDisplayLog=be abble to display its log
 ToDeleteAcc=be able to delete it
 ToEditAcc=be able to edit it
-
+CreatedDataFolder=Mails In Box data folder "%s" created.
 
 ;About
 Aboutbox.Caption=About Mails In Box
@@ -323,6 +323,7 @@ PlsSelectAcc=Sélectionnez un compte pour %s
 ToDisplayLog=pouvoir afficher son journal
 ToDeleteAcc=pouvoir le supprimer
 ToEditAcc=pouvoir le modifier
+CreatedDataFolder=Dossier de données de Couriels en attente "%s" créé.
 
 ;About
 Aboutbox.Caption=A propos de Courrier en attente

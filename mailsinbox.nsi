@@ -116,23 +116,26 @@ Section "" ;No components page, name is not important
      !getdllversion  "${source_dir}\mailsinboxwin64.exe" expv_
      StrCpy "$prg_to_inst" "$INSTDIR\mailsinboxwin64.exe"
      StrCpy "$prg_to_del" "$INSTDIR\mailsinboxwin32.exe"
-    ; Dont install ssl libs if it is aready in the system32 folder
-     IfFileExists '$SYSDIR\libeay32.dll' 0
-     goto okssl64
-     File "${lazarus_dir}\openssl\win64\libeay32.dll"
-     File "${lazarus_dir}\openssl\win64\ssleay32.dll"
-     File "${lazarus_dir}\openssl\OpenSSL License.txt"
-     okssl64:
+     IfFileExists "$WINDIR\sysnative\libeay32.dll" ssl_lib64_found ssl_lib64_not_found
+     ssl_lib64_found:
+       goto end_of_lib64 ;<== important for not continuing on the else branch
+     ssl_lib64_not_found:
+       File "${lazarus_dir}\openssl\win64\libeay32.dll"
+       File "${lazarus_dir}\openssl\win64\ssleay32.dll"
+       File "${lazarus_dir}\openssl\OpenSSL License.txt"
+     end_of_lib64:
   ${Else}
      !getdllversion  "${source_dir}\mailsinboxwin32.exe" expv_
      StrCpy "$prg_to_inst" "$INSTDIR\mailsinboxwin32.exe"
      StrCpy "$prg_to_del" "$INSTDIR\mailsinboxwin64.exe"
-     IfFileExists '$SYSDIR\libeay32.dll' 0
-     goto okssl32
-     File "${lazarus_dir}\openssl\win32\libeay32.dll"
-     File "${lazarus_dir}\openssl\win32\ssleay32.dll"
-     File "${lazarus_dir}\openssl\OpenSSL License.txt"
-     okssl32:
+     IfFileExists "$WINDIR\system32\libeay32.dll" ssl_lib32_found ssl_lib32_not_found
+     ssl_lib32_found:
+       goto end_of_lib32 ;<== important for not continuing on the else branch
+     ssl_lib32_not_found:
+       File "${lazarus_dir}\openssl\win32\libeay32.dll"
+       File "${lazarus_dir}\openssl\win32\ssleay32.dll"
+       File "${lazarus_dir}\openssl\OpenSSL License.txt"
+     end_of_lib32:
    ${EndIf}
   ; Dans le cas ou on n'aurait pas pu fermer l'application
   Delete /REBOOTOK "$INSTDIR\mailsinbox.exe"

@@ -248,6 +248,7 @@ type
     sCannotGetNewVerList: string;
     sNewAccount: string;
     aMailsList: array of string;
+    sCreatedDataFolder: String;
     procedure Initialize;
     procedure LoadSettings(Filename: string);
     procedure SettingsOnChange(Sender: TObject);
@@ -447,7 +448,12 @@ begin
   LogAddLine(-1, now, sOpenProgram+' - Version '+Version+ ' (' + OS + OSTarget + ')');
   LogAddLine(-1, now, OsInfo.VerDetail);
   MIBAppDataPath := UserAppsDataPath + PathDelim + ProgName + PathDelim;
-  if not DirectoryExists(MIBAppDataPath) then CreateDir(MIBAppDataPath);
+  if not DirectoryExists(MIBAppDataPath) then
+  begin
+    sCreatedDataFolder:=LangFile.ReadString(LangStr,'CreatedDataFolder','Dossier de données de Couriels en attente "%s" créé');
+    CreateDir(MIBAppDataPath);
+    LogAddLine(-1, now, Format(sCreatedDataFolder, [MIBAppDataPath]));
+  end;
   LogFileName:= MIBAppDataPath+ProgName+'.log';
 end;
 
@@ -503,7 +509,7 @@ begin
       ilOut.AddMasked(Bmp, $FF00FF);
     end else ilOut.AddMasked(Bmp1, $FF00FF);
   except
-     //
+     // Do nothing
   end;
   if Assigned(Bmp) then Bmp.Free;
   if Assigned(Bmp1) then Bmp1.Free;
@@ -620,7 +626,8 @@ begin
        else alertmsg:= TranslateHttpErrorMsg(errmsg, HttpErrMsgNames);
        if AlertDlg(Caption,  alertmsg, [OKBtn, CancelBtn, sNoLongerChkUpdates],
                     true, mtError, alertpos)= mrYesToAll then FSettings.Settings.NoChkNewVer:= true;
-        exit;
+       LogAddLine(-1, now, alertmsg);
+       exit;
      end;
      NewVer := VersionToInt(sNewVer);
      // Cannot get new version
@@ -630,6 +637,7 @@ begin
      if NewVer > CurVer then
      begin
        AboutBox.LUpdate.Caption := Format(sUpdateAvailable, [sNewVer]);
+       LogAddLine(-1, now, AboutBox.LUpdate.Caption);
        Case AlertDlg(Caption, Format(sUpdateAlertBox,[version+LineEnding, sNewVer]), [OKBtn, CancelBtn, sNoLongerChkUpdates], true, mtInformation, alertpos) of
          mrOK: OpenURL(Format(BaseUpdateURl, [version, FSettings.Settings.LangStr]));
          mrYesToAll: begin
@@ -2878,7 +2886,7 @@ begin
     sToDeleteAcc:=ReadString(LangStr,'ToDeleteAcc','pour pouvoir le supprimer');
     sToEditAcc:=ReadString(LangStr,'ToEditAcc','pour pouvoir le modifier');
     sNewAccount:=ReadString(LangStr,'NewAccount','Nouveau compte');
-
+    sCreatedDataFolder:=ReadString(LangStr,'CreatedDataFolder','Dossier de données de Couriels en attente "%s" créé');
     // Main menu
     MMnuFile.Caption:=ReadString(LangStr,'MMnuFile.Caption',MMnuFile.Caption);
     MMnuMails.Caption:=ReadString(LangStr,'MMnuMails.Caption',MMnuMails.Caption);

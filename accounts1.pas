@@ -17,7 +17,7 @@ uses
   lazbbutils;
 
 type
-  TChampsCompare = (cdcNone, cdcName, cdcIndex, cdcAccountUID, cdcMessageDate, cdcMessageNum, cdcMessageSize, cdcMessageUIDL,
+  TChampsCompare = (cdcNone, cdcName, cdcIndex, cdcUserName, cdcServer, cdcAccountUID, cdcMessageDate, cdcMessageNum, cdcMessageSize, cdcMessageUIDL,
                         cdcMessageFrom, cdcMessageTo, cdcMessageSubject, cdcMessageContentType);
   TSortDirections = (sdAscend, sdDescend);
   TProtocols = (ptcNone, ptcPOP3, ptcIMAP);
@@ -66,8 +66,6 @@ type
     procedure ModifyField (const i: integer; field: string; value: variant);
     function GetItem(const i: Integer): TMail;
     function FindUIDL(value: string): integer;
-    //function LoadXML(FileName: String): Integer;
-    //procedure SaveXML(FileName: String);
     procedure DoSort;
     property OnChange: TNotifyEvent read FOnChange write FOnChange;
     property SortType : TChampsCompare read FSortType write SetSortType default cdcNone;
@@ -193,7 +191,7 @@ type
 
 var
   FAccounts: TFAccounts;
-  ClesTri: array[0..10] of TChampsCompare;
+  ClesTri: array[0..Ord(High(TChampsCompare))] of TChampsCompare;
 
 implementation
 
@@ -226,8 +224,10 @@ begin
   ResComp[cdcNone]  := 0;
   ResComp[cdcName]  := StringCompare(Entry1^.Name, Entry2^.Name);
   ResComp[cdcIndex] := NumericCompare(Entry1^.Index, Entry2^.Index);
+  ResComp[cdcUserName] := StringCompare(Entry1^.Name, Entry2^.Name);
+  ResComp[cdcServer] := StringCompare(Entry1^.Name, Entry2^.Name);
   R := 0;
-  for J := 0 to 10 do
+  for J := 0 to Ord(High(TChampsCompare)) do
   begin
     if ResComp[ClesTri[J]] <> 0 then
      begin
@@ -256,7 +256,7 @@ begin
   ResComp[cdcMessageSubject] := StringCompare(Entry1^.MessageSubject, Entry2^.MessageSubject);
   ResComp[cdcMessageSize] := NumericCompare(Entry1^.MessageSize, Entry2^.MessageSize);
   R := 0;
-  for J := 0 to 10 do
+  for J := 0 to Ord(High(TChampsCompare)) do
   begin
     if ResComp[ClesTri[J]] <> 0 then
      begin
