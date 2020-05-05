@@ -196,6 +196,7 @@ type
     BaseUpdateUrl, ChkVerURL, version: string;
     sEmailCaption, sLastCheckCaption, sNextCheckCaption : string;
     sNoLongerChkUpdates, sLastUpdateSearch, sUpdateAvailable, sUpdateAlertBox: string;
+    sNoUpdateAvailable: String;
     OKBtn, YesBtn, NoBtn, CancelBtn: string;
     sBtnLogHint, sBtnGetAccMailHint, sBtnDeleteHint, sBtnEditAccHint: string;
     BtnsArr : array of TBtnProps;
@@ -243,6 +244,7 @@ type
     sBtnLaunchClientDef, sBtnLaunchClientCust: string;
     sDeleteAccount: string;
     sPlsSelectAcc, sToDisplayLog, sToDeleteAcc, sToEditAcc: string;
+    sAccDeleted: String;
     DisplayMails: TMailsList;
     HttpErrMsgNames: array [0..16] of string;
     sCannotGetNewVerList: string;
@@ -619,6 +621,7 @@ begin
   if (Trunc(Now)>Trunc(FSettings.Settings.LastUpdChk+7)) and (not FSettings.Settings.NoChkNewVer) then
    begin
      FSettings.Settings.LastUpdChk := Trunc(Now);
+     AboutBox.LUpdate.Hint:= sLastUpdateSearch + ': ' + DateToStr(FSettings.Settings.LastUpdChk);
      sNewVer:= GetLastVersion(ChkVerURL, 'mailsinbox', errmsg);
      if length(sNewVer)=0 then
      begin
@@ -645,7 +648,7 @@ begin
            OpenURL(Format(BaseUpdateURl, [version, FSettings.Settings.LangStr]));
          end;
        end;
-     end;
+     end else LogAddLine(-1, now, sNoUpdateAvailable);;
    end;
 end;
 
@@ -913,6 +916,7 @@ begin
   begin
     LogAddLine(-1, now, sLoadConf);
     Settings.LoadXMLFile(Filename);
+    self.Position:= poDesktopCenter;
     if Settings.SavSizePos then
     try
       WinState := TWindowState(StrToInt('$' + Copy(Settings.WState, 1, 4)));
@@ -2089,6 +2093,7 @@ end;
 procedure TFMailsInBox.BtnDeleteAccClick(Sender: TObject);
 var
   ndx: Integer;
+  AccName: String;
 begin
   ndx:= LVAccounts.ItemIndex;
   if ndx<0 then
@@ -2096,12 +2101,14 @@ begin
     ShowMessage(Format(sPlsSelectAcc, [sToDeleteAcc]));
     exit;
   end;
-  if AlertDlg (Caption, Format(sDeleteAccount, [FAccounts.Accounts.GetItem(ndx).name]), [OKBtn, CancelBtn, sAlertBoxCBNoShowAlert], false, mtWarning)= mrOK then
- begin
-   FAccounts.Accounts.Delete(ndx);
-   Application.ProcessMessages;
-   PopulateAccountsList(false);
- end;
+  AccName:= FAccounts.Accounts.GetItem(ndx).name;
+  if AlertDlg (Caption, Format(sDeleteAccount, [AccName]), [OKBtn, CancelBtn, sAlertBoxCBNoShowAlert], false, mtWarning)= mrOK then
+  begin
+    FAccounts.Accounts.Delete(ndx);
+    LogAddLine(-1, now, Format(sAccDeleted, [AccName]));
+    Application.ProcessMessages;
+    PopulateAccountsList(false);
+  end;
 
 end;
 
@@ -2323,6 +2330,7 @@ begin
   Case Curacc.Protocol of
     ptcPOP3:
       begin
+        //IdPOP3_1.KeepAlive;
         IdPOP3_1.Host:= CurAcc.Server;
         IdPOP3_1.Port:= CurAcc.Port;
         IdPOP3_1.Username:= CurAcc.UserName;
@@ -2359,7 +2367,8 @@ begin
             IdPop3_1.IOHandler := TIdSSLIOHandlerSocketOpenSSL.Create(idPop3_1);
           IdPop3_1.UseTLS := TIdUseTLS(CurAcc.SSL);
           IdPOP3_1.Connect;
-          Application.ProcessMessages;
+          //Application.ProcessMessages;
+          //IdPOP3_1.KeepAlive;
           result := IdPop3_1.CheckMessages;
          except
           on E: Exception do
@@ -2376,7 +2385,7 @@ begin
           IdIMAP4_1.UseTLS := TIdUseTLS(CurAcc.SSL);
           if IdIMAP4_1.Connect then
           IdIMAP4_1.ListSubscribedMailBoxes(AMailBoxList);
-          Application.ProcessMessages;
+          //Application.ProcessMessages;
           if not IdIMAP4_1.SelectMailBox('Inbox') then      // select proper mailbox
           begin
             // todo select another mailbox
@@ -2543,6 +2552,7 @@ begin
       if j>1 then s:= sAccountsImported else s:= sAccountImported;
       MsgDlg(Caption, Format(s, [j, CBAccType.Items[CBAccType.ItemIndex]]),
         mtInformation, [mbOK], [OKBtn], 0);
+      LogAddLine(-1, now, Format(s, [j, CBAccType.Items[CBAccType.ItemIndex]]));
     end;
   end;
 end;
@@ -2675,6 +2685,8 @@ begin
   CanClose:= true;
   Close;
 end;
+
+
 
 // Disable controls during mail check to avoid conflicts
 // Display hourglass cursor
@@ -2884,6 +2896,7 @@ begin
     sPlsSelectAcc:=ReadString(LangStr,'PlsSelectAcc','Sélectionnez un compte pour %s');
     sToDisplayLog:=ReadString(LangStr,'ToDisplayLog','pour pouvoir afficher son journal');
     sToDeleteAcc:=ReadString(LangStr,'ToDeleteAcc','pour pouvoir le supprimer');
+    sAccDeleted:=ReadString(LangStr,'AccDeleted','Le compte %s a été supprimé');
     sToEditAcc:=ReadString(LangStr,'ToEditAcc','pour pouvoir le modifier');
     sNewAccount:=ReadString(LangStr,'NewAccount','Nouveau compte');
     sCreatedDataFolder:=ReadString(LangStr,'CreatedDataFolder','Dossier de données de Couriels en attente "%s" créé');
@@ -2900,6 +2913,7 @@ begin
     sNoLongerChkUpdates:=ReadString(LangStr,'NoLongerChkUpdates','Ne plus rechercher les mises à jour');
     sLastUpdateSearch:=ReadString(LangStr,'LastUpdateSearch','Dernière recherche de mise à jour');
     sUpdateAvailable:=ReadString(LangStr,'UpdateAvailable','Nouvelle version %s disponible');
+    sNoUpdateAvailable:=ReadString(LangStr,'NoUpdateAvailable','Pas de nouvelle version disponible');
     sUpdateAlertBox:=ReadString(LangStr,'UpdateAlertBox','Version actuelle: %sUne nouvelle version %s est disponible');
     Aboutbox.Caption:=ReadString(LangStr,'Aboutbox.Caption','A propos de Courriels en attente');
     AboutBox.LUpdate.Caption:=ReadString(LangStr,'AboutBox.LUpdate.Caption','Recherche de mise à jour');

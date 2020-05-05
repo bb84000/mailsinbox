@@ -76,7 +76,6 @@ uses mailsinbox1;
 { TFImpex }
 
 procedure TFImpex.FormCreate(Sender: TObject);
-
 begin
   ImpAccounts:= TAccountsList.Create('impex');
   MailattAccName:= 'MailAttente accounts';

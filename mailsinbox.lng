@@ -95,6 +95,7 @@ MBytes=MB
 NeverChecked= Not yet checked
 Use64bit=Use the 64bit version of the program
 DeleteAccount=The account %s will be deleted. Are you sure ?
+AccDeleted=Account %s has been deleted
 CannotGetNewVerList=Cannot get new versions list
 NewAccount=New account
 MMnuFile.Caption=File
@@ -109,6 +110,7 @@ ToDisplayLog=be abble to display its log
 ToDeleteAcc=be able to delete it
 ToEditAcc=be able to edit it
 CreatedDataFolder=Mails In Box data folder "%s" created.
+NoUpdateAvailable=No new version available
 
 ;About
 Aboutbox.Caption=About Mails In Box
@@ -310,6 +312,7 @@ MBytes=Mo
 NeverChecked=Pas encore vérifié
 Use64bit=Utilisez la version 64 bits de ce programme
 DeleteAccount=Voulez-vous vraiment supprimer le compte %s ?
+AccDeleted=Le compte %s a été supprimé
 CannotGetNewVerList=Liste des nouvelles versions indisponible
 NewAccount=Nouveau compte
 MMnuFile.Caption=Fichier
@@ -324,6 +327,7 @@ ToDisplayLog=pouvoir afficher son journal
 ToDeleteAcc=pouvoir le supprimer
 ToEditAcc=pouvoir le modifier
 CreatedDataFolder=Dossier de données de Couriels en attente "%s" créé.
+NoUpdateAvailable=Pas de nouvelle version disponible
 
 ;About
 Aboutbox.Caption=A propos de Courrier en attente

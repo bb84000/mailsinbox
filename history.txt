@@ -140,3 +140,11 @@ Version 0.7.9.1 - 18/02/2020
 - Added log line when an update is available
 - Fixed bug in install program, did not install ssl libraries if needed
 
+Version 0.7.9.2 - 19/02/2020
+- Added log line when importing or deleting account
+- Added log line and updated aboutbox hint after new version check
+- Center windows on desktop at first run
+
+Version 0.7.9.3 - 05/05/2020
+- Removed Application ProcessMessage in connection routine to cope with timeout
+
