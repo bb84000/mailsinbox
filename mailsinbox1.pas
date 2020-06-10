@@ -2365,10 +2365,10 @@ begin
         try
           if CurAcc.SSL>0 then
             IdPop3_1.IOHandler := TIdSSLIOHandlerSocketOpenSSL.Create(idPop3_1);
-          IdPop3_1.UseTLS := TIdUseTLS(CurAcc.SSL);
-          IdPOP3_1.Connect;
+           IdPop3_1.UseTLS := TIdUseTLS(CurAcc.SSL);
+           //IdPOP3_1.ConnectTimeout:=;
+           IdPOP3_1.Connect;
           //Application.ProcessMessages;
-          //IdPOP3_1.KeepAlive;
           result := IdPop3_1.CheckMessages;
          except
           on E: Exception do

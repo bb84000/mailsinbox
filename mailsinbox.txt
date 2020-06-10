@@ -1,5 +1,5 @@
 Mails In Box : Mail notifier application
-Version 0.7.9.3
+Version 0.7.9.4
 
 (Explication en Français à la fin de ce fichier)
 
@@ -17,7 +17,7 @@ and you need to update them by editing the account(s).
 The program can be run at windows start and minimized, click the Settings button.
 
 In regular conditions, Mails In Box can run minimized in the system tray.
-It can onbly be closed by right click on its icon and choose Quit, or in its main windows,
+It can only be closed by right click on its icon and choose Quit, or in its main windows,
 with Quit button.
 
 
@@ -44,7 +44,7 @@ Web : http://www.sdtp.com
 *************************************************************************
 
 Courriels en attente - Notification de courriels arrivés
-MailAttente Version 0.7.9.3
+MailAttente Version 0.7.9.4
 
 OBJET
 Vérifie la présence de courrier sur les boîtes de courriel POP3 et IMAP

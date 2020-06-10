@@ -18,9 +18,7 @@
         <ComponentName Value="FMailsInBox"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <IsVisibleTab Value="True"/>
-        <TopLine Value="2361"/>
-        <CursorPos X="31" Y="2371"/>
+        <CursorPos Y="2372"/>
         <UsageCount Value="200"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
@@ -93,7 +91,7 @@
         <Filename Value="..\lazbbunits\lazbbutils.txt"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <UsageCount Value="142"/>
+        <UsageCount Value="144"/>
         <DefaultSyntaxHighlighter Value="None"/>
       </Unit8>
       <Unit9>
@@ -127,10 +125,11 @@
       </Unit12>
       <Unit13>
         <Filename Value="..\..\..\AppData\Local\lazarus\onlinepackagemanager\packages\Indy10\Protocols\IdPOP3.pas"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="586"/>
-        <CursorPos X="16" Y="601"/>
-        <UsageCount Value="3"/>
+        <EditorIndex Value="2"/>
+        <TopLine Value="180"/>
+        <CursorPos X="56" Y="12"/>
+        <UsageCount Value="10"/>
+        <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit13>
       <Unit14>
@@ -165,10 +164,11 @@
       </Unit17>
       <Unit18>
         <Filename Value="..\lazbbunits\lazbbosversion.pas"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="351"/>
-        <CursorPos X="3" Y="21"/>
-        <UsageCount Value="9"/>
+        <EditorIndex Value="1"/>
+        <TopLine Value="296"/>
+        <CursorPos X="35" Y="319"/>
+        <UsageCount Value="10"/>
+        <Loaded Value="True"/>
       </Unit18>
       <Unit19>
         <Filename Value="..\lazbbunits\lazbbinifiles.pas"/>
@@ -196,9 +196,10 @@
       </Unit21>
       <Unit22>
         <Filename Value="history.txt"/>
-        <EditorIndex Value="1"/>
-        <TopLine Value="117"/>
-        <CursorPos X="16" Y="148"/>
+        <IsVisibleTab Value="True"/>
+        <EditorIndex Value="4"/>
+        <TopLine Value="121"/>
+        <CursorPos X="68" Y="152"/>
         <UsageCount Value="100"/>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="None"/>
@@ -212,10 +213,11 @@
       </Unit23>
       <Unit24>
         <Filename Value="..\..\..\AppData\Local\lazarus\onlinepackagemanager\packages\Indy10\Protocols\IdExplicitTLSClientServerBase.pas"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="68"/>
-        <CursorPos X="20" Y="86"/>
+        <EditorIndex Value="3"/>
+        <TopLine Value="100"/>
+        <CursorPos X="15" Y="148"/>
         <UsageCount Value="25"/>
+        <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit24>
       <Unit25>
@@ -388,9 +390,8 @@
       </Unit46>
       <Unit47>
         <Filename Value="mailsinbox.txt"/>
-        <EditorIndex Value="2"/>
-        <TopLine Value="24"/>
-        <CursorPos X="28" Y="47"/>
+        <EditorIndex Value="5"/>
+        <CursorPos X="16" Y="2"/>
         <UsageCount Value="61"/>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="None"/>
@@ -491,7 +492,7 @@
         <UsageCount Value="10"/>
       </Unit60>
     </Units>
-    <JumpHistory Count="6" HistoryIndex="5">
+    <JumpHistory Count="18" HistoryIndex="17">
       <Position1>
         <Filename Value="mailsinbox1.pas"/>
         <Caret Line="17" Column="16"/>
@@ -516,6 +517,54 @@
         <Filename Value="mailsinbox1.pas"/>
         <Caret Line="2244" Column="24" TopLine="2218"/>
       </Position6>
+      <Position7>
+        <Filename Value="mailsinbox1.pas"/>
+        <Caret Line="2370" Column="23" TopLine="2352"/>
+      </Position7>
+      <Position8>
+        <Filename Value="..\..\..\AppData\Local\lazarus\onlinepackagemanager\packages\Indy10\Protocols\IdPOP3.pas"/>
+        <Caret Line="232" Column="22" TopLine="216"/>
+      </Position8>
+      <Position9>
+        <Filename Value="..\..\..\AppData\Local\lazarus\onlinepackagemanager\packages\Indy10\Protocols\IdPOP3.pas"/>
+        <Caret Line="588" Column="26" TopLine="561"/>
+      </Position9>
+      <Position10>
+        <Filename Value="..\..\..\AppData\Local\lazarus\onlinepackagemanager\packages\Indy10\Protocols\IdPOP3.pas"/>
+        <Caret Line="601" Column="20" TopLine="40"/>
+      </Position10>
+      <Position11>
+        <Filename Value="..\..\..\AppData\Local\lazarus\onlinepackagemanager\packages\Indy10\Protocols\IdPOP3.pas"/>
+        <Caret Line="171" Column="28" TopLine="144"/>
+      </Position11>
+      <Position12>
+        <Filename Value="..\..\..\AppData\Local\lazarus\onlinepackagemanager\packages\Indy10\Protocols\IdPOP3.pas"/>
+        <Caret Line="172" Column="22" TopLine="145"/>
+      </Position12>
+      <Position13>
+        <Filename Value="..\..\..\AppData\Local\lazarus\onlinepackagemanager\packages\Indy10\Protocols\IdPOP3.pas"/>
+        <Caret Line="179" Column="21" TopLine="152"/>
+      </Position13>
+      <Position14>
+        <Filename Value="..\..\..\AppData\Local\lazarus\onlinepackagemanager\packages\Indy10\Protocols\IdPOP3.pas"/>
+        <Caret Line="232" Column="22" TopLine="205"/>
+      </Position14>
+      <Position15>
+        <Filename Value="..\..\..\AppData\Local\lazarus\onlinepackagemanager\packages\Indy10\Protocols\IdPOP3.pas"/>
+        <Caret Line="601" Column="18" TopLine="578"/>
+      </Position15>
+      <Position16>
+        <Filename Value="..\lazbbunits\lazbbosversion.pas"/>
+        <Caret Line="307" Column="10" TopLine="295"/>
+      </Position16>
+      <Position17>
+        <Filename Value="..\lazbbunits\lazbbosversion.pas"/>
+        <Caret Line="379" Column="39" TopLine="352"/>
+      </Position17>
+      <Position18>
+        <Filename Value="history.txt"/>
+        <Caret Line="153" TopLine="121"/>
+      </Position18>
     </JumpHistory>
     <RunParams>
       <FormatVersion Value="2"/>
