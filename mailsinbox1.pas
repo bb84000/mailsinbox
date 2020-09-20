@@ -19,7 +19,7 @@ uses
   lazbbinifiles, lazbbosversion, LazUTF8, settings1, lazbbautostart,
   lazbbabout, Impex1, mailclients1, uxtheme, Types, IdComponent, fptimer,
   RichMemo, variants, IdMessageCollection, UniqueInstance, log1, registry,
-  dateutils, strutils, lazbbchknewver;
+  dateutils, strutils, lazbbchknewver, fpopenssl, openssl;
 
 type
   TSaveMode = (None, Setting, All);           // Save nothing, only settings, settings and accounts
@@ -284,6 +284,7 @@ type
     procedure SortMails(CurCol: integer);
     procedure LoadAccounts(filename: string);
     function SetError(E: Exception; ErrorStr: String; ErrorUID: Integer; ErrorCaption: String; var ErrorsStr: String): boolean;
+    procedure BeforeClose;
   public
     OsInfo: TOSInfo;           //used by Settings1
     UserAppsDataPath: string;  //used by Impex1
@@ -359,14 +360,16 @@ var
       reg.WriteString(RunRegKeyVal, RunRegKeySz) ;
       reg.CloseKey;
       reg.free;
-      Application.ProcessMessages;
-      caClose:= caFree;
-      FormClose(self, caClose);
+    // Application.ProcessMessages;
+    // caClose:= caFree;
+    //  FormClose(self, caClose);
     {$ENDIF}
     {$IFDEF Linux}
        SetAutostart(ProgName, Application.exename);
     {$ENDIF}
   end;
+  BeforeClose;
+  Application.ProcessMessages;
 end;
 
 // TFMailsInBox : This is the main form of the program
@@ -622,7 +625,8 @@ begin
    begin
      FSettings.Settings.LastUpdChk := Trunc(Now);
      AboutBox.LUpdate.Hint:= sLastUpdateSearch + ': ' + DateToStr(FSettings.Settings.LastUpdChk);
-     sNewVer:= GetLastVersion(ChkVerURL, 'mailsinbox', errmsg);
+     //sNewVer:= GetLastVersion(ChkVerURL, 'mailsinbox', errmsg);
+     sNewVer:= ChkLastVersion('mailsinbox', errmsg);
      if length(sNewVer)=0 then
      begin
        if length(errmsg)=0 then alertmsg:= sCannotGetNewVerList
@@ -635,7 +639,7 @@ begin
      NewVer := VersionToInt(sNewVer);
      // Cannot get new version
      if NewVer < 0 then exit;
-     // CurVer := VersionToInt('0.1.0.0');     //Test version check
+     //CurVer := VersionToInt('0.1.0.0');     //Test version check
      CurVer := VersionToInt(version);
      if NewVer > CurVer then
      begin
@@ -985,6 +989,36 @@ begin
   SettingsChanged := false;
 end;
 
+// Procedure used during QueryEndSession and Formclose function
+procedure TFMailsInBox.BeforeClose;
+var
+  s: string;
+  i: integer;
+  curcolsw: string;
+begin
+  // check if columns width has changed
+  curcolsw:='';
+  For i:= 0 to 4 do  curcolsw:= curcolsw+IntToHex(self.SGMails.Columns [i].Width, 4);
+  if (curcolsw <> sColumnswidth) then DoChangeBounds(self);
+  if FSettings.Settings.Startup then SetAutostart(progname, Application.exename)
+      else UnSetAutostart(progname);
+  if AccountsChanged then
+  begin
+    SaveConfig(All);
+  end else
+  begin
+    if SettingsChanged then SaveConfig(Setting) ;
+  end;
+  LogAddLine(-1, now, sClosingProg);
+  LogAddLine(-1, now, '************************');
+  if FSettings.Settings.SaveLogs then
+  begin
+    s:= Mainlog+SessionLog.text;
+    SessionLog.text:=s;
+  end;
+  SessionLog.SaveToFile(LogFileName);
+  Application.ProcessMessages;
+end;
 
 procedure TFMailsInBox.FormClose(Sender: TObject; var CloseAction: TCloseAction);
 var
@@ -994,30 +1028,15 @@ var
 begin
   if CanClose then
   begin
-
-    CloseAction:= caFree;
+     CloseAction:= caFree;
     if CheckingMail then
     begin
       ShowMessage(sCannotQuit);
       CloseAction:= caNone;
     end else
     begin
-      // check if columns width has changed
-      curcolsw:='';
-      For i:= 0 to 4 do  curcolsw:= curcolsw+IntToHex(self.SGMails.Columns [i].Width, 4);
-      if (curcolsw <> sColumnswidth) then DoChangeBounds(self);
-      if FSettings.Settings.Startup then SetAutostart(progname, Application.exename)
-      else UnSetAutostart(progname);
-      if AccountsChanged then SaveConfig(All)
-      else if SettingsChanged then SaveConfig(Setting) ;
-      LogAddLine(-1, now, sClosingProg);
-      LogAddLine(-1, now, '************************');
-      if FSettings.Settings.SaveLogs then
-      begin
-        s:= Mainlog+SessionLog.text;
-        SessionLog.text:=s;
-      end;
-      SessionLog.SaveToFile(LogFileName);
+      // check if something has changed in accounts and settings
+      BeforeClose;
       CloseAction:= caFree;
     end;
   end else

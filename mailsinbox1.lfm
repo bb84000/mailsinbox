@@ -1910,6 +1910,7 @@ object FMailsInBox: TFMailsInBox
       }
       GroupIndex = 1
       NumGlyphs = 2
+      OnClick = BtnQuitClick
       OnDblClick = BtnQuitDblClick
     end
     object BtnHelp: TSpeedButton

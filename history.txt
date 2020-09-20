@@ -151,3 +151,8 @@ Version 0.7.9.3 - 05/05/2020
 Version 0.7.9.4 - 30/05/2020
 - Updated OS version detection for Win 10 may 2020 and 20H2 updates
 
+Version 0.7.9.5 - 17/6/2020
+- Last version check is done on github account
+
+Version 0.7.9.6 - 20/09/20
+- Changed code in end session routine to be sure changes are saved
