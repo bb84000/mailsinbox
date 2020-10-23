@@ -156,3 +156,6 @@ Version 0.7.9.5 - 17/6/2020
 
 Version 0.7.9.6 - 20/09/20
 - Changed code in end session routine to be sure changes are saved
+
+Version 0.7.9.7 - 23/10/2020
+- Updated windows version info
