@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mailsinbox>
+  <settings version="">
+    <savsizepos>false</savsizepos>
+    <wstate/>
+    <lastupdchk>30/12/1899</lastupdchk>
+    <nochknewver>false</nochknewver>
+    <startup>false</startup>
+    <startmini>false</startmini>
+    <mailclientmini>false</mailclientmini>
+    <hideintaskbar>false</hideintaskbar>
+    <restnewmsg>false</restnewmsg>
+    <savelogs>false</savelogs>
+    <startupcheck>false</startupcheck>
+    <smallbtns>false</smallbtns>
+    <notifications>false</notifications>
+    <noclosealert>false</noclosealert>
+    <noquitalert>false</noquitalert>
+    <DisplayAllAccMsgs>false</DisplayAllAccMsgs>
+    <soundfile/>
+    <langstr>fr</langstr>
+    <mailclient/>
+    <mailclientname/>
+    <mailclientisurl>false</mailclientisurl>
+    <restart>false</restart>
+    <mailsorttyp>0</mailsorttyp>
+    <mailsortdir>0</mailsortdir>
+    <buttonbar>true</buttonbar>
+    <menubar>false</menubar>
+    <lastfires/>
+    <nextfires/>
+  </settings>
+</mailsinbox>

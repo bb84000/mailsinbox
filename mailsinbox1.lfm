@@ -12,7 +12,7 @@ object FMailsInBox: TFMailsInBox
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   Position = poDesktopCenter
-  LCLVersion = '2.0.6.0'
+  LCLVersion = '2.0.10.0'
   object PnlToolbar: TPanel
     Left = 0
     Height = 42
@@ -2085,7 +2085,7 @@ object FMailsInBox: TFMailsInBox
       Left = 8
       Height = 15
       Top = 8
-      Width = 544
+      Width = 520
       AutoSize = False
       ParentColor = False
     end
@@ -2964,25 +2964,25 @@ object FMailsInBox: TFMailsInBox
     }
     Visible = True
     OnClick = MnuRestoreClick
-    left = 400
-    top = 80
+    Left = 400
+    Top = 80
   end
   object IdPOP3_1: TIdPOP3
     OnDisconnected = Id_client_Disconnected
     OnConnected = Id_client_Connected
     SASLMechanisms = <>
-    left = 32
-    top = 80
+    Left = 32
+    Top = 80
   end
   object ImgAccounts: TImageList
-    left = 96
-    top = 216
+    Left = 96
+    Top = 216
   end
   object MnuAccount: TPopupMenu
     Images = ILMnuAccounts
     OnPopup = MnuAccountPopup
-    left = 168
-    top = 80
+    Left = 168
+    Top = 80
     object MnuAccountLog: TMenuItem
       Caption = 'Journal du compte sélectionné'
       OnClick = BtnLogClick
@@ -3014,8 +3014,8 @@ object FMailsInBox: TFMailsInBox
   object MnuMails: TPopupMenu
     Images = ILMnuMails
     OnPopup = MnuMailsPopup
-    left = 248
-    top = 80
+    Left = 248
+    Top = 80
     object MnuInfos: TMenuItem
       Caption = 'Informations'
       OnClick = MnuInfosClick
@@ -3033,8 +3033,8 @@ object FMailsInBox: TFMailsInBox
     end
   end
   object ILTray: TImageList
-    left = 472
-    top = 80
+    Left = 472
+    Top = 80
     Bitmap = {
       4C69010000001000000010000000FF00FF00FF00FF00FF00FF00FF00FF00FF00
       FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00
@@ -3074,29 +3074,29 @@ object FMailsInBox: TFMailsInBox
   object TrayTimer: TTimer
     Interval = 1750
     OnTimer = OnTrayTimer
-    left = 400
-    top = 152
+    Left = 400
+    Top = 152
   end
   object IdIMAP4_1: TIdIMAP4
     OnDisconnected = Id_client_Disconnected
     OnConnected = Id_client_Connected
     SASLMechanisms = <>
     MilliSecsToWaitToClearBuffer = 10
-    left = 104
-    top = 80
+    Left = 104
+    Top = 80
   end
   object GetMailTimer: TTimer
     Enabled = False
     Interval = 15000
     OnTimer = GetMailTimerTimer
-    left = 32
-    top = 144
+    Left = 32
+    Top = 144
   end
   object MnuTray: TPopupMenu
     Images = ILMnuTray
     OnPopup = MnuTrayPopup
-    left = 328
-    top = 80
+    Left = 328
+    Top = 80
     object MnuRestore: TMenuItem
       Caption = 'Restaurer'
       ImageIndex = 0
@@ -3137,31 +3137,31 @@ object FMailsInBox: TFMailsInBox
   end
   object UniqueInstance1: TUniqueInstance
     Enabled = True
-    left = 32
-    top = 216
+    Left = 32
+    Top = 216
   end
   object ILMnuTray: TImageList
-    left = 328
-    top = 152
+    Left = 328
+    Top = 152
   end
   object ILMnuMails: TImageList
-    left = 248
-    top = 152
+    Left = 248
+    Top = 152
   end
   object ILMnuAccounts: TImageList
-    left = 112
-    top = 144
+    Left = 112
+    Top = 144
   end
   object ILLargeBtns: TImageList
     Height = 24
     Width = 48
-    left = 472
-    top = 160
+    Left = 472
+    Top = 160
   end
   object ILSmallBtns: TImageList
     Width = 32
-    left = 544
-    top = 160
+    Left = 544
+    Top = 160
     Bitmap = {
       4C69120000002000000010000000808080008080800080808000808080008080
       800080808000000000FF000000FF000000FF000000FF80808000808080008080
@@ -4319,8 +4319,8 @@ object FMailsInBox: TFMailsInBox
     }
   end
   object ILSGTitles: TImageList
-    left = 253
-    top = 230
+    Left = 253
+    Top = 230
     Bitmap = {
       4C69030000001000000010000000FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
       FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
@@ -4423,8 +4423,8 @@ object FMailsInBox: TFMailsInBox
   end
   object MainMnu: TMainMenu
     Images = ILMainMnu
-    left = 328
-    top = 232
+    Left = 328
+    Top = 232
     object MMnuFile: TMenuItem
       Caption = 'Fichier'
       OnClick = MMnuClick
@@ -4507,8 +4507,8 @@ object FMailsInBox: TFMailsInBox
   end
   object MnuButtonBar: TPopupMenu
     OnPopup = MnuButtonBarPopup
-    left = 632
-    top = 8
+    Left = 632
+    Top = 8
     object MnuDisplayMenu: TMenuItem
       AutoCheck = True
       Caption = 'Afficher le menu'
@@ -4522,7 +4522,7 @@ object FMailsInBox: TFMailsInBox
     end
   end
   object ILMainMnu: TImageList
-    left = 392
-    top = 232
+    Left = 392
+    Top = 232
   end
 end

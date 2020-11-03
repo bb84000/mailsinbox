@@ -744,7 +744,7 @@ begin
   MailClients[1].Url:=true;
   {$IFDEF WINDOWS}
   //If Windows 10
-  if FMailsInBox.OsInfo.VerMaj=10 then
+  if FMailsInBox.OSVersion.VerMaj=10 then
   begin
     inc (FixedCount);
     if frst then SetLength(MailClients, FixedCount);

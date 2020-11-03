@@ -1,6 +1,6 @@
 {******************************************************************************}
 { MailInBox main unit                                                          }
-{ bb - sdtp - february 2020                                                    }
+{ bb - sdtp - november 2020                                                    }
 { Check mails on pop3 and imap servers                                         }
 {******************************************************************************}
 
@@ -16,7 +16,7 @@ uses
   {$ENDIF} Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ExtCtrls,
   StdCtrls, Grids, ComCtrls, Buttons, Menus, IdPOP3, IdSSLOpenSSL, LCLIntf,
   IdExplicitTLSClientServerBase, IdMessage, IdIMAP4, accounts1, lazbbutils,
-  lazbbinifiles, lazbbosversion, LazUTF8, settings1, lazbbautostart,
+  lazbbinifiles, lazbbosver{sion}, LazUTF8, settings1, lazbbautostart,
   lazbbabout, Impex1, mailclients1, uxtheme, Types, IdComponent, fptimer,
   RichMemo, variants, IdMessageCollection, UniqueInstance, log1, registry,
   dateutils, strutils, lazbbchknewver, fpopenssl, openssl;
@@ -286,7 +286,8 @@ type
     function SetError(E: Exception; ErrorStr: String; ErrorUID: Integer; ErrorCaption: String; var ErrorsStr: String): boolean;
     procedure BeforeClose;
   public
-    OsInfo: TOSInfo;           //used by Settings1
+    //OsInfo: TOSInfo;           //used by Settings1
+    OSVersion: TOSVersion;
     UserAppsDataPath: string;  //used by Impex1
   end;
 
@@ -415,6 +416,12 @@ begin
   slLastFires:= TstringList.Create;
   slNextFires:=TstringList.Create;
   DisplayMails:= TMailsList.Create;
+  {$IFDEF CPU32}
+     OSTarget := '32 bits';
+  {$ENDIF}
+  {$IFDEF CPU64}
+     OSTarget := '64 bits';
+  {$ENDIF}
   {$IFDEF Linux}
     OS := 'Linux';
     CRLF := #10;
@@ -422,7 +429,7 @@ begin
     x := pos('.', LangStr);
     LangStr := Copy(LangStr, 0, 2);
     wxbitsrun := 0;
-    OSTarget:= '';
+    //OSTarget:= '';
     UserAppsDataPath := GetUserDir;
     // Get mail client
   {$ENDIF}
@@ -436,22 +443,16 @@ begin
     else
     UserAppsDataPath := ExtractFilePath(ExcludeTrailingPathDelimiter(s)) + 'Roaming'; // Vista to W10
     LazGetShortLanguageID(LangStr);
-    {$IFDEF WIN32}
-      OSTarget := '32 bits';
-    {$ENDIF}
-    {$IFDEF WIN64}
-      OSTarget := '64 bits';
-    {$ENDIF}
   {$ENDIF}
-  GetSysInfo(OsInfo);
-  version := GetVersionInfo.ProductVersion;
   MIBExecPath:=ExtractFilePath(Application.ExeName);
   // Chargement des chaînes de langue...
   LangFile := TBbIniFile.Create(MIBExecPath + LowerCase(ProgName)+'.lng');
+  version := GetVersionInfo.ProductVersion;
+  OSVersion:= TOSVersion.Create(LangStr, LangFile);
   // Cannot call Modlang as components are not yet created, use default language
   sOpenProgram:=LangFile.ReadString(LangStr,'OpenProgram','Ouverture de Courrier en attente');
   LogAddLine(-1, now, sOpenProgram+' - Version '+Version+ ' (' + OS + OSTarget + ')');
-  LogAddLine(-1, now, OsInfo.VerDetail);
+  LogAddLine(-1, now, OSVersion.VerDetail);
   MIBAppDataPath := UserAppsDataPath + PathDelim + ProgName + PathDelim;
   if not DirectoryExists(MIBAppDataPath) then
   begin
@@ -475,12 +476,12 @@ end;
 
 procedure TFMailsInBox.FormActivate(Sender: TObject);
 begin
- if not Initialized then
- begin
-   InitButtons;
-   Initialize;
-   CheckUpdate;
- end;
+  if not Initialized then
+  begin
+    InitButtons;
+    Initialize;
+    CheckUpdate;
+  end;
 end;
 
 // populate menu imagelist from resource name(value is a string)
@@ -733,8 +734,8 @@ begin
   LoadSettings(ConfigFileName);
   LoadAccounts(AccountsFileName);
   Application.Title:=Caption;
-  if (OSINfo.Architecture = 'x86_64') and (OsTarget = '32 bits') then
-     MsgDlg(Caption, sUse64bit, mtInformation,  [mbOK], [OKBtn]);
+  if (Pos('64', OSVersion.Architecture)>0) and (OsTarget='32 bits') then
+    MsgDlg(Caption, sUse64bit, mtInformation,  [mbOK], [OKBtn]);
   Application.ProcessMessages;
   // in case startup was done after a session end
   if FSettings.Settings.Restart then
@@ -787,7 +788,7 @@ begin
   // Update infos as we may have changed nextfire time
   UpdateInfos;
   // OS version in Settings dialog status line
-  FSettings.LStatus.Caption := OsInfo.VerDetail;
+  FSettings.LStatus.Caption := OSVersion.VerDetail;
   // set small buttons only if asked
   if FSettings.Settings.SmallBtns then SetSmallBtns(bzSmall)
   else SetSmallBtns(bzNone); // customize only launchmail button
@@ -857,8 +858,11 @@ end;
 
 procedure TFMailsInBox.DoChangeBounds(Sender: TObject);
 begin
-  // Change time display label position when window width change
-  if Sender= self then LNow.left:= Clientwidth-LNow.width-10;
+  // Change time display position and status label width when window width change
+  if Sender= self then begin
+    LNow.left:= Clientwidth-LNow.width-10;
+    LStatus.width:= Clientwidth -LNow.width-20;
+  end;
   SettingsChanged:= FSettings.Settings.SavSizePos;
 end;
 
@@ -985,6 +989,7 @@ begin
       Settings.LangStr := 'en';
     end;
   end;
+
   Modlangue;
   SettingsChanged := false;
 end;
@@ -2821,9 +2826,10 @@ end;
 
 procedure TFMailsInBox.ModLangue;
 begin
+  LangStr:=FSettings.Settings.LangStr;
+  OSVersion:= TOSVersion.Create(LangStr, LangFile);
   with LangFile do
   begin
-    LangStr:=FSettings.Settings.LangStr;
     // general strings
     sRetConfBack:= ReadString(LangStr,'RetConfBack','Recharge la dernière configuration sauvegardée');
     sCreNewConf:= ReadString(LangStr,'CreNewConf','Création d''une nouvelle configuration');
@@ -2992,6 +2998,7 @@ begin
     FSettings.GMailWeb:=ReadString(LangStr,'FSettings.GMailWeb','Site Web de GMail');
     FSettings.OutlookWeb:=ReadString(LangStr,'FSettings.OutlookWeb','Site Web d''Outlook.com');
     FSettings.Win10Mail:=ReadString(LangStr,'FSettings.Win10Mail','Application Courrier de Windows 10');
+    FSettings.Lstatus.Caption:= OSVersion.VerDetail;
 
     // Choose mail client
     FMailClientChoose.BtnOK.Caption:=OKBtn;
