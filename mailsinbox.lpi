@@ -17,11 +17,9 @@
     </General>
     <VersionInfo>
       <UseVersionInfo Value="True"/>
-      <MinorVersionNr Value="7"/>
-      <RevisionNr Value="9"/>
-      <BuildNr Value="8"/>
+      <MajorVersionNr Value="1"/>
       <Attributes pvaPreRelease="True"/>
-      <StringTable Comments="https://www.sdtp.com" CompanyName="sdtp" FileDescription="Courrier en attente - Mails in Box" InternalName="mailsinbox" LegalCopyright="sdtp - bb - october 2020" LegalTrademarks="sdtp - bb - october 2020" OriginalFilename="mailsinbox" ProductName="Mails In Box - Courriels en attente" ProductVersion="0.7.9.8"/>
+      <StringTable Comments="https://www.sdtp.com" CompanyName="sdtp" FileDescription="Courrier en attente - Mails in Box" InternalName="mailsinbox" LegalCopyright="sdtp - bb - october 2020" LegalTrademarks="sdtp - bb - october 2020" OriginalFilename="mailsinbox" ProductName="Mails In Box - Courriels en attente" ProductVersion="1.0.0.0"/>
     </VersionInfo>
     <BuildModes Count="1">
       <Item1 Name="Default" Default="True"/>
@@ -51,7 +49,7 @@
         <PackageName Value="LCL"/>
       </Item5>
     </RequiredPackages>
-    <Units Count="9">
+    <Units Count="10">
       <Unit0>
         <Filename Value="mailsinbox.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -106,6 +104,13 @@
         <Filename Value="..\lazbbunits\lazbbutils.txt"/>
         <IsPartOfProject Value="True"/>
       </Unit8>
+      <Unit9>
+        <Filename Value="..\lazbbunits\unit1.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="Form1"/>
+        <ResourceBaseClass Value="Form"/>
+        <UnitName Value="Unit1"/>
+      </Unit9>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

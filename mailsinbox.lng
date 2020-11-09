@@ -171,6 +171,7 @@ FSettings.CBUrl.Hint=Check if it is a Web address (Url)
 FSettings.GMailWeb=GMail Web site
 FSettings.OutlookWeb=Outlook.com Web site
 FSettings.Win10Mail=Windows 10 Mail application
+FSettings.CBDisplayAllAccMsgs.Caption=Display all accounts mails
 
 ;Choose mail client
 FMailClientChoose.Caption=Choose a mail client
@@ -405,6 +406,7 @@ FSettings.OutlookWeb=Site Web d'Outlook.com
 FSettings.Win10Mail=Application Courrier de Windows 10
 FSettings.CBNoCloseAlert.Caption=Ne pas afficher l'alerte de masquage de la fenêtre
 FSettings.CBNoQuitAlert.Caption=Ne pas afficher l'alerte d'arrêt du programme
+FSettings.CBDisplayAllAccMsgs.Caption=Afficher les messages de tous les comptes
 
 ;Choose mail client
 FMailClientChoose.Caption=Choisir un client courrier

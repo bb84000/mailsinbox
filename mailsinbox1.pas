@@ -19,7 +19,7 @@ uses
   lazbbinifiles, lazbbosver{sion}, LazUTF8, settings1, lazbbautostart,
   lazbbabout, Impex1, mailclients1, uxtheme, Types, IdComponent, fptimer,
   RichMemo, variants, IdMessageCollection, UniqueInstance, log1, registry,
-  dateutils, strutils, lazbbchknewver, fpopenssl, openssl;
+  dateutils, strutils, lazbbchknewver, fpopenssl, openssl, opensslsockets;
 
 type
   TSaveMode = (None, Setting, All);           // Save nothing, only settings, settings and accounts
@@ -475,12 +475,15 @@ end;
 // Form activation only needed once
 
 procedure TFMailsInBox.FormActivate(Sender: TObject);
+var
+  err: string;
 begin
   if not Initialized then
   begin
     InitButtons;
     Initialize;
     CheckUpdate;
+
   end;
 end;
 
@@ -626,8 +629,8 @@ begin
    begin
      FSettings.Settings.LastUpdChk := Trunc(Now);
      AboutBox.LUpdate.Hint:= sLastUpdateSearch + ': ' + DateToStr(FSettings.Settings.LastUpdChk);
-     //sNewVer:= GetLastVersion(ChkVerURL, 'mailsinbox', errmsg);
-     sNewVer:= ChkLastVersion('mailsinbox', errmsg);
+     sNewVer:= GetLastVersion(ChkVerURL, 'mailsinbox', errmsg);
+     //sNewVer:= FNewVersion.ChkNewVersion('https://github.com/bb84000/mailsinbox/releases/latest', errmsg);
      if length(sNewVer)=0 then
      begin
        if length(errmsg)=0 then alertmsg:= sCannotGetNewVerList
@@ -729,7 +732,7 @@ begin
   BaseUpdateUrl:= IniFile.ReadString('urls', 'BaseUpdateUrl',
     'https://www.sdtp.com/versions/version.php?program=mailsinbox&version=%s&language=%s');
   ChkVerURL := IniFile.ReadString('urls', 'ChkVerURL',
-    'https://www.sdtp.com/versions/versions.csv');
+    'ChkVerURL=https://www.sdtp.com/versions/versions.csv');
   if Assigned(IniFile) then IniFile.free;
   LoadSettings(ConfigFileName);
   LoadAccounts(AccountsFileName);
@@ -2106,6 +2109,7 @@ begin
   else AboutBox.Position:= poMainFormCenter;
   AboutBox.LastUpdate:= FSettings.Settings.LastUpdChk;
   AboutBox.ShowModal;
+  if AboutBox.ModalResult=mrYes then ShowMessage('Test de mise à jour');
   // Truncate date to avoid changes if there is the same day (hh:mm are in the decimal part of the date)
   if trunc(AboutBox.LastUpdate) > trunc(FSettings.Settings.LastUpdChk) then
   begin
@@ -2988,6 +2992,7 @@ begin
     FSettings.CBNotifications.Caption:=ReadString(LangStr,'FSettings.CBNotifications.Caption',FSettings.CBNotifications.Caption);
     FSettings.CBNoCloseAlert.Caption:=ReadString(LangStr,'FSettings.CBNoCloseAlert.Caption',FSettings.CBNoCloseAlert.Caption);
     FSettings.CBNoQuitAlert.Caption:=ReadString(LangStr,'FSettings.CBNoQuitAlert.Caption',FSettings.CBNoQuitAlert.Caption);
+    FSettings.CBDisplayAllAccMsgs.Caption:=ReadString(LangStr,'FSettings.CBDisplayAllAccMsgs.Caption',FSettings.CBDisplayAllAccMsgs.Caption) ;
     FSettings.LMailClient.Caption:=ReadString(LangStr,'FSettings.LMailClient.Caption',FSettings.LMailClient.Caption);
     FSettings.BtnMailClient.Hint:=ReadString(LangStr,'FSettings.BtnMailClient.Hint',FSettings.BtnMailClient.Hint);
     FSettings.LSoundFile.Caption:=FAccounts.LSoundFile.Caption;
