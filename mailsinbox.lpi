@@ -18,8 +18,9 @@
     <VersionInfo>
       <UseVersionInfo Value="True"/>
       <MajorVersionNr Value="1"/>
+      <BuildNr Value="1"/>
       <Attributes pvaPreRelease="True"/>
-      <StringTable Comments="https://www.sdtp.com" CompanyName="sdtp" FileDescription="Courrier en attente - Mails in Box" InternalName="mailsinbox" LegalCopyright="sdtp - bb - october 2020" LegalTrademarks="sdtp - bb - october 2020" OriginalFilename="mailsinbox" ProductName="Mails In Box - Courriels en attente" ProductVersion="1.0.0.0"/>
+      <StringTable Comments="https://www.sdtp.com" CompanyName="sdtp" FileDescription="Courrier en attente - Mails in Box" InternalName="mailsinbox" LegalCopyright="sdtp - bb - october 2020" LegalTrademarks="sdtp - bb - october 2020" OriginalFilename="mailsinbox" ProductName="Mails In Box - Courriels en attente" ProductVersion="1.0.0.1"/>
     </VersionInfo>
     <BuildModes Count="1">
       <Item1 Name="Default" Default="True"/>
@@ -49,7 +50,7 @@
         <PackageName Value="LCL"/>
       </Item5>
     </RequiredPackages>
-    <Units Count="10">
+    <Units Count="8">
       <Unit0>
         <Filename Value="mailsinbox.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -100,17 +101,6 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
       </Unit7>
-      <Unit8>
-        <Filename Value="..\lazbbunits\lazbbutils.txt"/>
-        <IsPartOfProject Value="True"/>
-      </Unit8>
-      <Unit9>
-        <Filename Value="..\lazbbunits\unit1.pas"/>
-        <IsPartOfProject Value="True"/>
-        <ComponentName Value="Form1"/>
-        <ResourceBaseClass Value="Form"/>
-        <UnitName Value="Unit1"/>
-      </Unit9>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -125,8 +115,8 @@
       <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <CodeGeneration>
-      <TargetCPU Value="x86_64"/>
-      <TargetOS Value="win64"/>
+      <TargetCPU Value="i386"/>
+      <TargetOS Value="win32"/>
       <Optimizations>
         <OptimizationLevel Value="2"/>
       </Optimizations>
@@ -134,6 +124,7 @@
     <Linking>
       <Debugging>
         <GenerateDebugInfo Value="False"/>
+        <DebugInfoType Value="dsStabs"/>
       </Debugging>
       <Options>
         <Win32>
@@ -141,6 +132,9 @@
         </Win32>
       </Options>
     </Linking>
+    <Other>
+      <CustomOptions Value="-al"/>
+    </Other>
   </CompilerOptions>
   <Debugging>
     <Exceptions Count="3">

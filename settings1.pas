@@ -59,6 +59,7 @@ type
     FRestart: Boolean;
     FAppName: String;
     FVersion: String;
+    FLastVersion: String;
     FLastFires: TStringList;
     FNextFires: TstringList;
     FMailSortDir: TSortDirections;
@@ -94,6 +95,7 @@ type
     procedure SetMailClientName(s: string);
     procedure SetMailClientIsUrl(b: boolean);
     procedure SetVersion(s: string);
+    procedure SetLastVersion(s: string);
     procedure SetRestart(b: boolean);
     procedure SetLastFires(sl: TStringList);
     procedure SetNextFires(sl: TStringList);
@@ -131,6 +133,7 @@ type
     property MailClientIsUrl: boolean read FMailClientIsUrl write SetMailClientIsUrl;
     property AppName: string read FAppName write FAppName;
     property Version: string read FVersion write SetVersion;
+    property LastVersion: string read FLastVersion write SetLastVersion;
     property Restart: boolean read FRestart write SetRestart;
     // couple of account UID and unix date converted to strings.
     // separator is '|'
@@ -379,6 +382,13 @@ begin
   if Assigned(FOnChange) then FOnChange(Self);
 end;
 
+procedure TConfig.SetLastVersion(s:string);
+begin
+  if FLastVersion=s then exit;
+  FLastVersion:= s;
+  if Assigned(FOnChange) then FOnChange(Self);
+end;
+
 procedure TConfig.SetRestart(b:boolean);
 begin
   if FRestart=b then exit;
@@ -445,6 +455,7 @@ begin
   ts:= TstringList.Create;
   Try
     TDOMElement(iNode).SetAttribute ('version', FVersion);
+    iNode.AppendChild(SaveItem(iNode, 'lastversion', FLastVersion));
     iNode.AppendChild(SaveItem(iNode, 'savsizepos', BoolToString(FSavSizePos)));
     iNode.AppendChild(SaveItem(iNode, 'wstate', FWState));
     iNode.AppendChild(SaveItem(iNode, 'lastupdchk', TimeDateToString(FLastUpdChk)));
@@ -529,6 +540,7 @@ begin
     try
       upCaseSetting:= UpperCase(subNode.NodeName);
       s:= subNode.TextContent;
+      if UpCaseSetting = 'LASTVERSION' then FLastVersion:= s;
       if upCaseSetting = 'SAVSIZEPOS' then FSavSizePos:= StringToBool(s);
       if upCaseSetting = 'WSTATE' then  FWState:= s;
       if upCaseSetting = 'LASTUPDCHK' then FLastUpdChk:= StringToTimeDate(s);

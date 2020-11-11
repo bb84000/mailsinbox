@@ -110,12 +110,13 @@ ToDisplayLog=be abble to display its log
 ToDeleteAcc=be able to delete it
 ToEditAcc=be able to edit it
 CreatedDataFolder=Mails In Box data folder "%s" created.
-NoUpdateAvailable=No new version available
+
 
 ;About
 Aboutbox.Caption=About Mails In Box
 AboutBox.LUpdate.Caption=Search update
-UpdateAvailable=New version %s available
+UpdateAvailable=New version %s available. Click to download it
+NoUpdateAvailable=MailsInBox is up to date
 NoLongerChkUpdates=No longer check updates
 LastUpdateSearch=Last update check
 UpdateAlertBox=Current version: %sA new version %s is available
@@ -346,12 +347,12 @@ ToDisplayLog=pouvoir afficher son journal
 ToDeleteAcc=pouvoir le supprimer
 ToEditAcc=pouvoir le modifier
 CreatedDataFolder=Dossier de données de Couriels en attente "%s" créé.
-NoUpdateAvailable=Pas de nouvelle version disponible
 
 ;About
 Aboutbox.Caption=A propos de Courrier en attente
 AboutBox.LUpdate.Caption=Recherche de mise à jour
-UpdateAvailable=Nouvelle version %s disponible
+UpdateAvailable=Nouvelle version %s disponible. Cliquer pour la télécharger
+NoUpdateAvailable=Courriels en attente est à jour
 NoLongerChkUpdates=Ne plus rechercher de mise à jour
 LastUpdateSearch=Dernière recherche de mise à jour
 UpdateAlertBox=Version actuelle: %sUne nouvelle version %s est disponible
