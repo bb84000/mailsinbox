@@ -1,7 +1,7 @@
 object FSettings: TFSettings
-  Left = 763
+  Left = 1046
   Height = 327
-  Top = 146
+  Top = 236
   Width = 589
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle

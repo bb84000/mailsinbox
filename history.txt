@@ -175,3 +175,8 @@ Version 1.0.0.0 - 09/11/2020
 Version 1.0.0.1 - 11/11/2020
 - Version check is now in lazbbaboutbox unit
 - New version check scheme with Github instead sdtp
+
+Version 1.0.0.2 - 14/11/20
+- Changed automatic update check to every two days.
+- Aboutbox update status updated at startup
+- Localization of help file

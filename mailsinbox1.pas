@@ -186,6 +186,7 @@ type
     ProgName: string;
     LangStr: string;
     LangFile: TBbIniFile;
+
     LangNums: TStringList;
     LangFound: boolean;
     SettingsChanged: boolean;
@@ -193,9 +194,10 @@ type
     ConfigFileName, AccountsFileName: string;
     ChkMailTimerTick: integer;
     CanClose: boolean;
-    BaseUpdateUrl, ChkVerURL, version: string;
+    //BaseUpdateUrl,  ChkVerURL,
+      version: string;
     sEmailCaption, sLastCheckCaption, sNextCheckCaption : string;
-    sNoLongerChkUpdates, sLastUpdateSearch, sUpdateAlertBox: string;
+    sNoLongerChkUpdates, sUpdateAlertBox: string;
     OKBtn, YesBtn, NoBtn, CancelBtn: string;
     sBtnLogHint, sBtnGetAccMailHint, sBtnDeleteHint, sBtnEditAccHint: string;
     BtnsArr : array of TBtnProps;
@@ -615,22 +617,23 @@ var
   errmsg: string;
   sNewVer: string;
   CurVer, NewVer: int64;
-  //alertpos: TPosition;
-  //alertmsg: string;
+  alertpos: TPosition;
+  alertmsg: string;
 begin
-  //Dernière recherche il y a plus de 7 jours ?
+  //Dernière recherche il y a plus de 1 jours ?
   errmsg := '';
-  //alertmsg:= '';
-  //if not visible then alertpos:= poDesktopCenter
-  //else alertpos:= poMainFormCenter;
-  if (Trunc(Now)>Trunc(FSettings.Settings.LastUpdChk+7)) and (not FSettings.Settings.NoChkNewVer) then
+  alertmsg:= '';
+  if not visible then alertpos:= poDesktopCenter
+  else alertpos:= poMainFormCenter;
+  if (Trunc(Now)>Trunc(FSettings.Settings.LastUpdChk)+1) and (not FSettings.Settings.NoChkNewVer) then
    begin
      FSettings.Settings.LastUpdChk := Trunc(Now);
-     AboutBox.LUpdate.Hint:= sLastUpdateSearch + ': ' + DateToStr(FSettings.Settings.LastUpdChk);
+     AboutBox.LUpdate.Hint:= AboutBox.sLastUpdateSearch + ': ' + DateToStr(FSettings.Settings.LastUpdChk);
      AboutBox.Checked:= true;
-     //sNewVer:= GetLastVersion(ChkVerURL, 'mailsinbox', errmsg);
-     sNewVer:= AboutBox.ChkNewVersion(AboutBox.ChkVerUrl, errmsg);
-     {if length(sNewVer)=0 then
+     AboutBox.ErrorMessage:='';
+     sNewVer:= AboutBox.ChkNewVersion;
+     errmsg:= AboutBox.ErrorMessage;
+     if length(sNewVer)=0 then
      begin
        if length(errmsg)=0 then alertmsg:= sCannotGetNewVerList
        else alertmsg:= TranslateHttpErrorMsg(errmsg, HttpErrMsgNames);
@@ -638,7 +641,7 @@ begin
                     true, mtError, alertpos)= mrYesToAll then FSettings.Settings.NoChkNewVer:= true;
        LogAddLine(-1, now, alertmsg);
        exit;
-     end;  }
+     end;
      NewVer := VersionToInt(sNewVer);
      // Cannot get new version
      if NewVer < 0 then exit;
@@ -650,16 +653,18 @@ begin
        AboutBox.LUpdate.Caption := Format(AboutBox.sUpdateAvailable, [sNewVer]);
        LogAddLine(-1, now, AboutBox.LUpdate.Caption);
        AboutBox.NewVersion:= true;
-
        AboutBox.ShowModal;
-       {Case AlertDlg(Caption, Format(sUpdateAlertBox,[version+LineEnding, sNewVer]), [OKBtn, CancelBtn, sNoLongerChkUpdates], true, mtInformation, alertpos) of
-         mrOK: OpenURL(Format(BaseUpdateURl, [version, FSettings.Settings.LangStr]));
-         mrYesToAll: begin
-           FSettings.Settings.NoChkNewVer := true;
-           OpenURL(Format(BaseUpdateURl, [version, FSettings.Settings.LangStr]));
-         end;
-       end; }
-     end else LogAddLine(-1, now, AboutBox.sNoUpdateAvailable);;
+     end else
+     begin
+      AboutBox.LUpdate.Caption:= AboutBox.sNoUpdateAvailable;
+      LogAddLine(-1, now, AboutBox.sNoUpdateAvailable);
+
+     end;
+   end else
+   begin
+    if VersionToInt(FSettings.Settings.LastVersion)>VersionToInt(version) then
+       AboutBox.LUpdate.Caption := Format(AboutBox.sUpdateAvailable, [FSettings.Settings.LastVersion]) else
+       AboutBox.LUpdate.Caption:= AboutBox.sNoUpdateAvailable;
    end;
 end;
 
@@ -732,15 +737,12 @@ begin
   FSettings.Settings.ButtonBar:= true;
   // Check inifile with URLs, if not present, then use default
   IniFile:= TBbInifile.Create('mailsinbox.ini');
-  BaseUpdateUrl:= IniFile.ReadString('urls', 'BaseUpdateUrl',
-    'https://www.sdtp.com/versions/version.php?program=mailsinbox&version=%s&language=%s');
-  ChkVerURL := IniFile.ReadString('urls', 'ChkVerURL',
-    'ChkVerURL=https://www.sdtp.com/versions/versions.csv');
   AboutBox.ChkVerURL := IniFile.ReadString('urls', 'ChkVerURL','https://github.com/bb84000/mailsinbox/releases/latest');
   if Assigned(IniFile) then IniFile.free;
   LoadSettings(ConfigFileName);
   // In case of program's first use
   if length(FSettings.Settings.LastVersion)=0 then FSettings.Settings.LastVersion:= version;
+
   LoadAccounts(AccountsFileName);
   Application.Title:=Caption;
   if (Pos('64', OSVersion.Architecture)>0) and (OsTarget='32 bits') then
@@ -764,9 +766,10 @@ begin
   AboutBox.LCopyright.Caption := GetVersionInfo.CompanyName + ' - ' + DateTimeToStr(CompileDateTime);
   AboutBox.LVersion.Caption := 'Version: ' + Version + ' (' + OS + OSTarget + ')';
   AboutBox.UrlWebsite := GetVersionInfo.Comments;
-  AboutBox.LUpdate.Hint := sLastUpdateSearch + ': ' + DateToStr(FSettings.Settings.LastUpdChk);
+  AboutBox.LUpdate.Hint := AboutBox.sLastUpdateSearch + ': ' + DateToStr(FSettings.Settings.LastUpdChk);
   AboutBox.Version:= Version;
   AboutBox.ProgName:= ProgName;
+
    // Load last log file
   tmplog:= TStringList.Create;
   if FileExists(LogFileName) then
@@ -2111,19 +2114,32 @@ end;
 
 
 procedure TFMailsInBox.BtnAboutClick(Sender: TObject);
+var
+  chked: Boolean;
+  alertmsg: String;
 begin
   // If main windows is hidden, place the about box at the center of desktop,
   // else at the center of main windows
   if (Sender.ClassName= 'TMenuItem') and not visible then AboutBox.Position:= poDesktopCenter
   else AboutBox.Position:= poMainFormCenter;
   AboutBox.LastUpdate:= FSettings.Settings.LastUpdChk;
+  chked:= AboutBox.Checked;
+  AboutBox.ErrorMessage:='';
   AboutBox.ShowModal;
-  if AboutBox.ModalResult=mrYes then ShowMessage('Test de mise à jour');
+  // If we have checked update and got an error
+  if length(AboutBox.ErrorMessage)>0 then
+  begin
+    alertmsg := TranslateHttpErrorMsg(AboutBox.ErrorMessage, HttpErrMsgNames);
+    if AlertDlg(Caption,  alertmsg, [OKBtn, CancelBtn, sNoLongerChkUpdates],
+                    true, mtError)= mrYesToAll then FSettings.Settings.NoChkNewVer:= true;
+    LogAddLine(-1, now, alertmsg);
+  end;
   // Truncate date to avoid changes if there is the same day (hh:mm are in the decimal part of the date)
+  if (not chked) and AboutBox.Checked then FSettings.Settings.LastVersion:= AboutBox.LastVersion;
   if trunc(AboutBox.LastUpdate) > trunc(FSettings.Settings.LastUpdChk) then
   begin
     FSettings.Settings.LastUpdChk:= AboutBox.LastUpdate;
-    LogAddLine(-1, FSettings.Settings.LastUpdChk, sLastUpdateSearch);
+    LogAddLine(-1, FSettings.Settings.LastUpdChk, AboutBox.LastVersion);
   end;
 end;
 
@@ -2148,6 +2164,8 @@ begin
   end;
 
 end;
+
+
 
 procedure TFMailsInBox.BtnGetAllMailClick(Sender: TObject);
 var
@@ -2179,7 +2197,7 @@ end;
 
 procedure TFMailsInBox.BtnHelpClick(Sender: TObject);
 begin
-  OpenDocument(MIBExecPath+'help'+PathDelim+ProgName+'.html');
+  OpenDocument(AboutBox.HelpFile);
 end;
 
 
@@ -2954,21 +2972,20 @@ begin
     MMnuInfos.Caption:=ReadString(LangStr,'MMnuInfos.Caption',MMnuInfos.Caption);
 
     // About
-    sNoLongerChkUpdates:=ReadString(LangStr,'NoLongerChkUpdates','Ne plus rechercher les mises à jour');
-    sLastUpdateSearch:=ReadString(LangStr,'LastUpdateSearch','Dernière recherche de mise à jour');
-    AboutBox.sUpdateAvailable:=ReadString(LangStr,'UpdateAvailable','Nouvelle version %s disponible');
-    AboutBox.sNoUpdateAvailable:=ReadString(LangStr,'NoUpdateAvailable','Courriels en attente est à jour');
-    sUpdateAlertBox:=ReadString(LangStr,'UpdateAlertBox','Version actuelle: %sUne nouvelle version %s est disponible. Cliquer pour la télécharger');
+    AboutBox.sLastUpdateSearch:=ReadString(LangStr,'AboutBox.LastUpdateSearch','Dernière recherche de mise à jour');
+    AboutBox.sUpdateAvailable:=ReadString(LangStr,'AboutBox.UpdateAvailable','Nouvelle version %s disponible');
+    AboutBox.sNoUpdateAvailable:=ReadString(LangStr,'AboutBox.NoUpdateAvailable','Courriels en attente est à jour');
     Aboutbox.Caption:=ReadString(LangStr,'Aboutbox.Caption','A propos de Courriels en attente');
     if not AboutBox.checked then AboutBox.LUpdate.Caption:=ReadString(LangStr,'AboutBox.LUpdate.Caption',AboutBox.LUpdate.Caption) else
     begin
       if AboutBox.NewVersion then AboutBox.LUpdate.Caption:= Format(AboutBox.sUpdateAvailable, [AboutBox.LastVersion])
       else AboutBox.LUpdate.Caption:= AboutBox.sNoUpdateAvailable;
     end;
+    AboutBox.HelpFile:= MIBExecPath+'help'+PathDelim+ReadString(LangStr,'AboutBox.HelpFile', 'mailsinbox.html');
 
-    //
-    //AboutBox.UrlUpdate:=Format(BaseUpdateURl,[Version,LangStr]);
-
+    // Alert
+    sUpdateAlertBox:=ReadString(LangStr,'UpdateAlertBox','Version actuelle: %sUne nouvelle version %s est disponible. Cliquer pour la télécharger');
+    sNoLongerChkUpdates:=ReadString(LangStr,'NoLongerChkUpdates','Ne plus rechercher les mises à jour');
 
     //Accounts
     FAccounts.BtnOk.Caption:=OKBtn;
@@ -3070,7 +3087,7 @@ begin
     MnuQuit.Caption:= ReadString(LangStr,'MnuQuit.Caption',MnuQuit.Caption);
     MnuAbout.Caption:=BtnAbout.Hint;
 
-        // HTTP Error messages
+    // HTTP Error messages
     HttpErrMsgNames[0] := ReadString(LangStr,'SErrInvalidProtocol','Protocole "%s" invalide');
     HttpErrMsgNames[1] := ReadString(LangStr,'SErrReadingSocket','Erreur de lecture des données à partir du socket');
     HttpErrMsgNames[2] := ReadString(LangStr,'SErrInvalidProtocolVersion','Version de protocole invalide en réponse: %s');

@@ -1597,7 +1597,7 @@ object FMailsInBox: TFMailsInBox
       OnClick = BtnLogClick
     end
     object BtnAbout: TSpeedButton
-      Left = 450
+      Left = 448
       Height = 32
       Hint = 'A propos de MailsInBox'
       Top = 5
