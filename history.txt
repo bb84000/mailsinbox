@@ -180,3 +180,9 @@ Version 1.0.0.2 - 14/11/20
 - Changed automatic update check to every two days.
 - Aboutbox update status updated at startup
 - Localization of help file
+
+Version 1.0.1.0 - 06/12/2020
+- Changed name of lazbbabout unit to lazbbaboutupdate tro avoid confusion with previous aboutbox unit
+- Corrected bug : check new version date display not updated after automatic check
+- Changed behaviour of quit button : single click iconize, double click quit
+- Added version infos in windows installer

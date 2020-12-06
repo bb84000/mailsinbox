@@ -34,7 +34,6 @@ type
   private
     FOnChange: TNotifyEvent;
     FOnStateChange: TNotifyEvent;
-    FOnQuitAlertChange: TNotifyEvent;
     FSavSizePos: Boolean;
     FWState: string;
     FLastUpdChk: Tdatetime;
@@ -109,7 +108,6 @@ type
   published
     property OnChange: TNotifyEvent read FOnChange write FOnChange;
     property OnStateChange: TNotifyEvent read FOnStateChange write FOnStateChange;
-    property OnQuitAlertChange: TNotifyEvent read FOnQuitAlertChange write FOnQuitAlertChange;
     property SavSizePos: Boolean read FSavSizePos write SetSavSizePos;
     property WState: string read FWState write SetWState;
     property LastUpdChk: Tdatetime read FLastUpdChk write SetLastUpdChk;
@@ -330,7 +328,7 @@ begin
   if FNoQuitAlert=b then exit;
   FNoQuitAlert:= b;
   if Assigned(FOnChange) then FOnChange(Self);
-  if Assigned(OnQuitAlertChange) then FOnQuitAlertChange(self);
+  if Assigned(OnChange) then FOnChange(self);
 end;
 
 procedure TConfig.SetDisplayAllAccMsgs(b: boolean);

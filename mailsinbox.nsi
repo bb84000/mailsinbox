@@ -101,6 +101,13 @@
   !define MUI_LANGDLL_INFO "$(LangDialog_Text)"
 ;--------------------------------
 
+  !getdllversion  "${source_dir}\mailsinboxwin64.exe" expv_
+   VIProductVersion "${expv_1}.${expv_2}.${expv_3}.${expv_4}"
+   VIAddVersionKey "FileVersion" "${expv_1}.${expv_2}.${expv_3}.${expv_4}"
+   VIAddVersionKey "ProductName" "InstallMailsInBox.exe"
+   VIAddVersionKey "FileDescription" "MailsInBox Installer"
+   VIAddVersionKey "LegalCopyright" "sdtp - bb"
+   VIAddVersionKey "ProductVersion" "${expv_1}.${expv_2}.${expv_3}.${expv_4}"
 ; The stuff to install
 Section "" ;No components page, name is not important
   SetShellVarContext all

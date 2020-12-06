@@ -37,7 +37,7 @@ BtnEditAccHint=Modify account %s
 BtnSettings.Hint=General Settings
 BtnAbout.Hint=About Mails in Box
 BtnHelp.Hint=Mails In Box help
-BtnQuit.Hint=Double click to quit Mails In Box
+BtnQuit.Hint=Double click to quit Mails In Box, single click to minimize the program
 SGMails.Columns_0.Title.Caption=From
 SGMails.Columns_1.Title.Caption=To
 SGMails.Columns_2.Title.Caption=Subject
@@ -81,8 +81,8 @@ TrayHintNewMsg=(including %u new)
 TrayHintNewMsgs=(including %u new)
 NoShowCloseAlert=Hide program window alert disabled
 sNoShowQuitAlert=Quit program alert disabled
-NoQuitAlert=To close the program and no longer check new mails, double click on this button. To let the program check mail in the background, click the iconize or close button on title bar.
-NoCloseAlert=The program will run in the background to check new mails. To quit the program, click the button "Quit Mails in Box".
+NoQuitAlert=To close the program and no longer check new mails, double click on this button. To let the program check mail in the background, single click on this button.
+NoCloseAlert=The program will run in the background to check new mails. To quit the program, double click the button "Quit Mails in Box".
 Restart=Restart after system shutdown
 CannotQuit=Cannot quit during mail checking
 ClosingProg=Closing Mails In Box
@@ -116,11 +116,13 @@ CreatedDataFolder=Mails In Box data folder "%s" created.
 Aboutbox.Caption=About Mails In Box
 AboutBox.LUpdate.Caption=Search update
 AboutBox.UpdateAvailable=New version %s available. Click to download it
-AboutBox.NoUpdateAvailable=MailsInBox is up to date
+AboutBox.NoUpdateAvailable=MailsInBox is up to date.
 NoLongerChkUpdates=No longer check updates
 AboutBox.LastUpdateSearch=Last update check
 UpdateAlertBox=Current version: %sA new version %s is available
-AboutBox.HelpFile=mailsinbox_en.html
+
+;Help
+HelpFile=mailsinbox_en.html
 
 ;Alert
 AlertBoxCBNoShowAlert=No longer show this warning
@@ -276,7 +278,7 @@ BtnEditAccHint=Modifier le compte %s
 BtnSettings.Hint=Options générales
 BtnAbout.Hint=A propos de Courrier en attente
 BtnHelp.Hint=Aide de Courrier en attente
-BtnQuit.Hint=Double clic pour quitter Courrier en attente
+BtnQuit.Hint=Double-cliquer pour quitter Courrier en attente, cliquer une seule fois pour le réduire en icone
 SGMails.Columns_0.Title.Caption=De
 SGMails.Columns_1.Title.Caption=A
 SGMails.Columns_2.Title.Caption=Objet
@@ -320,8 +322,8 @@ TrayHintNewMsg=(dont %u nouveau)
 TrayHintNewMsgs=(dont %u nouveaux)
 NoShowCloseAlert=Alerte de masquage de la fenêtre du programme déactivée
 sNoShowQuitAlert=Alerte de fermeture du programme désactivée
-NoQuitAlert=Pour fermer le programme et ne plus vérifier l'arrivée de nouveaux courriels, double cliquer sur ce bouton. Pour que la vérification se poursuive en tâche de fond, cliquez sur le bouton de minimisation ou de fermeture dans la barre de titre.
-NoCloseAlert=Le programme va se poursuivre en tâche de fond pour vérifier l'arrivée de nouveaux courriels. Pour quitter le programme, il faut cliquer sur le bouton "Quitter Courrier en attente".
+NoQuitAlert=Pour fermer le programme et ne plus vérifier l'arrivée de nouveaux courriels, double-cliquer sur ce bouton. Pour que la vérification se poursuive en tâche de fond, cliquez une fois sur ce bouton.
+NoCloseAlert=Le programme va se poursuivre en tâche de fond pour vérifier l'arrivée de nouveaux courriels. Pour quitter le programme, il faut double-cliquer sur le bouton "Quitter Courrier en attente".
 Restart=Redémarrage après arrêt forcé du système
 SettingsChange=Configuration modifiée
 MsgDeleted=%s : Message #%u supprimé
@@ -349,12 +351,14 @@ ToEditAcc=pouvoir le modifier
 CreatedDataFolder=Dossier de données de Couriels en attente "%s" créé.
 
 ;About
-Aboutbox.Caption=A propos de Courrier en attente
+Aboutbox.Caption=A propos de Courriels en attente
 AboutBox.LUpdate.Caption=Recherche de mise à jour
 AboutBox.UpdateAvailable=Nouvelle version %s disponible. Cliquer pour la télécharger
-AboutBox.NoUpdateAvailable=Courriels en attente est à jour
+AboutBox.NoUpdateAvailable=Courriels en attente est à jour.
 AboutBox.LastUpdateSearch=Dernière recherche de mise à jour
-AboutBox.HelpFile=mailsinbox.html
+
+;Help
+HelpFile=mailsinbox.html
 
 ;Alert
 AlertBoxCBNoShowAlert=Ne plus afficher cet avertissement
@@ -385,7 +389,7 @@ FAccounts.LSoundFile.Caption=Fichier son
 FAccounts.BtnSoundFile.Hint=Cliquer pour sélectionner un fichier son
 
 ;Settings
-FSettings.Caption=Préférences de Courrier en attente
+FSettings.Caption=Préférences de Courriels en attente
 FSettings.GBSystem.Caption=Système
 FSettings.CBStartup.Caption=Lancer au démarrage du système
 FSettings.CBStartMini.Caption=Démarrage minimisé

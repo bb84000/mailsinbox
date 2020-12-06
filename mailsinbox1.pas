@@ -1,6 +1,6 @@
 {******************************************************************************}
 { MailInBox main unit                                                          }
-{ bb - sdtp - november 2020                                                    }
+{ bb - sdtp - december 2020                                                    }
 { Check mails on pop3 and imap servers                                         }
 {******************************************************************************}
 
@@ -16,8 +16,8 @@ uses
   {$ENDIF} Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ExtCtrls,
   StdCtrls, Grids, ComCtrls, Buttons, Menus, IdPOP3, IdSSLOpenSSL, LCLIntf,
   IdExplicitTLSClientServerBase, IdMessage, IdIMAP4, accounts1, lazbbutils,
-  lazbbinifiles, lazbbosver{sion}, LazUTF8, settings1, lazbbautostart,
-  lazbbabout, Impex1, mailclients1, uxtheme, Types, IdComponent, fptimer,
+  lazbbinifiles, lazbbosver, LazUTF8, settings1, lazbbautostart,
+  lazbbaboutupdate, Impex1, mailclients1, uxtheme, Types, IdComponent, fptimer,
   RichMemo, variants, IdMessageCollection, UniqueInstance, log1, registry,
   dateutils, strutils, fpopenssl, openssl, opensslsockets;
 
@@ -133,6 +133,8 @@ type
     procedure BtnLogClick(Sender: TObject);
     procedure BtnQuitClick(Sender: TObject);
     procedure BtnQuitDblClick(Sender: TObject);
+    procedure BtnQuitMouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
     procedure BtnSettingsClick(Sender: TObject);
     procedure FormActivate(Sender: TObject);
     procedure DoChangeBounds(Sender: TObject);
@@ -149,8 +151,6 @@ type
     procedure LVAccountsSelectItem(Sender: TObject; Item: TListItem;
       Selected: Boolean);
     procedure MMnuClick(Sender: TObject);
-    procedure MMnuImportClick(Sender: TObject);
-    procedure MMnuPrefsClick(Sender: TObject);
     procedure MnuAccountPopup(Sender: TObject);
     procedure MnuAnswerMsgClick(Sender: TObject);
     procedure MnuButtonBarPopup(Sender: TObject);
@@ -179,14 +179,13 @@ type
     procedure OnChkMailTimer(Sender: TObject);
   private
     Initialized: boolean;
-    OS, OSTarget, CRLF: string;
+    OS, OSTarget: string;
     CompileDateTime: TDateTime;
     MIBAppDataPath: string;
     MIBExecPath: string;
     ProgName: string;
     LangStr: string;
     LangFile: TBbIniFile;
-
     LangNums: TStringList;
     LangFound: boolean;
     SettingsChanged: boolean;
@@ -194,8 +193,7 @@ type
     ConfigFileName, AccountsFileName: string;
     ChkMailTimerTick: integer;
     CanClose: boolean;
-    //BaseUpdateUrl,  ChkVerURL,
-      version: string;
+    version: string;
     sEmailCaption, sLastCheckCaption, sNextCheckCaption : string;
     sNoLongerChkUpdates, sUpdateAlertBox: string;
     OKBtn, YesBtn, NoBtn, CancelBtn: string;
@@ -252,11 +250,17 @@ type
     sNewAccount: string;
     aMailsList: array of string;
     sCreatedDataFolder: String;
+    // Timer used to differentiate button's single and double click
+    clickTimer: TFPTimer;
+    doubleclick: Boolean;
+    timespan: int64;
+    lastclick: int64;
+    doubleClickMaxTime: int64;
+    procedure OnclickTimer (sender: TObject);
     procedure Initialize;
     procedure LoadSettings(Filename: string);
     procedure SettingsOnChange(Sender: TObject);
     procedure SettingsOnStateChange(Sender: TObject);
-    procedure SettingsOnQuitAlertChange(Sender:Tobject);
     procedure AccountsOnChange(Sender: TObject);
     function SaveConfig(Typ: TSaveMode): boolean;
     procedure PopulateAccountsList(notify: boolean);
@@ -286,9 +290,7 @@ type
     procedure LoadAccounts(filename: string);
     function SetError(E: Exception; ErrorStr: String; ErrorUID: Integer; ErrorCaption: String; var ErrorsStr: String): boolean;
     procedure BeforeClose;
-
   public
-    //OsInfo: TOSInfo;           //used by Settings1
     OSVersion: TOSVersion;
     UserAppsDataPath: string;  //used by Impex1
   end;
@@ -349,8 +351,7 @@ var
     reg: TRegistry;
     RunRegKeyVal, RunRegKeySz: string;
   {$ENDIF}
-  //caClose: TCloseAction;
- begin
+  begin
   if not FSettings.Settings.Startup then
   begin
     FSettings.Settings.Restart:= true;
@@ -363,9 +364,6 @@ var
       reg.WriteString(RunRegKeyVal, RunRegKeySz) ;
       reg.CloseKey;
       reg.free;
-    // Application.ProcessMessages;
-    // caClose:= caFree;
-    //  FormClose(self, caClose);
     {$ENDIF}
     {$IFDEF Linux}
        SetAutostart(ProgName, Application.exename);
@@ -397,6 +395,13 @@ begin
   // Intercept minimize system command
   Application.OnMinimize:=@OnAppMinimize;
   Application.OnQueryEndSession:= @OnQueryendSession;
+  // Click timer to differentiate button single and double click
+  clickTimer:= TFPTimer.Create(self);
+  clickTimer.Interval:= GetDoubleClickTime;
+  clickTimer.UseTimerThread:= false;   // important !!!
+  clickTimer.Enabled:= true;
+  clickTimer.OnTimer:= @OnclickTimer;
+  doubleClickMaxTime:= GetDoubleClickTime;
   // Initialize check mail timer
   ChkMailTimer:= TFPTimer.Create(self);
   ChkMailTimer.Interval:= 100;
@@ -418,6 +423,10 @@ begin
   slLastFires:= TstringList.Create;
   slNextFires:=TstringList.Create;
   DisplayMails:= TMailsList.Create;
+  // Some useful paths
+  MIBExecPath:=ExtractFilePath(Application.ExeName);
+  // Chargement des chaînes de langue...
+  LangFile := TBbIniFile.Create(MIBExecPath + LowerCase(ProgName)+'.lng');
   {$IFDEF CPU32}
      OSTarget := '32 bits';
   {$ENDIF}
@@ -426,7 +435,6 @@ begin
   {$ENDIF}
   {$IFDEF Linux}
     OS := 'Linux';
-    CRLF := #10;
     LangStr := GetEnvironmentVariable('LANG');
     x := pos('.', LangStr);
     LangStr := Copy(LangStr, 0, 2);
@@ -437,7 +445,6 @@ begin
   {$ENDIF}
   {$IFDEF WINDOWS}
     OS := 'Windows ';
-    CRLF := #13#10;
     // get user data folder
     s := ExtractFilePath(ExcludeTrailingPathDelimiter(GetAppConfigDir(False)));
     if Ord(WindowsVersion) < 7 then
@@ -446,9 +453,6 @@ begin
     UserAppsDataPath := ExtractFilePath(ExcludeTrailingPathDelimiter(s)) + 'Roaming'; // Vista to W10
     LazGetShortLanguageID(LangStr);
   {$ENDIF}
-  MIBExecPath:=ExtractFilePath(Application.ExeName);
-  // Chargement des chaînes de langue...
-  LangFile := TBbIniFile.Create(MIBExecPath + LowerCase(ProgName)+'.lng');
   version := GetVersionInfo.ProductVersion;
   OSVersion:= TOSVersion.Create(LangStr, LangFile);
   // Cannot call Modlang as components are not yet created, use default language
@@ -626,9 +630,9 @@ begin
   if not visible then alertpos:= poDesktopCenter
   else alertpos:= poMainFormCenter;
   if (Trunc(Now)>Trunc(FSettings.Settings.LastUpdChk)+1) and (not FSettings.Settings.NoChkNewVer) then
-   begin
+  begin
      FSettings.Settings.LastUpdChk := Trunc(Now);
-     AboutBox.LUpdate.Hint:= AboutBox.sLastUpdateSearch + ': ' + DateToStr(FSettings.Settings.LastUpdChk);
+     //AboutBox.LUpdate.Hint:= AboutBox.sLastUpdateSearch + ': ' + DateToStr(FSettings.Settings.LastUpdChk);
      AboutBox.Checked:= true;
      AboutBox.ErrorMessage:='';
      sNewVer:= AboutBox.ChkNewVersion;
@@ -656,16 +660,18 @@ begin
        AboutBox.ShowModal;
      end else
      begin
-      AboutBox.LUpdate.Caption:= AboutBox.sNoUpdateAvailable;
-      LogAddLine(-1, now, AboutBox.sNoUpdateAvailable);
-
+       AboutBox.LUpdate.Caption:= AboutBox.sNoUpdateAvailable;
+       LogAddLine(-1, now, AboutBox.sNoUpdateAvailable);
      end;
+     FSettings.Settings.LastUpdChk:= now;
    end else
    begin
     if VersionToInt(FSettings.Settings.LastVersion)>VersionToInt(version) then
        AboutBox.LUpdate.Caption := Format(AboutBox.sUpdateAvailable, [FSettings.Settings.LastVersion]) else
        AboutBox.LUpdate.Caption:= AboutBox.sNoUpdateAvailable;
+       //AboutBox.LUpdate.Hint:= AboutBox.sLastUpdateSearch + ': ' + DateToStr(FSettings.Settings.LastUpdChk);
    end;
+   AboutBox.LUpdate.Hint:= AboutBox.sLastUpdateSearch + ': ' + DateToStr(FSettings.Settings.LastUpdChk);
 end;
 
 // Initialize accounts base
@@ -738,6 +744,7 @@ begin
   // Check inifile with URLs, if not present, then use default
   IniFile:= TBbInifile.Create('mailsinbox.ini');
   AboutBox.ChkVerURL := IniFile.ReadString('urls', 'ChkVerURL','https://github.com/bb84000/mailsinbox/releases/latest');
+  AboutBox.UrlWebsite:= IniFile.ReadString('urls', 'UrlWebSite','https://www.sdtp.com');
   if Assigned(IniFile) then IniFile.free;
   LoadSettings(ConfigFileName);
   // In case of program's first use
@@ -758,14 +765,12 @@ begin
      if not FSettings.Settings.Startup  then UnsetAutostart(ProgName);
   {$ENDIF}
 
-  // AboutBox.UrlUpdate, AboutBox.LUpdate.Caption and Aboutbox.Caption
-  // are done in ModLangue procedure
+  // Language dependent variables are updated in ModLangue procedure
   AboutBox.Width:= 400; // to have more place for the long product name
   AboutBox.Image1.Picture.LoadFromResourceName(HInstance, 'ABOUTIMG');
-  AboutBox.LProductName.Caption := GetVersionInfo.FileDescription;
+  //AboutBox.LProductName.Caption := GetVersionInfo.FileDescription;
   AboutBox.LCopyright.Caption := GetVersionInfo.CompanyName + ' - ' + DateTimeToStr(CompileDateTime);
   AboutBox.LVersion.Caption := 'Version: ' + Version + ' (' + OS + OSTarget + ')';
-  AboutBox.UrlWebsite := GetVersionInfo.Comments;
   AboutBox.LUpdate.Hint := AboutBox.sLastUpdateSearch + ': ' + DateToStr(FSettings.Settings.LastUpdChk);
   AboutBox.Version:= Version;
   AboutBox.ProgName:= ProgName;
@@ -787,7 +792,7 @@ begin
   else LVAccounts.ItemIndex:=  -1;
   FSettings.Settings.OnChange := @SettingsOnChange;
   FSettings.Settings.OnStateChange := @SettingsOnStateChange;
-  FSettings.Settings.OnQuitAlertChange:= @SettingsOnQuitAlertChange;
+  //FSettings.Settings.OnQuitAlertChange:= @SettingsOnChange;
   FAccounts.Accounts.OnChange:= @AccountsOnChange;
   // Enumerate accounts, add names to log and update nextfire value
   for i:= 0 to FAccounts.Accounts.count-1 do
@@ -823,7 +828,7 @@ begin
   TrayMail.Hint:= sTrayHintNoMsg;
   if FSettings.Settings.StartupCheck then BtnGetAllMailClick(self);
   GetMailTimer.enabled:= true;
-  SettingsOnQuitAlertChange(self);
+  //SettingsOnQuitAlertChange(self);
   // Set proper sort order and direction of mails display
   DisplayMails.SortType:= FSettings.Settings.MailSortTyp;
   DisplayMails.SortDirection:= FSettings.Settings.MailSortDir;
@@ -842,8 +847,9 @@ end;
 // Change BtnQuit behaviour: one click if alert enabled,
 // double click if aleret disabled
 // procedure to call on each NoQuitAlert setting change
+// No longer used, see BtnQuitMouseDown procedure
 
-procedure TFMailsInBox.SettingsOnQuitAlertChange(sender: TObject);
+{procedure TFMailsInBox.SettingsOnQuitAlertChange(sender: TObject);
 begin
   if FSettings.Settings.NoQuitAlert then
   begin
@@ -854,7 +860,7 @@ begin
     BTnQuit.OnDblClick:= nil;
     BTnQuit.OnClick:= @BtnQuitClick;
   end;
-end;
+end; }
 
 // Hide taskbar icon, App is only in tray
 
@@ -1480,19 +1486,6 @@ begin
 end;
 
 
-
-procedure TFMailsInBox.MMnuImportClick(Sender: TObject);
-begin
-
-end;
-
-procedure TFMailsInBox.MMnuPrefsClick(Sender: TObject);
-begin
-
-end;
-
-
-
 function TFMailsInBox.GetFire(CurAcc: Taccount; mode: TFireMode): TDateTime;
 var
   uidfnd: boolean;
@@ -2090,6 +2083,7 @@ begin
         begin
           ModLangue;
           GetMailClientNames(false);
+          CheckUpdate;
         end;
         if (Settings.MailClientName<>MailClients[CBMailClient.ItemIndex].Name) then
         begin
@@ -2197,7 +2191,7 @@ end;
 
 procedure TFMailsInBox.BtnHelpClick(Sender: TObject);
 begin
-  OpenDocument(AboutBox.HelpFile);
+  OpenDocument(HelpFile);
 end;
 
 
@@ -2713,6 +2707,8 @@ begin
 end;
 
 // Quit button click.
+// Don't use with button event,
+// fired from new buttonclick routine
 
 procedure TFMailsInBox.BtnQuitClick(Sender: TObject);
 begin
@@ -2720,22 +2716,20 @@ begin
   begin
     Case AlertDlg(Caption, sNoQuitAlert, [OKBtn, CancelBtn, sAlertBoxCBNoShowAlert], true) of
        mrOk: begin
-         CanClose:= true;
-         Close;
        end;
        mrYesToAll: begin
          FSettings.Settings.NoQuitAlert:= true;
          LogAddLine(-1, now, sNoShowQuitAlert);
-         CanClose:= true;
-         Close;
        end;
     end;
   end ;
-
+  MnuIconizeClick(Sender);
 
 end;
 
 // Quit button double click
+// Don't use with button event,
+// fired from new buttonclick routine
 
 procedure TFMailsInBox.BtnQuitDblClick(Sender: TObject);
 begin
@@ -2743,11 +2737,39 @@ begin
   Close;
 end;
 
+// Procedures to differentiate button's single and double click
+// based on mousedown event and clicktimer
 
+procedure TFMailsInBox.BtnQuitMouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  if doubleClick then
+  begin
+    doubleClick:= false;
+    timespan:= GetTickCount64-lastclick;
+    // If double click is valid, respond
+    if timespan < doubleClickMaxTime then
+    begin
+      clickTimer.StopTimer;
+      BtnQuitDblClick(Sender)
+    end;
+    exit;
+  end;
+  // Double click was invalid, restart
+  clickTimer.StopTimer;
+  clickTimer.StartTimer;
+  lastClick:= GetTickCount64;
+  doubleClick:= true;
+end;
 
-
-
-
+procedure TFMailsInBox.OnclickTimer (sender: TObject);
+begin
+  // Clear double click watcher and timer
+  doubleClick:= false;
+  clickTimer.StopTimer;
+  // Single click action
+  BtnQuitClick(Sender);
+end;
 
 // Disable controls during mail check to avoid conflicts
 // Display hourglass cursor
@@ -2972,16 +2994,19 @@ begin
     MMnuInfos.Caption:=ReadString(LangStr,'MMnuInfos.Caption',MMnuInfos.Caption);
 
     // About
+
     AboutBox.sLastUpdateSearch:=ReadString(LangStr,'AboutBox.LastUpdateSearch','Dernière recherche de mise à jour');
     AboutBox.sUpdateAvailable:=ReadString(LangStr,'AboutBox.UpdateAvailable','Nouvelle version %s disponible');
     AboutBox.sNoUpdateAvailable:=ReadString(LangStr,'AboutBox.NoUpdateAvailable','Courriels en attente est à jour');
     Aboutbox.Caption:=ReadString(LangStr,'Aboutbox.Caption','A propos de Courriels en attente');
+    AboutBox.LProductName.Caption:= caption;
     if not AboutBox.checked then AboutBox.LUpdate.Caption:=ReadString(LangStr,'AboutBox.LUpdate.Caption',AboutBox.LUpdate.Caption) else
     begin
       if AboutBox.NewVersion then AboutBox.LUpdate.Caption:= Format(AboutBox.sUpdateAvailable, [AboutBox.LastVersion])
       else AboutBox.LUpdate.Caption:= AboutBox.sNoUpdateAvailable;
     end;
-    AboutBox.HelpFile:= MIBExecPath+'help'+PathDelim+ReadString(LangStr,'AboutBox.HelpFile', 'mailsinbox.html');
+    HelpFile:= MIBExecPath+'help'+PathDelim+ReadString(LangStr,'HelpFile', 'mailsinbox.html');
+    AboutBox.UrlProgSite:= HelpFile;
 
     // Alert
     sUpdateAlertBox:=ReadString(LangStr,'UpdateAlertBox','Version actuelle: %sUne nouvelle version %s est disponible. Cliquer pour la télécharger');

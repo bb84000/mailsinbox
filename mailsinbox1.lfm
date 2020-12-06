@@ -1910,8 +1910,7 @@ object FMailsInBox: TFMailsInBox
       }
       GroupIndex = 1
       NumGlyphs = 2
-      OnClick = BtnQuitClick
-      OnDblClick = BtnQuitDblClick
+      OnMouseDown = BtnQuitMouseDown
     end
     object BtnHelp: TSpeedButton
       Left = 410
@@ -2090,10 +2089,10 @@ object FMailsInBox: TFMailsInBox
       ParentColor = False
     end
     object LNow: TLabel
-      Left = 736
+      Left = 725
       Height = 15
       Top = 8
-      Width = 194
+      Width = 204
       Alignment = taRightJustify
       AutoSize = False
       ParentColor = False
