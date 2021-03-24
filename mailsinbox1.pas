@@ -32,6 +32,14 @@ type
     Enabled: Boolean;
   end;
 
+  { int64 or longint type for Application.QueueAsyncCall }
+  {$IFDEF CPU32}
+    iDays= LongInt;
+  {$ENDIF}
+  {$IFDEF CPU64}
+    iDays= Int64;
+  {$ENDIF}
+
   { TFMailsInBox }
   TFMailsInBox = class(TForm)
     BtnAbout: TSpeedButton;
@@ -256,6 +264,7 @@ type
     timespan: int64;
     lastclick: int64;
     doubleClickMaxTime: int64;
+    ChkVerInterval: Int64;
     procedure OnclickTimer (sender: TObject);
     procedure Initialize;
     procedure LoadSettings(Filename: string);
@@ -285,7 +294,7 @@ type
     function GetFire(CurAcc: Taccount; mode: TFireMode): TDateTime;
     procedure SetFire(Curacc: TAccount; datim: TDateTime; mode: TFireMode);
     procedure InitButtons;
-    procedure CheckUpdate;
+    procedure CheckUpdate(days: iDays);
     procedure SortMails(CurCol: integer);
     procedure LoadAccounts(filename: string);
     function SetError(E: Exception; ErrorStr: String; ErrorUID: Integer; ErrorCaption: String; var ErrorsStr: String): boolean;
@@ -486,8 +495,8 @@ begin
   begin
     InitButtons;
     Initialize;
-    CheckUpdate;
-
+    //CheckUpdate;
+    Application.QueueAsyncCall(@CheckUpdate, ChkVerInterval);       // async call to let icons loading
   end;
 end;
 
@@ -616,7 +625,9 @@ begin
 
 end;
 
-procedure TFMailsInBox.CheckUpdate;
+//Dernière recherche il y a "days" jours ou plus ?
+
+procedure TFMailsInBox.CheckUpdate(days: iDays);
 var
   errmsg: string;
   sNewVer: string;
@@ -629,7 +640,7 @@ begin
   alertmsg:= '';
   if not visible then alertpos:= poDesktopCenter
   else alertpos:= poMainFormCenter;
-  if (Trunc(Now)>Trunc(FSettings.Settings.LastUpdChk)+1) and (not FSettings.Settings.NoChkNewVer) then
+  if (Trunc(Now)>Trunc(FSettings.Settings.LastUpdChk)+days) and (not FSettings.Settings.NoChkNewVer) then
   begin
      FSettings.Settings.LastUpdChk := Trunc(Now);
      //AboutBox.LUpdate.Hint:= AboutBox.sLastUpdateSearch + ': ' + DateToStr(FSettings.Settings.LastUpdChk);
@@ -743,8 +754,10 @@ begin
   FSettings.Settings.ButtonBar:= true;
   // Check inifile with URLs, if not present, then use default
   IniFile:= TBbInifile.Create('mailsinbox.ini');
-  AboutBox.ChkVerURL := IniFile.ReadString('urls', 'ChkVerURL','https://github.com/bb84000/mailsinbox/releases/latest');
+  AboutBox.ChkVerURL := IniFile.ReadString('urls', 'ChkVerURL','https://github.com/bb84000/mailsinbox/raw/master/history.txt');
   AboutBox.UrlWebsite:= IniFile.ReadString('urls', 'UrlWebSite','https://www.sdtp.com');
+  AboutBox.UrlSourceCode:=IniFile.ReadString('urls', 'UrlSourceCode','https://github.com/bb84000/mailsinbox');
+  ChkVerInterval:= IniFile.ReadInt64('urls', 'ChkVerInterval', 3);
   if Assigned(IniFile) then IniFile.free;
   LoadSettings(ConfigFileName);
   // In case of program's first use
@@ -2083,7 +2096,7 @@ begin
         begin
           ModLangue;
           GetMailClientNames(false);
-          CheckUpdate;
+          Application.QueueAsyncCall(@CheckUpdate, ChkVerInterval);
         end;
         if (Settings.MailClientName<>MailClients[CBMailClient.ItemIndex].Name) then
         begin
@@ -2887,6 +2900,7 @@ procedure TFMailsInBox.ModLangue;
 begin
   LangStr:=FSettings.Settings.LangStr;
   OSVersion:= TOSVersion.Create(LangStr, LangFile);
+  AboutBox.LVersion.Hint:= OSVersion.VerDetail;
   with LangFile do
   begin
     // general strings
@@ -3000,6 +3014,10 @@ begin
     AboutBox.sNoUpdateAvailable:=ReadString(LangStr,'AboutBox.NoUpdateAvailable','Courriels en attente est à jour');
     Aboutbox.Caption:=ReadString(LangStr,'Aboutbox.Caption','A propos de Courriels en attente');
     AboutBox.LProductName.Caption:= caption;
+    AboutBox.UrlProgSite:= ReadString(LangStr,'AboutBox.UrlProgSite','https://github.com/bb84000/mailsinbox/wiki/Accueil');
+    AboutBox.LWebSite.Caption:= ReadString(LangStr,'AboutBox.LWebSite.Caption', AboutBox.LWebSite.Caption);
+    AboutBox.LSourceCode.Caption:= ReadString(LangStr,'AboutBox.LSourceCode.Caption', AboutBox.LSourceCode.Caption);
+
     if not AboutBox.checked then AboutBox.LUpdate.Caption:=ReadString(LangStr,'AboutBox.LUpdate.Caption',AboutBox.LUpdate.Caption) else
     begin
       if AboutBox.NewVersion then AboutBox.LUpdate.Caption:= Format(AboutBox.sUpdateAvailable, [AboutBox.LastVersion])

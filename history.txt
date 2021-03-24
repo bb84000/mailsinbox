@@ -186,3 +186,9 @@ Version 1.0.1.0 - 06/12/2020
 - Corrected bug : check new version date display not updated after automatic check
 - Changed behaviour of quit button : single click iconize, double click quit
 - Added version infos in windows installer
+
+Version 1.0.1.1 - 24/03/2021
+- New version detection in history.txt instead github latest version page
+  and done asynchronously
+- OS version info on aboutbox version hint
+
