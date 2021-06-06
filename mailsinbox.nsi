@@ -47,7 +47,7 @@
 
   !insertmacro MUI_PAGE_WELCOME
   !insertmacro MUI_PAGE_LICENSE $(licence)
- ; !insertmacro MUI_PAGE_DIRECTORY
+  !insertmacro MUI_PAGE_DIRECTORY
   !insertmacro MUI_PAGE_INSTFILES
   !insertmacro MUI_PAGE_FINISH
 
@@ -217,8 +217,8 @@ RMDir /r "$INSTDIR\help"
 DeleteRegKey HKCU "Software\SDTP\mailsinbox"
 DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\mailsinbox"
 ; remove also autostart settings if any
-DeleteRegKey HKCU "Software\Microsoft\Windows\CurentVersion\Run\MailsInBox"
-DeleteRegKey HKCU "Software\Microsoft\Windows\CurrentVersion\RunOnce\MailsInBox"
+DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Run\" "MailsInBox"
+DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\RunOnce\" "MailsInBox"
 
 SectionEnd ; end of uninstall section
 

@@ -1,6 +1,6 @@
 {******************************************************************************}
 { MailInBox main unit                                                          }
-{ bb - sdtp - december 2020                                                    }
+{ bb - sdtp - may 2021                                                    }
 { Check mails on pop3 and imap servers                                         }
 {******************************************************************************}
 
@@ -387,6 +387,9 @@ end;
 procedure TFMailsInBox.FormCreate(Sender: TObject);
 var
   s: string;
+ {$IFDEF Linux}
+    x: Integer;
+ {$ENDIF}	
 begin
   // Variables initialization
   CanClose:= false;
