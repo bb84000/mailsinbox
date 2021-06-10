@@ -1,9 +1,9 @@
 ;Installation script for MailsInBox
-; bb - sdtp - february 2020
+; bb - sdtp - June 2021
 ;--------------------------------
+  Unicode true
 
   !include "MUI2.nsh"
-  !include "${NSISDIR}\Contrib\Modern UI\BB.nsh"
   !include x64.nsh
   !include FileFunc.nsh
   
@@ -102,18 +102,24 @@
 ;--------------------------------
 
   !getdllversion  "${source_dir}\mailsinboxwin64.exe" expv_
-   VIProductVersion "${expv_1}.${expv_2}.${expv_3}.${expv_4}"
-   VIAddVersionKey "FileVersion" "${expv_1}.${expv_2}.${expv_3}.${expv_4}"
-   VIAddVersionKey "ProductName" "InstallMailsInBox.exe"
-   VIAddVersionKey "FileDescription" "MailsInBox Installer"
-   VIAddVersionKey "LegalCopyright" "sdtp - bb"
-   VIAddVersionKey "ProductVersion" "${expv_1}.${expv_2}.${expv_3}.${expv_4}"
+  !define FileVersion "${expv_1}.${expv_2}.${expv_3}.${expv_4}"
+
+  VIProductVersion "${FileVersion}"
+  VIAddVersionKey "FileVersion" "${FileVersion}"
+  VIAddVersionKey "ProductName" "InstallMailsInBox.exe"
+  VIAddVersionKey "FileDescription" "MailsInBox Installer"
+  VIAddVersionKey "LegalCopyright" "sdtp - bb"
+  VIAddVersionKey "ProductVersion" "${FileVersion}"
+   
+  ; Change nsis brand line
+  BrandingText "$(ProgramDescStr) version ${FileVersion} - bb - sdtp"
+  
 ; The stuff to install
 Section "" ;No components page, name is not important
   SetShellVarContext all
   SetOutPath "$INSTDIR"
 
-  ${If} ${RunningX64}
+ ${If} ${RunningX64}
     SetRegView 64    ; change registry entries and install dir for 64 bit
   ${EndIf}
   Var /GLOBAL prg_to_inst
@@ -163,7 +169,7 @@ Section "" ;No components page, name is not important
   WriteRegStr HKEY_LOCAL_MACHINE "Software\Microsoft\Windows\CurrentVersion\Uninstall\mailsinbox" "UninstallString" "$INSTDIR\uninst.exe"
   WriteRegStr HKEY_LOCAL_MACHINE "Software\Microsoft\Windows\CurrentVersion\Uninstall\mailsinbox" "DisplayIcon" "$INSTDIR\uninst.exe"
   WriteRegStr HKEY_LOCAL_MACHINE "Software\Microsoft\Windows\CurrentVersion\Uninstall\mailsinbox" "DisplayName" "$(RemoveStr)"
-  WriteRegStr HKEY_LOCAL_MACHINE "Software\Microsoft\Windows\CurrentVersion\Uninstall\mailsinbox" "DisplayVersion" "${expv_1}.${expv_2}.${expv_3}.${expv_4}"
+  WriteRegStr HKEY_LOCAL_MACHINE "Software\Microsoft\Windows\CurrentVersion\Uninstall\mailsinbox" "DisplayVersion" "${FileVersion}"
   WriteRegDWORD HKEY_LOCAL_MACHINE "Software\Microsoft\Windows\CurrentVersion\Uninstall\mailsinbox" "EstimatedSize" "$0"
   WriteRegStr HKEY_LOCAL_MACHINE "Software\Microsoft\Windows\CurrentVersion\Uninstall\mailsinbox" "Publisher" "SDTP"
   WriteRegStr HKEY_LOCAL_MACHINE "Software\Microsoft\Windows\CurrentVersion\Uninstall\mailsinbox" "URLInfoAbout" "www.sdtp.com"

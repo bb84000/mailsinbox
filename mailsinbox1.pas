@@ -1,6 +1,6 @@
 {******************************************************************************}
 { MailInBox main unit                                                          }
-{ bb - sdtp - may 2021                                                    }
+{ bb - sdtp - june 2021                                                    }
 { Check mails on pop3 and imap servers                                         }
 {******************************************************************************}
 
@@ -651,6 +651,13 @@ begin
      AboutBox.ErrorMessage:='';
      sNewVer:= AboutBox.ChkNewVersion;
      errmsg:= AboutBox.ErrorMessage;
+     // Retry if nothing found the first time
+     if (length(sNewVer)=0) and (length(errmsg)=0)then
+     begin
+       Application.ProcessMessages;
+       sNewVer:= AboutBox.ChkNewVersion;
+       errmsg:= AboutBox.ErrorMessage;
+     end;
      if length(sNewVer)=0 then
      begin
        if length(errmsg)=0 then alertmsg:= sCannotGetNewVerList
@@ -3017,6 +3024,7 @@ begin
     AboutBox.sNoUpdateAvailable:=ReadString(LangStr,'AboutBox.NoUpdateAvailable','Courriels en attente est à jour');
     Aboutbox.Caption:=ReadString(LangStr,'Aboutbox.Caption','A propos de Courriels en attente');
     AboutBox.LProductName.Caption:= caption;
+    AboutBox.LProgPage.Caption:= ReadString(LangStr,'AboutBox.LProgPage.Caption', AboutBox.LProgPage.Caption);
     AboutBox.UrlProgSite:= ReadString(LangStr,'AboutBox.UrlProgSite','https://github.com/bb84000/mailsinbox/wiki/Accueil');
     AboutBox.LWebSite.Caption:= ReadString(LangStr,'AboutBox.LWebSite.Caption', AboutBox.LWebSite.Caption);
     AboutBox.LSourceCode.Caption:= ReadString(LangStr,'AboutBox.LSourceCode.Caption', AboutBox.LSourceCode.Caption);
