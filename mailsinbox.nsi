@@ -126,7 +126,7 @@ Section "" ;No components page, name is not important
   Var /GLOBAL prg_to_del
   
   ${If} ${RunningX64}  ; change registry entries and install dir for 64 bit
-     !getdllversion  "${source_dir}\mailsinboxwin64.exe" expv_
+    ;!getdllversion  "${source_dir}\mailsinboxwin64.exe" expv_
      StrCpy "$prg_to_inst" "$INSTDIR\mailsinboxwin64.exe"
      StrCpy "$prg_to_del" "$INSTDIR\mailsinboxwin32.exe"
      IfFileExists "$WINDIR\sysnative\libeay32.dll" ssl_lib64_found ssl_lib64_not_found
@@ -136,7 +136,7 @@ Section "" ;No components page, name is not important
        File "${lazarus_dir}\openssl\OpenSSL License.txt"
      ssl_lib64_found:
   ${Else}
-     !getdllversion  "${source_dir}\mailsinboxwin32.exe" expv_
+     ;!getdllversion  "${source_dir}\mailsinboxwin32.exe" expv_
      StrCpy "$prg_to_inst" "$INSTDIR\mailsinboxwin32.exe"
      StrCpy "$prg_to_del" "$INSTDIR\mailsinboxwin64.exe"
      IfFileExists "$WINDIR\system32\libeay32.dll" ssl_lib32_found ssl_lib32_not_found

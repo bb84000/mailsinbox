@@ -638,7 +638,7 @@ var
   alertpos: TPosition;
   alertmsg: string;
 begin
-  //Dernière recherche il y a plus de 1 jours ?
+  //Dernière recherche il y a plus de 'days' jours ?
   errmsg := '';
   alertmsg:= '';
   if not visible then alertpos:= poDesktopCenter
@@ -646,7 +646,6 @@ begin
   if (Trunc(Now)>Trunc(FSettings.Settings.LastUpdChk)+days) and (not FSettings.Settings.NoChkNewVer) then
   begin
      FSettings.Settings.LastUpdChk := Trunc(Now);
-     //AboutBox.LUpdate.Hint:= AboutBox.sLastUpdateSearch + ': ' + DateToStr(FSettings.Settings.LastUpdChk);
      AboutBox.Checked:= true;
      AboutBox.ErrorMessage:='';
      sNewVer:= AboutBox.ChkNewVersion;
@@ -764,7 +763,7 @@ begin
   FSettings.Settings.ButtonBar:= true;
   // Check inifile with URLs, if not present, then use default
   IniFile:= TBbInifile.Create('mailsinbox.ini');
-  AboutBox.ChkVerURL := IniFile.ReadString('urls', 'ChkVerURL','https://github.com/bb84000/mailsinbox/raw/master/history.txt');
+  AboutBox.ChkVerURL := IniFile.ReadString('urls', 'ChkVerURL','https://github.com/bb84000/mailsinbox/releases/latest');
   AboutBox.UrlWebsite:= IniFile.ReadString('urls', 'UrlWebSite','https://www.sdtp.com');
   AboutBox.UrlSourceCode:=IniFile.ReadString('urls', 'UrlSourceCode','https://github.com/bb84000/mailsinbox');
   ChkVerInterval:= IniFile.ReadInt64('urls', 'ChkVerInterval', 3);
