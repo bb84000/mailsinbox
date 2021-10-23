@@ -1,5 +1,5 @@
 Mails In Box : Mail notifier application
-Version 1.0.1.6
+Version 1.0.1.7
 
 (Explication en Français à la fin de ce fichier)
 
@@ -37,14 +37,14 @@ mail client launched by the program.
 
 Sources (Windows and Linux) are available on https://github.com/bb84000/
 
-bb95 - sdtp - february 2020
+bb95 - sdtp - October 2021
 Web : http://www.sdtp.com
 
 
 *************************************************************************
 
 Courriels en attente - Notification de courriels arrivés
-MailAttente Version 1.0.1.6
+MailAttente Version 1.0.1.7
 
 OBJET
 Vérifie la présence de courrier sur les boîtes de courriel POP3 et IMAP
@@ -81,6 +81,6 @@ indiquer le client courriel lancé par le programme.
 
 Sources (Windows et Linux) disponibles à https://github.com/bb84000/
 
-bb95 - sdtp - february 2020
+bb95 - sdtp - October 2021
 Web : http://www.sdtp.com
 

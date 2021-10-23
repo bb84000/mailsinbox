@@ -171,7 +171,8 @@ begin
       end;
     end;
   end;
-  result:= Paths[CurrentProfile];
+  if length(Paths)>0 then result:= Paths[CurrentProfile]
+  else result:= '';
   if assigned(Sections) then Sections.Free;
   if Assigned(ProfileIni) then ProfileIni.free;
 end;
