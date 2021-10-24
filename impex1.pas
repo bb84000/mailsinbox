@@ -1,7 +1,7 @@
 {*******************************************************************************}
 { Impex1 unit - Import Outlook, Thunderbird and Mailattente mail accounts       }
 { for MailsInBox application                                                    }
-{ bb - sdtp - january 2020                                                      }
+{ bb - sdtp - october 2021                                                      }
 {*******************************************************************************}
 
 unit impex1;
