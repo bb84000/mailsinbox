@@ -211,3 +211,6 @@ Version 1.0.1.6 - 11/10/2021
 Version 1.0.1.7 - 23/10/2021
 - Corrected bug in impex when thunderbird not present
 
+Version 1.0.1.8 - 18/11/2021
+- W 10 21H2 version renamed
+
