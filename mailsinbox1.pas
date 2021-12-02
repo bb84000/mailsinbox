@@ -1,6 +1,6 @@
 {******************************************************************************}
 { MailInBox main unit                                                          }
-{ bb - sdtp - october 2021                                                     }
+{ bb - sdtp - december 2021                                                     }
 { Check mails on pop3 and imap servers                                         }
 {******************************************************************************}
 
@@ -1365,6 +1365,8 @@ begin
         LVAccounts.ItemIndex:= LVAccounts.Items.count-1 ;
         LogAddLine(Accounts.GetItem(LVAccounts.ItemIndex).UID , now, Format(sAccountAdded, [CurAcc.Name]));
       end;
+      if AccountsChanged then SaveConfig(All);
+      AccountsChanged:= False;
     end;
   end;
 end;
