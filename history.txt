@@ -216,3 +216,9 @@ Version 1.0.1.8 - 18/11/2021
 
 Version 1.0.1.9 - 02/12/2021
 - Account data immedialtely saved after change instead during application close
+
+Version 1.0.2.0 - 29/09/2022
+- Updated with new Windows 10-11 22H2 versions
+- Use TbbOsVersion component instead lazbbOsVer unit
+- Changed  installer routine to proper manage 32/64 bit installation
+

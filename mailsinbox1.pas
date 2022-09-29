@@ -1,6 +1,6 @@
 {******************************************************************************}
 { MailInBox main unit                                                          }
-{ bb - sdtp - december 2021                                                     }
+{ bb - sdtp - september 2022                                                     }
 { Check mails on pop3 and imap servers                                         }
 {******************************************************************************}
 
@@ -16,9 +16,9 @@ uses
   {$ENDIF} Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ExtCtrls,
   StdCtrls, Grids, ComCtrls, Buttons, Menus, IdPOP3, IdSSLOpenSSL, LCLIntf,
   IdExplicitTLSClientServerBase, IdMessage, IdIMAP4, accounts1, lazbbutils,
-  lazbbinifiles, lazbbosver, LazUTF8, settings1, lazbbautostart,
-  lazbbaboutupdate, Impex1, mailclients1, uxtheme, Types, IdComponent, fptimer,
-  RichMemo, variants, IdMessageCollection, UniqueInstance, log1, registry,
+  lazbbinifiles, LazUTF8, settings1, lazbbautostart, lazbbaboutupdate, Impex1,
+  mailclients1, uxtheme, Types, IdComponent, fptimer, RichMemo, variants,
+  IdMessageCollection, UniqueInstance, log1, lazbbOsVersion, registry,
   dateutils, strutils, fpopenssl, openssl, opensslsockets;
 
 type
@@ -42,6 +42,7 @@ type
 
   { TFMailsInBox }
   TFMailsInBox = class(TForm)
+    OsVersion: TbbOsVersion;
     BtnAbout: TSpeedButton;
     BtnHelp: TSpeedButton;
     BtnAddAcc: TSpeedButton;
@@ -300,7 +301,7 @@ type
     function SetError(E: Exception; ErrorStr: String; ErrorUID: Integer; ErrorCaption: String; var ErrorsStr: String): boolean;
     procedure BeforeClose;
   public
-    OSVersion: TOSVersion;
+
     UserAppsDataPath: string;  //used by Impex1
   end;
 
@@ -466,7 +467,6 @@ begin
     LazGetShortLanguageID(LangStr);
   {$ENDIF}
   version := GetVersionInfo.ProductVersion;
-  OSVersion:= TOSVersion.Create(LangStr, LangFile);
   // Cannot call Modlang as components are not yet created, use default language
   sOpenProgram:=LangFile.ReadString(LangStr,'OpenProgram','Ouverture de Courrier en attente');
   LogAddLine(-1, now, sOpenProgram+' - Version '+Version+ ' (' + OS + OSTarget + ')');
@@ -796,7 +796,7 @@ begin
   AboutBox.LUpdate.Hint := AboutBox.sLastUpdateSearch + ': ' + DateToStr(FSettings.Settings.LastUpdChk);
   AboutBox.Version:= Version;
   AboutBox.ProgName:= ProgName;
-
+  AboutBox.LVersion.Hint:= OSVersion.VerDetail;
    // Load last log file
   tmplog:= TStringList.Create;
   if FileExists(LogFileName) then
@@ -2908,12 +2908,12 @@ end;
 // from mailsinbox.lng
 
 procedure TFMailsInBox.ModLangue;
+var
+  i: integer;
 begin
   LangStr:=FSettings.Settings.LangStr;
-  OSVersion:= TOSVersion.Create(LangStr, LangFile);
-  AboutBox.LVersion.Hint:= OSVersion.VerDetail;
   with LangFile do
-  begin
+begin
     // general strings
     sRetConfBack:= ReadString(LangStr,'RetConfBack','Recharge la dernière configuration sauvegardée');
     sCreNewConf:= ReadString(LangStr,'CreNewConf','Création d''une nouvelle configuration');
@@ -3141,6 +3141,17 @@ begin
     MnuGetAllMail.Caption:= BtnGetAllMail.Hint;
     MnuQuit.Caption:= ReadString(LangStr,'MnuQuit.Caption',MnuQuit.Caption);
     MnuAbout.Caption:=BtnAbout.Hint;
+
+   with OsVersion do
+   begin
+     ProdStr[1]:= ReadString(LangStr,'Home','Famille');
+     ProdStr[2]:= ReadString(LangStr,'Professional','Entreprise');
+     ProdStr[3]:= ReadString(LangStr,'Server','Serveur');
+     for i:= 0 to high(Win10Build) do Win10Build[i,1]:= ReadString(LangStr,Win10Build[i,0],Win10Build[i,1]);
+     for i:= 0 to high(Win11Build) do Win11Build[i,1]:= ReadString(LangStr,Win11Build[i,0],Win11Build[i,1]);
+     GetSysInfo;
+   end;
+
 
     // HTTP Error messages
     HttpErrMsgNames[0] := ReadString(LangStr,'SErrInvalidProtocol','Protocole "%s" invalide');
