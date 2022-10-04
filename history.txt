@@ -222,3 +222,6 @@ Version 1.0.2.0 - 29/09/2022
 - Use TbbOsVersion component instead lazbbOsVer unit
 - Changed  installer routine to proper manage 32/64 bit installation
 
+Version 1.0.2.1 - 04/10/2022
+- Some changes dues to TbbOsVersion component translation changes
+

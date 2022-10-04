@@ -13,7 +13,7 @@ object FSettings: TFSettings
   OnDestroy = FormDestroy
   OnWindowStateChange = FormWindowStateChange
   Position = poMainFormCenter
-  LCLVersion = '2.0.10.0'
+  LCLVersion = '2.2.2.0'
   object PnlStatus: TPanel
     Left = 0
     Height = 31
@@ -54,7 +54,6 @@ object FSettings: TFSettings
       DefaultCaption = True
       Kind = bkOK
       ModalResult = 1
-      NumGlyphs = 2
       TabOrder = 0
     end
     object BtnCancel: TBitBtn
@@ -66,7 +65,6 @@ object FSettings: TFSettings
       DefaultCaption = True
       Kind = bkCancel
       ModalResult = 2
-      NumGlyphs = 2
       TabOrder = 1
     end
   end

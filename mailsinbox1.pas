@@ -125,9 +125,9 @@ type
     MnuTray: TPopupMenu;
     MnuButtonBar: TPopupMenu;
     RMInfos: TRichMemo;
+    SGMails: TStringGrid;
     SplitterV: TSplitter;
     SplitterH: TSplitter;
-    SGMails: TStringGrid;
     GetMailTimer: TTimer;
     TrayTimer: TTimer;
     TrayMail: TTrayIcon;
@@ -796,7 +796,7 @@ begin
   AboutBox.LUpdate.Hint := AboutBox.sLastUpdateSearch + ': ' + DateToStr(FSettings.Settings.LastUpdChk);
   AboutBox.Version:= Version;
   AboutBox.ProgName:= ProgName;
-  AboutBox.LVersion.Hint:= OSVersion.VerDetail;
+
    // Load last log file
   tmplog:= TStringList.Create;
   if FileExists(LogFileName) then
@@ -2249,6 +2249,7 @@ function TFMailsInBox.MailChecking(status: boolean): boolean;
 var
   ndx: integer;
 begin
+  result:= false;
   ndx:= LVAccounts.ItemIndex;
   if ndx<0 then exit;
   CheckingMail:= status;
@@ -2910,10 +2911,28 @@ end;
 procedure TFMailsInBox.ModLangue;
 var
   i: integer;
+  A: TStringArray;
 begin
   LangStr:=FSettings.Settings.LangStr;
   with LangFile do
-begin
+  begin
+    // OsVersion translation before other stuff
+    with OsVersion do
+    begin
+      ProdStrs.Strings[1]:= ReadString(LangStr,'Home','Famille'); ;
+      ProdStrs.Strings[2]:= ReadString(LangStr,'Professional','Entreprise');
+      ProdStrs.Strings[3]:= ReadString(LangStr,'Server','Serveur');
+      for i:= 0 to Win10Strs.count-1 do
+      begin
+        A:= Win10Strs.Strings[i].split('=');
+        Win10Strs.Strings[i]:= A[0]+'='+ReadString(LangStr,A[0],A[1]);
+      end;
+      for i:= 0 to Win11Strs.count-1 do
+      begin
+        A:= Win11Strs.Strings[i].split('=');
+        Win11Strs.Strings[i]:= A[0]+'='+ReadString(LangStr,A[0],A[1]);
+      end;
+    end;
     // general strings
     sRetConfBack:= ReadString(LangStr,'RetConfBack','Recharge la dernière configuration sauvegardée');
     sCreNewConf:= ReadString(LangStr,'CreNewConf','Création d''une nouvelle configuration');
@@ -2922,7 +2941,6 @@ begin
     YesBtn:=ReadString(LangStr,'YesBtn','Oui');
     NoBtn:=ReadString(LangStr,'NoBtn','Non');
     CancelBtn:=ReadString(LangStr,'CancelBtn','Annuler');
-
     //Main Form  & components captions
     Caption:=ReadString(LangStr,'Caption','Courriels en attente');
     BtnImport.Hint:=ReadString(LangStr,'BtnImport.Hint',BtnImport.Hint );
@@ -3029,7 +3047,7 @@ begin
     AboutBox.UrlProgSite:= ReadString(LangStr,'AboutBox.UrlProgSite','https://github.com/bb84000/mailsinbox/wiki/Accueil');
     AboutBox.LWebSite.Caption:= ReadString(LangStr,'AboutBox.LWebSite.Caption', AboutBox.LWebSite.Caption);
     AboutBox.LSourceCode.Caption:= ReadString(LangStr,'AboutBox.LSourceCode.Caption', AboutBox.LSourceCode.Caption);
-
+    AboutBox.LVersion.Hint:= OSVersion.VerDetail;
     if not AboutBox.checked then AboutBox.LUpdate.Caption:=ReadString(LangStr,'AboutBox.LUpdate.Caption',AboutBox.LUpdate.Caption) else
     begin
       if AboutBox.NewVersion then AboutBox.LUpdate.Caption:= Format(AboutBox.sUpdateAvailable, [AboutBox.LastVersion])
@@ -3142,15 +3160,7 @@ begin
     MnuQuit.Caption:= ReadString(LangStr,'MnuQuit.Caption',MnuQuit.Caption);
     MnuAbout.Caption:=BtnAbout.Hint;
 
-   with OsVersion do
-   begin
-     ProdStr[1]:= ReadString(LangStr,'Home','Famille');
-     ProdStr[2]:= ReadString(LangStr,'Professional','Entreprise');
-     ProdStr[3]:= ReadString(LangStr,'Server','Serveur');
-     for i:= 0 to high(Win10Build) do Win10Build[i,1]:= ReadString(LangStr,Win10Build[i,0],Win10Build[i,1]);
-     for i:= 0 to high(Win11Build) do Win11Build[i,1]:= ReadString(LangStr,Win11Build[i,0],Win11Build[i,1]);
-     GetSysInfo;
-   end;
+
 
 
     // HTTP Error messages
