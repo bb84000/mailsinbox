@@ -5,4 +5,4 @@ ssleay32.dll
 InstallMailsInBox.exe
 mailsinboxwin32.exe
 mailsinboxwin64.exe
-*.wiki
+wiki*
