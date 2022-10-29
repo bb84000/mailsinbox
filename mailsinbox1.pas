@@ -129,6 +129,7 @@ type
     SplitterV: TSplitter;
     SplitterH: TSplitter;
     GetMailTimer: TTimer;
+    TimerIconize: TTimer;
     TrayTimer: TTimer;
     TrayMail: TTrayIcon;
     UniqueInstance1: TUniqueInstance;
@@ -186,6 +187,7 @@ type
     procedure OnTimeTimer(Sender: TObject);
     procedure OnTrayTimer(Sender: TObject);
     procedure OnChkMailTimer(Sender: TObject);
+    procedure TimerIconizeTimer(Sender: TObject);
   private
     Initialized: boolean;
     OS, OSTarget: string;
@@ -266,6 +268,7 @@ type
     lastclick: int64;
     doubleClickMaxTime: int64;
     ChkVerInterval: Int64;
+    miniatstart: Boolean;
     procedure OnclickTimer (sender: TObject);
     procedure Initialize;
     procedure LoadSettings(Filename: string);
@@ -981,13 +984,13 @@ begin
       FLogView.Left:= StrToInt('$' + Copy(Settings.WState, 53, 4));
       FLogView.Height:= StrToInt('$' + Copy(Settings.WState, 57, 4));
       FLogView.Width:= StrToInt('$' + Copy(Settings.WState, 61, 4));;
-      self.WindowState := WinState;
+      ;self.WindowState := WinState;
       PrevLeft:= self.left;
-        PrevTop:= self.top;
+      PrevTop:= self.top;
       if Winstate = wsMinimized then
       begin
         Application.Minimize;
-      end;
+      end else self.WindowState := WinState;
     except
     end;
     // Display buttons bar and/or menu bar
@@ -1007,7 +1010,15 @@ begin
     // Get columns width to use at application close
     sColumnswidth:='';
     For i:= 0 to 4 do  sColumnswidth:= sColumnswidth+IntToHex(self.SGMails.Columns [i].Width, 4);
-    if settings.StartMini then Application.Minimize;
+    if settings.StartMini then
+    begin
+      // On newer windows versions, minimize at startup no longer works properly
+      // Application.minimize let a minmized window on the desktop when called in activate event
+      // Set window to wsNormal ad uUse a timer to delay minimize
+      WindowState:=wsNormal;
+      miniatstart:= true;
+      TimerIconize.enabled:= true;
+    end;
     // Détermination de la langue (si pas dans settings, langue par défaut)
     if Settings.LangStr = '' then Settings.LangStr := LangStr;
     LangFile.ReadSections(LangNums);
@@ -2011,6 +2022,13 @@ begin
   end;
 end;
 
+procedure TFMailsInBox.TimerIconizeTimer(Sender: TObject);
+begin
+  TimerIconize.Enabled:= false;
+  miniatstart:= false;
+  Application.Minimize;
+end;
+
 
 
 // Timer for time display (TFPTimer)
@@ -2261,6 +2279,7 @@ begin
   end else
   begin
     ChkMailTimer.StopTimer;
+    Application.ProcessMessages;
     TrayTimerTick:= 0;
     ILTray.GetBitmap(TrayTimerTick, TrayTimerBmp);
     TrayMail.Icon.Assign(TrayTimerbmp);

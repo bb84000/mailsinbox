@@ -225,3 +225,7 @@ Version 1.0.2.0 - 29/09/2022
 Version 1.0.2.1 - 04/10/2022
 - Some changes dues to TbbOsVersion component translation changes
 
+Version 1.0.2.2 - 29/10/2022
+- Corrected minimized startup on windows 10 22H2 : minimized window
+  remains on the desktop, use a timer to get a proper behaviour
+- Installer rewritten : better older versions management

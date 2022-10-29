@@ -1,0 +1,35 @@
+# Mails In Box
+[Vers la page d'accueil en Français ](https://github.com/bb84000/mailsinbox/wiki/Accueil)
+
+**Mails In Box** is a program to periodically check if there are mails on POP3 and IMAP mailboxes.
+
+![Mails In Box](https://github.com/bb84000/mailsinbox/raw/master/help/images/mailsinboxe.jpg)
+
+### INSTALLATION
+[Download archive](https://github.com/bb84000/mailsinbox/raw/master/mailsinbox.zip), extract and run InstallMailInBox.exe, then follow instructions of the setup program.
+
+### USAGE
+On first run, you must create new account(s), or import account from previous MailAttente or import account(s) from Outlook 2007-2013 and Thunderbird. In the two latter cases, passwords are not imported and you need to update them by editing the account(s).
+
+The program cannot use OAuth2 authentification method. Use instead an application specific password given by the mail service. 
+
+The program can be run at windows start and minimized, click the Settings button.
+
+In regular conditions, **Mails In Box** can run minimized in the system tray.<br>
+It can onbly be closed by right click on its icon and choose _Quit_, or in its main windows,
+with _Quit_ button.
+
+
+
+### UNINSTALL
+Use control panel's program management system to uninstall the program.
+
+### NOTICE
+**Mails In Box** software can be used fee of charge.<br>
+Use the program at your own risks. Take care, mail delete on server is irreversible.<br>
+OpenSSL license http://www.openssl.org .<br>
+Outlook and Windows trademarks and logos are property of Microsoft Corporation, Thunderbird name and logo are property of Mozilla Fundation, and are represented to indicate the mail client launched by the program.
+
+Sources (Windows and Linux) are available on [GitHub](https://github.com/bb84000/mailsinbox)
+
+

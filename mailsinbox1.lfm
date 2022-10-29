@@ -12,7 +12,7 @@ object FMailsInBox: TFMailsInBox
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   Position = poDesktopCenter
-  LCLVersion = '2.2.2.0'
+  LCLVersion = '2.2.4.0'
   object PnlToolbar: TPanel
     Left = 0
     Height = 42
@@ -3600,5 +3600,12 @@ object FMailsInBox: TFMailsInBox
     )
     Left = 676
     Top = 256
+  end
+  object TimerIconize: TTimer
+    Enabled = False
+    Interval = 10
+    OnTimer = TimerIconizeTimer
+    Left = 353
+    Top = 309
   end
 end

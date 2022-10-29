@@ -1,138 +1,191 @@
-;Installation script for MailsInBox
-; bb - sdtp - June 2021
-;--------------------------------
-  Unicode true
+;------------------------------------------------------------------------------------------
+; NSIS Installation script for 32/64 bit Mailsinbox
+; bb - sdtp - October 2022
+;
+; 25/10/2022 Replaced onInit with a custom page to check running app and previous versions
+;------------------------------------------------------------------------------------------
+!define FileVersion "1.0.0.2"
 
-  !include "MUI2.nsh"
-  !include x64.nsh
-  !include FileFunc.nsh
-  
-;--------------------------------
-;Configuration
+ Unicode true
 
-  ;General
-  Name "Mails In Box"
-  OutFile "InstallMailsInBox.exe"
-  !define lazarus_dir "C:\Users\Bernard\Documents\Lazarus"
-  !define source_dir "${lazarus_dir}\mailsinbox"
-  
-  RequestExecutionLevel admin
-  
-  ;Windows vista.. 10 manifest
-  ManifestSupportedOS all
+!include "MUI2.nsh"
+!include x64.nsh
+!include FileFunc.nsh
+!include WordFunc.nsh
+!include StrFunc.nsh
+!include nsDialogs.nsh
 
-  ;!define MUI_LANGDLL_ALWAYSSHOW                     ; To display language selection dialog
-  !define MUI_ICON "${source_dir}\mailsinbox.ico"
-  !define MUI_UNICON "${source_dir}\mailsinbox.ico"
+${Using:StrFunc} StrRep   ; Replace substring function, uses StrFunc.nsh needed in custom page
 
-  ; The default installation directory
-  InstallDir "$PROGRAMFILES\MailsInBox"
-  
-  ; Variables to properly manage X64 or X32
-  var exe_to_inst       ; "32.exe" or "64.exe"
-  var exe_to_del
-  var dll_to_inst       ; "32.dll" or "64.dll"
-  var dll_to_del
-  var sysfolder         ; system 32 folder
-;--------------------------------
+!define lazarus_dir "C:\Users\Bernard\Documents\Lazarus"
+!define source_dir "${lazarus_dir}\mailsinbox"
+; generic program name suffix, then use ${prog_name} constant
+!define prog_name "Mailsinbox"
+; Key name for uninstall
+!define uninst_key "Software\Microsoft\Windows\CurrentVersion\Uninstall\${prog_name}"
+
+;General
+Name "Mails In Box"
+OutFile "Install${prog_name}.exe"
+; The default installation directory
+InstallDir "$PROGRAMFILES\${prog_name}"
+
+;Windows vista.. 11 manifest
+ManifestSupportedOS all
+; Install with admlin privileges
+RequestExecutionLevel admin
+
+; Variables to properly manage X64 or X32
+var exe_to_inst       ; "32.exe" or "64.exe"
+var exe_to_del
+var dll_to_inst       ; "32.dll" or "64.dll"
+var dll_to_del
+var sysfolder         ; system 32 folder
+; Variables for version management
+var prev_inst_folder  ; Install folder of previous version
+var prev_inst_version ; Number of previous version
+var Custom_cbuninst   ; uninstall check box in custopm page
+var Custom_cbstate
+var old_uninstpath
+var estimated_size
+var install_date
+
 ; Interface Settings
-
+; installer and uninstall icons
 !define MUI_ABORTWARNING
+!define MUI_ICON "${source_dir}\${prog_name}.ico"
+!define MUI_UNICON "${source_dir}\${prog_name}.ico"
+; Welcome and finsh pages vertical images 164x314 pixels max unstretched
+!define MUI_WELCOMEFINISHPAGE_BITMAP "${source_dir}\images\${prog_name}_welcome.bmp"
+!define MUI_WELCOMEFINISHPAGE_BITMAP_NOSTRETCH
+!define MUI_UNWELCOMEFINISHPAGE_BITMAP "${source_dir}\images\${prog_name}_welcome.bmp"
+!define MUI_UNWELCOMEFINISHPAGE_BITMAP_NOSTRETCH
+;Remember the installer language
+!define MUI_LANGDLL_REGISTRY_ROOT "HKCU"
+!define MUI_LANGDLL_REGISTRY_KEY "Software\SDTP\${prog_name}"
+!define MUI_LANGDLL_REGISTRY_VALUENAME "Installer Language"
+;!define MUI_LANGDLL_ALWAYSSHOW                     ; To force language selection dialog
+;checkboxes on finsh page
+!define MUI_FINISHPAGE_SHOWREADME
+!define MUI_FINISHPAGE_SHOWREADME_TEXT "$(Check_box)"
+!define MUI_FINISHPAGE_SHOWREADME_NOTCHECKED
+!define MUI_FINISHPAGE_SHOWREADME_FUNCTION inst_shortcut
+!define MUI_FINISHPAGE_RUN
+!define MUI_FINISHPAGE_RUN_TEXT "$(App_run)"
+!define MUI_FINISHPAGE_RUN_FUNCTION run_appli
+!define MUI_FINISHPAGE_RUN_NOTCHECKED
 
-;--------------------------------
-;Language Selection Dialog Settings
-
-  ;Remember the installer language
-  !define MUI_LANGDLL_REGISTRY_ROOT "HKCU"
-  !define MUI_LANGDLL_REGISTRY_KEY "Software\SDTP\MailsInBox"
-  !define MUI_LANGDLL_REGISTRY_VALUENAME "Installer Language"
-  !define MUI_FINISHPAGE_SHOWREADME
-  !define MUI_FINISHPAGE_SHOWREADME_TEXT "$(Check_box)"
-  !define MUI_FINISHPAGE_SHOWREADME_FUNCTION inst_shortcut
 ; Pages
-
-  !insertmacro MUI_PAGE_WELCOME
+;!define MUI_WELCOMEPAGE_TITLE_3LINES
+!insertmacro MUI_PAGE_WELCOME
   !insertmacro MUI_PAGE_LICENSE $(licence)
-  !insertmacro MUI_PAGE_DIRECTORY
-  !insertmacro MUI_PAGE_INSTFILES
-  !insertmacro MUI_PAGE_FINISH
-
-  !insertmacro MUI_UNPAGE_WELCOME
-  !insertmacro MUI_UNPAGE_CONFIRM
-  !insertmacro MUI_UNPAGE_INSTFILES
-  !insertmacro MUI_UNPAGE_FINISH
+Page custom ChkVerPage ChkVerLeave                 ; Custom page for version check
+;!insertmacro MUI_PAGE_DIRECTORY                   ; Let select the install directory
+!insertmacro MUI_PAGE_INSTFILES
+!insertmacro MUI_PAGE_FINISH
+!insertmacro MUI_UNPAGE_WELCOME
+!insertmacro MUI_UNPAGE_CONFIRM
+!insertmacro MUI_UNPAGE_INSTFILES
+!insertmacro MUI_UNPAGE_FINISH
 
 ;Languages
-  !insertmacro MUI_LANGUAGE "English"
-  !insertmacro MUI_LANGUAGE "French"
-  !insertmacro MUI_RESERVEFILE_LANGDLL
+!insertmacro MUI_LANGUAGE "English"
+!insertmacro MUI_LANGUAGE "French"
+!insertmacro MUI_RESERVEFILE_LANGDLL
 
-  ;Licence langage file
-  LicenseLangString Licence ${LANG_ENGLISH} "${source_dir}\license.txt"
-  LicenseLangString Licence ${LANG_FRENCH}  "${source_dir}\licensf.txt"
+;Licence langage file
+LicenseLangString Licence ${LANG_ENGLISH} "${source_dir}\license.txt"
+LicenseLangString Licence ${LANG_FRENCH}  "${source_dir}\licensf.txt"
 
-  ;Language strings for uninstall string
-  LangString RemoveStr ${LANG_ENGLISH}  "Mails In Box"
-  LangString RemoveStr ${LANG_FRENCH} "Courriels en attente"
+;Language strings for uninstall string
+LangString RemoveStr ${LANG_ENGLISH}  "Mails In Box"
+LangString RemoveStr ${LANG_FRENCH} "Courriels en attente"
 
-  ;Language string for links
-  LangString ProgramLnkStr ${LANG_ENGLISH} "Mails In Box.lnk"
-  LangString ProgramLnkStr ${LANG_FRENCH} "Courriels en attente.lnk"
-  LangString UninstLnkStr ${LANG_ENGLISH} "Mails In Box uninstall.lnk"
-  LangString UninstLnkStr ${LANG_FRENCH} "Désinstallation de Courriels en attente.lnk"
-
-  LangString ProgramDescStr ${LANG_ENGLISH} "Mails In Box"
-  LangString ProgramDescStr ${LANG_FRENCH} "Courriels en attente"
-
-  ;Language strings for language selection dialog
-  LangString LangDialog_Title ${LANG_ENGLISH} "Installer Language|$(^CancelBtn)"
-  LangString LangDialog_Title ${LANG_FRENCH} "Langue d'installation|$(^CancelBtn)"
-
-  LangString LangDialog_Text ${LANG_ENGLISH} "Please select the installer language."
-  LangString LangDialog_Text ${LANG_FRENCH} "Choisissez la langue du programme d'installation."
-
-  ;language strings for checkbox
-  LangString Check_box ${LANG_ENGLISH} "Install a shortcut on the desktop"
-  LangString Check_box ${LANG_FRENCH} "Installer un raccourci sur le bureau"
-
-  ;Cannot install
-  LangString No_Install ${LANG_ENGLISH} "The application cannot be installed on a 32bit system"
-  LangString No_Install ${LANG_FRENCH} "Cette application ne peut pas être installée sur un système 32bits"
+;Language string for links
+LangString ProgramLnkStr ${LANG_ENGLISH} "Mails In Box.lnk"
+LangString ProgramLnkStr ${LANG_FRENCH} "Courriels en attente.lnk"
+LangString UninstLnkStr ${LANG_ENGLISH} "Mails In Box uninstall.lnk"
+LangString UninstLnkStr ${LANG_FRENCH} "Désinstallation de Courriels en attente.lnk"
+LangString ProgramDescStr ${LANG_ENGLISH} "Mails In Box"
+LangString ProgramDescStr ${LANG_FRENCH} "Courriels en attente"
+LangString ShortcutDescStr ${LANG_ENGLISH} "Application to check if there are new mails in mailboxes"
+LangString ShortcutDescStr ${LANG_FRENCH} "Application pour vérifier les nouveaux mails dans les boites mail"
   
-  ; Language string for remove old install
-  LangString Remove_Old ${LANG_ENGLISH} "Install will remove a previous installation."
-  LangString Remove_Old ${LANG_FRENCH} "Install va supprimer une ancienne installation."
+;Language strings for language selection dialog
+LangString LangDialog_Title ${LANG_ENGLISH} "Installer Language|$(^CancelBtn)"
+LangString LangDialog_Title ${LANG_FRENCH} "Langue d'installation|$(^CancelBtn)"
+LangString LangDialog_Text ${LANG_ENGLISH} "Please select the installer language."
+LangString LangDialog_Text ${LANG_FRENCH} "Choisissez la langue du programme d'installation."
 
-  !define MUI_LANGDLL_WINDOWTITLE "$(LangDialog_Title)"
-  !define MUI_LANGDLL_INFO "$(LangDialog_Text)"
+;language strings for checkbox
+LangString Check_box ${LANG_ENGLISH} "Install a shortcut on the desktop"
+LangString Check_box ${LANG_FRENCH} "Installer un raccourci sur le bureau"
+LangString App_run ${LANG_ENGLISH} "Launch $(RemoveStr)"
+LangString App_run ${LANG_FRENCH} "Lancer $(RemoveStr)"
+
+; custom page strings
+LangString Custom_title ${LANG_ENGLISH} "Installation initialization"
+LangString Custom_title ${LANG_FRENCH} "Initialisation de l'installation"
+LangString Custom_subtitle ${LANG_ENGLISH} "Close program's running instance(s) if there are and search a previous installation"
+LangString Custom_subtitle ${LANG_FRENCH} "Ferme le programme s'il est en cours d'exécution et recherche une installation précédente"
+LangString Custom_labelclose ${LANG_ENGLISH} "Closing eventual running program instance..."
+LangString Custom_labelclose ${LANG_FRENCH} "Fermeture du programme s'il est en cours d'exécution..."
+LangString Custom_labelsearchprev ${LANG_ENGLISH} "Searching previous program installation..."
+LangString Custom_labelsearchprev ${LANG_FRENCH} "Recheche d'une précédente installation du programme..."
+LangString Custom_newinstall ${LANG_ENGLISH} "No previous installation found. Click Install to continue or Cancel to abort installation"
+LangString Custom_newinstall ${LANG_FRENCH} "Pas d'installation précxédente trouvée. Cliquer sur Installer pour continuer ou Annuler pour abandonner l'installation"
+LangString Custom_delphifound ${LANG_ENGLISH} "Previous conflicting installation to be uninstalled. Click Install to continue or Cancel to abort installation"
+LangString Custom_delphifound ${LANG_FRENCH} "Une précédente installation va être désinstallée. Cliquer sur Installer pour continuer ou Annuler pour abandonner l'installation"
+LangString Custom_delphichecked ${LANG_ENGLISH} "If you uncheck this box, previous install can conflict with new install"
+LangString Custom_delphichecked ${LANG_FRENCH} "Si vous décochez cette case, une précente installation peut perturber la nouvelle"
+
+;Install checks
+LangString Already_inst ${LANG_ENGLISH} "The program is already installed. Click Install to reinstall or Cancel to abort installation"
+LangString Already_inst ${LANG_FRENCH} "Ce programme est déjà installé. Cliquer sur Installer pour le réinstaller ou Annuler pour abandonner l'installation"
+LangString Upgrade_inst ${LANG_ENGLISH} "A previous version %ver1% of the program is installed. Do you want upgrade this previous version with %ver2% version ?"
+LangString Upgrade_inst ${LANG_FRENCH} "Une version précédente %ver1% de ce programme est installée. Voulez vous mettre à jour cette version avec la version %ver2% ?"
+LangString Downgrade_inst ${LANG_ENGLISH} "A most recent version %ver1% of the program is installed. Do you want really return to an older version %ver2% ?"
+LangString Downgrade_inst ${LANG_FRENCH} "Une version plus récente %ver1% de ce programme est installée. Voulez vous vraiment revenir à une version plus ancienne %ver2% ?"
+
+!define MUI_LANGDLL_WINDOWTITLE "$(LangDialog_Title)"
+!define MUI_LANGDLL_INFO "$(LangDialog_Text)"
 ;--------------------------------
 
-  !getdllversion  "${source_dir}\mailsinboxwin64.exe" expv_
-  !define FileVersion "${expv_1}.${expv_2}.${expv_3}.${expv_4}"
+; Get new version of program to install
+!getdllversion  "${source_dir}\${prog_name}win64.exe" expv_
+!define ProductVersion "${expv_1}.${expv_2}.${expv_3}.${expv_4}"
+!define /date DATE "%d/%m/%Y %H:%M:%S"
+  
+VIProductVersion "${ProductVersion}"
+VIFileVersion ${FileVersion}
+VIAddVersionKey "FileVersion" "${FileVersion}"
+VIAddVersionKey "ProductName" "Install${prog_name}.exe"
+VIAddVersionKey "FileDescription" "${prog_name} Installer"
+VIAddVersionKey "LegalCopyright" "sdtp - bb"
+VIAddVersionKey "ProductVersion" "${ProductVersion}"
+VIAddVersionKey "LegalTrademarks" "sdtp - bb - ${DATE}"
 
-  VIProductVersion "${FileVersion}"
-  VIAddVersionKey "FileVersion" "${FileVersion}"
-  VIAddVersionKey "ProductName" "InstallMailsInBox.exe"
-  VIAddVersionKey "FileDescription" "MailsInBox Installer"
-  VIAddVersionKey "LegalCopyright" "sdtp - bb"
-  VIAddVersionKey "ProductVersion" "${FileVersion}"
-   
-  ; Change nsis brand line
-  BrandingText "$(ProgramDescStr) version ${FileVersion} - bb - sdtp"
+; Change nsis brand line
+BrandingText "$(ProgramDescStr) version ${ProductVersion} - bb - sdtp"
   
 ; The stuff to install
-Section "" ;No components page, name is not important
+Section "install" ;No components page, name is not important
   SetShellVarContext all
+  ; change registry entries for 64 bit
+  ${If} ${RunningX64}
+    SetRegView 64
+  ${EndIf}
   SetOutPath "$INSTDIR"
-
- ${If} ${RunningX64}
-    SetRegView 64    ; change registry entries and install dir for 64 bit
+  ; need to uninstall previous version if  transmitted from custom page
+  ${If} $Custom_cbstate <> ${BST_UNCHECKED}
+  ${andif} $old_uninstpath != ""
+     Execwait $old_uninstpath
   ${EndIf}
   
   ;Copy all files, files whhich have the same name in 32 and 64 bit are copied
   ; with 64 or 32 in their name, the renamed
-  File "${source_dir}\mailsinboxwin64.exe"
-  File "${source_dir}\mailsinboxwin32.exe"
+  File "${source_dir}\${prog_name}win64.exe"
+  File "${source_dir}\${prog_name}win32.exe"
   File "/oname=libeay3264.dll" "${lazarus_dir}\openssl\win64\libeay32.dll"
   File "/oname=ssleay3264.dll" "${lazarus_dir}\openssl\win64\ssleay32.dll"
   File "/oname=libeay3232.dll" "${lazarus_dir}\openssl\win32\libeay32.dll"
@@ -154,11 +207,11 @@ Section "" ;No components page, name is not important
 
   SetOutPath "$INSTDIR"
   ; Delete old files if they exist as we can not rename if the file exists
-  Delete /REBOOTOK "$INSTDIR\mailsinbox.exe"
+  Delete /REBOOTOK "$INSTDIR\${prog_name}.exe"
   Delete /REBOOTOK "$INSTDIR\libeay32.dll"
   Delete /REBOOTOK "$INSTDIR\\ssleay32.dll"
   ; Rename 32 or 64 files
-  Rename /REBOOTOK "$INSTDIR\mailsinboxwin$exe_to_inst" "$INSTDIR\mailsinbox.exe"
+  Rename /REBOOTOK "$INSTDIR\${prog_name}win$exe_to_inst" "$INSTDIR\${prog_name}.exe"
   ; Install ssl libraries if not already in system folder
   IfFileExists "$sysfolder\libeay32.dll" ssl_lib_found ssl_lib_not_found
   ssl_lib_not_found:
@@ -171,114 +224,178 @@ Section "" ;No components page, name is not important
     Delete "$INSTDIR\ssleay32$dll_to_inst"
   ssl_lib_set:
   ; delete non used files
-  Delete "$INSTDIR\ProgramGrpMgrwin$exe_to_del"
+  Delete "$INSTDIR\${prog_name}win$exe_to_del"
   Delete "$INSTDIR\libeay32$dll_to_del"
   Delete "$INSTDIR\ssleay32$dll_to_del"
   ; Install other files
   File "${source_dir}\licensf.txt"
   File "${source_dir}\license.txt"
   File "${source_dir}\history.txt"
-  File "${source_dir}\mailsinbox.txt"
-  File "${source_dir}\mailsinbox.lng"
-  File "${source_dir}\mailsinbox.ini"
+  File "${source_dir}\${prog_name}.txt"
+  File "${source_dir}\${prog_name}.lng"
+  File "${source_dir}\${prog_name}.ini"
   File /r "${source_dir}\help"
 
   ; write out uninstaller
   WriteUninstaller "$INSTDIR\uninst.exe"
-  ; Get install folder size
-  ${GetSize} "$INSTDIR" "/S=0K" $0 $1 $2
+  
+  ; Get install folder size in var $estimated_size
+  ${GetSize} "$INSTDIR" "/S=0K" $estimated_size $1 $2
+  ; Get install date in var $install_date
+  ${GetTime} "" "L" $0 $1 $2 $3 $4 $5 $6 ; $0 day ; $1 month ; $2 year $3 day of week name ; $4 hour ; $5 minutes ; $6 seconds
+  StrCpy $install_date "$0/$1/$2 $4:$5:$6"
 
   ;Write uninstall in register
-  WriteRegStr HKEY_LOCAL_MACHINE "Software\Microsoft\Windows\CurrentVersion\Uninstall\mailsinbox" "UninstallString" "$INSTDIR\uninst.exe"
-  WriteRegStr HKEY_LOCAL_MACHINE "Software\Microsoft\Windows\CurrentVersion\Uninstall\mailsinbox" "DisplayIcon" "$INSTDIR\uninst.exe"
-  WriteRegStr HKEY_LOCAL_MACHINE "Software\Microsoft\Windows\CurrentVersion\Uninstall\mailsinbox" "DisplayName" "$(RemoveStr)"
-  WriteRegStr HKEY_LOCAL_MACHINE "Software\Microsoft\Windows\CurrentVersion\Uninstall\mailsinbox" "DisplayVersion" "${FileVersion}"
-  WriteRegDWORD HKEY_LOCAL_MACHINE "Software\Microsoft\Windows\CurrentVersion\Uninstall\mailsinbox" "EstimatedSize" "$0"
-  WriteRegStr HKEY_LOCAL_MACHINE "Software\Microsoft\Windows\CurrentVersion\Uninstall\mailsinbox" "Publisher" "SDTP"
-  WriteRegStr HKEY_LOCAL_MACHINE "Software\Microsoft\Windows\CurrentVersion\Uninstall\mailsinbox" "URLInfoAbout" "www.sdtp.com"
-  WriteRegStr HKEY_LOCAL_MACHINE "Software\Microsoft\Windows\CurrentVersion\Uninstall\mailsinbox" "HelpLink" "www.sdtp.com"
+  WriteRegStr HKLM ${uninst_key} "UninstallString" "$INSTDIR\uninst.exe"
+  WriteRegStr HKLM ${uninst_key} "DisplayIcon" "$INSTDIR\uninst.exe"
+  WriteRegStr HKLM ${uninst_key} "DisplayName" "$(RemoveStr)"
+  WriteRegStr HKLM ${uninst_key} "DisplayVersion" "${ProductVersion}"
+  WriteRegDWORD HKLM ${uninst_key} "EstimatedSize" "$estimated_size"
+  WriteRegStr HKLM ${uninst_key} "Publisher" "SDTP"
+  WriteRegStr HKLM ${uninst_key} "URLInfoAbout" "www.sdtp.com"
+  WriteRegStr HKLM ${uninst_key} "HelpLink" "www.sdtp.com"
   ;Store install folder
-  WriteRegStr HKCU "Software\SDTP\mailsinbox" "InstallDir" $INSTDIR
-
+  WriteRegStr HKCU "Software\SDTP\${prog_name}" "InstallDir" $INSTDIR
+  WriteRegStr HKCU "Software\SDTP\${prog_name}" "ProductVersion" ${ProductVersion}
+  WriteRegStr HKCU "Software\SDTP\${prog_name}" "InstallDate" "$install_date"
 SectionEnd ; end the section
 
 ; Install shortcuts, language dependant
 
 Section "Start Menu Shortcuts"
   SetShellVarContext all
-  CreateDirectory "$SMPROGRAMS\mailsinbox"
-  CreateShortCut  "$SMPROGRAMS\mailsinbox\$(ProgramLnkStr)" "$INSTDIR\mailsinbox.exe" "" "$INSTDIR\mailsinbox.exe" 0 SW_SHOWNORMAL "" "$(ProgramDescStr)"
-  CreateShortCut  "$SMPROGRAMS\mailsinbox\$(UninstLnkStr)" "$INSTDIR\uninst.exe" "" "$INSTDIR\uninst.exe" 0
+  ;delete non localized shortcuts if exist
+  Delete  "$SMPROGRAMS\${prog_name}\$(ProgramLnkStr)"
+  Delete  "$SMPROGRAMS\${prog_name}\$(UninstLnkStr)"
+  RMDir "$SMPROGRAMS\${prog_name}"
+  ; create localized shortcuts
+  CreateDirectory "$SMPROGRAMS\$(RemoveStr)"
+  CreateShortCut  "$SMPROGRAMS\$(RemoveStr)\$(ProgramLnkStr)" "$INSTDIR\${prog_name}.exe" "" "$INSTDIR\${prog_name}.exe" 0 SW_SHOWNORMAL "" "$(ProgramDescStr)"
+  CreateShortCut  "$SMPROGRAMS\$(RemoveStr)\$(UninstLnkStr)" "$INSTDIR\uninst.exe" "" "$INSTDIR\uninst.exe" 0
 
 SectionEnd
 
 ;Uninstaller Section
 
 Section Uninstall
-SetShellVarContext all
-${If} ${RunningX64}
-  SetRegView 64    ; change registry entries and install dir for 64 bit
-${EndIf}
-; add delete commands to delete whatever files/registry keys/etc you installed here.
-Delete /REBOOTOK "$INSTDIR\mailsinbox.exe"
-Delete "$INSTDIR\history.txt"
-Delete "$INSTDIR\mailsinbox.txt"
-Delete "$INSTDIR\mailsinbox.lng"
-Delete "$INSTDIR\mailsinbox.ini"
-Delete "$INSTDIR\libeay32.dll"
-Delete "$INSTDIR\ssleay32.dll"
-Delete "$INSTDIR\licensf.txt"
-Delete "$INSTDIR\license.txt"
-Delete "$INSTDIR\OpenSSL License.txt"
-Delete "$INSTDIR\uninst.exe"
-RMDir /r "$INSTDIR\help"
-; remove shortcuts, if any.
-  Delete  "$SMPROGRAMS\mailsinbox\$(ProgramLnkStr)"
-  Delete  "$SMPROGRAMS\mailsinbox\$(UninstLnkStr)"
+  SetShellVarContext all
+  ${If} ${RunningX64}
+    SetRegView 64    ; change registry entries and install dir for 64 bit
+  ${EndIf}
+  ; add delete commands to delete whatever files/registry keys/etc you installed here.
+  Delete /REBOOTOK "$INSTDIR\${prog_name}.exe"
+  Delete "$INSTDIR\history.txt"
+  Delete "$INSTDIR\${prog_name}.txt"
+  Delete "$INSTDIR\${prog_name}.lng"
+  Delete "$INSTDIR\${prog_name}.ini"
+  Delete "$INSTDIR\libeay32.dll"
+  Delete "$INSTDIR\ssleay32.dll"
+  Delete "$INSTDIR\licensf.txt"
+  Delete "$INSTDIR\license.txt"
+  Delete "$INSTDIR\OpenSSL License.txt"
+  Delete "$INSTDIR\uninst.exe"
+  RMDir /r "$INSTDIR\help"
+  ; remove shortcuts, if any.
+  Delete  "$SMPROGRAMS\$(RemoveStr)\$(ProgramLnkStr)"
+  Delete  "$SMPROGRAMS\$(RemoveStr)\$(UninstLnkStr)"
   Delete  "$DESKTOP\$(ProgramLnkStr)"
-
-
-; remove directories used.
-  RMDir "$SMPROGRAMS\mailsinbox"
+  ; remove directories used.
+  RMDir "$SMPROGRAMS\$(RemoveStr)"
   RMDir "$INSTDIR"
-
-; Remove installed keys
-DeleteRegKey HKCU "Software\SDTP\mailsinbox"
-DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\mailsinbox"
-; remove also autostart settings if any
-DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Run\" "MailsInBox"
-DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\RunOnce\" "MailsInBox"
-
+  ; Remove installed keys
+  DeleteRegKey HKCU "Software\SDTP\${prog_name}"
+  DeleteRegKey HKLM ${uninst_key}
+  ; remove also autostart settings if any
+  DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Run\"${prog_name}
+  DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\RunOnce\"${prog_name}
 SectionEnd ; end of uninstall section
 
 Function inst_shortcut
-  CreateShortCut "$DESKTOP\$(ProgramLnkStr)" "$INSTDIR\mailsinbox.exe"
+  CreateShortCut "$DESKTOP\$(ProgramLnkStr)" "$INSTDIR\${prog_name}.exe" "" "" "" SW_SHOWNORMAL "" $(ShortcutDescStr)
+FunctionEnd
+
+Function run_appli
+  Exec "$INSTDIR\${prog_name}.exe"
+FunctionEnd
+
+; custom page to check running program, old veresions, etc...
+Function ChkVerPage
+  !insertmacro MUI_HEADER_TEXT $(Custom_title) $(Custom_subtitle)
+  StrCpy $Custom_cbstate ${BST_UNCHECKED}    ; Set initial/default state
+  nsDialogs::Create 1018
+  Pop $0
+  ${If} $0 == error
+    Abort
+  ${EndIf}
+  ; Close all apps instance
+  ${NSD_CreateLabel} 0 0 100% 12u $(Custom_labelclose)
+  Pop $0
+  FindProcDLL::FindProc "${prog_name}.exe"
+  ${While} $R0 > 0
+    FindProcDLL::KillProc "${prog_name}.exe"
+    FindProcDLL::WaitProcEnd "${prog_name}.exe" -1
+    FindProcDLL::FindProc "${prog_name}.exe"
+  ${EndWhile}
+  ${NSD_CreateLabel} 0 20 100% 12u $(Custom_labelsearchprev)
+  Pop $0
+  ; Retrieve previous install and current program version
+  ReadRegStr $prev_inst_folder HKCU "Software\SDTP\${prog_name}" "InstallDir"
+  ${If} $prev_inst_folder == ""     ; Install dir not found program is not already installed
+    ${NSD_CreateLabel} 0 40 100% 20u $(Custom_newinstall)
+    Pop $0
+  ${else}
+    ; Check delphi program installed on win64 and win32
+    ${If} ${RunningX64}
+      ReadRegStr $old_uninstpath HKLM "SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\MailAttente" "UninstallString"
+    ${else}
+      ReadRegStr $old_uninstpath HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\MailAttente" "UninstallString"
+    ${endif}
+    ${if} $old_uninstpath != ""
+      ${NSD_CreateLabel} 0 40 100% 20u $(Custom_delphifound)
+      Pop $0
+      ${NSD_CreateCheckbox} 0 -50 100% 16u $(Custom_delphichecked)
+      Pop $Custom_cbuninst
+      ; chheck the uninstall box
+      ${NSD_Check} $Custom_cbuninst
+    ${Endif}
+    ; check previous versions and set proper programfiles folder
+    StrCpy "$INSTDIR" $prev_inst_folder
+    ReadRegStr $prev_inst_version HKCU "Software\SDTP\${prog_name}" "ProductVersion"
+    ${if} $prev_inst_version == ""                             ; version not set in registry, get file version
+      ${GetFileVersion} "$prev_inst_folder\${prog_name}.exe" $prev_inst_version
+    ${endif}
+    ; compare instelled version and new poroduct version
+    ${VersionConvert} ${ProductVersion} "" $R0
+    ${VersionConvert} $prev_inst_version "" $R1
+    ${VersionCompare} $R0 $R1 $R2
+    ${If} $R2 == 0       ; same version, install only to repair
+      StrCpy $R3 $(Already_inst)
+    ${elseif} $R2 == 1   ; version can be upgraded
+      StrCpy $R3 $(Upgrade_inst)
+    ${elseif} $R2 == 2   ; Downgrade version ?
+      StrCpy $R3 $(Downgrade_inst)
+    ${endif}
+    ; Replace with versions values in language strings
+    ${StrRep} $R1 $R3 "%ver1%" $prev_inst_version
+    ${StrRep} $R3 $R1 "%ver2%" ${ProductVersion}
+    ${NSD_CreateLabel} 0 40 100% 20u $R3
+    Pop $0
+  ${endif}
+  nsDialogs::Show
+FunctionEnd
+
+Function ChkVerLeave
+  ; store checkbox sate in var Custom_cbstate to use in main saction
+  ${NSD_GetState} $Custom_cbuninst $Custom_cbstate
 FunctionEnd
 
 Function .onInit
-  ; !insertmacro MUI_LANGDLL_DISPLAY
-  ${If} ${RunningX64}
-    SetRegView 64    ; change registry entries and install dir for 64 bit
-    StrCpy "$INSTDIR" "$PROGRAMFILES64\mailsinbox"
-  ${Else}
-
-  ${EndIf}
   SetShellVarContext all
-  ; Close all apps instance
-  FindProcDLL::FindProc "$INSTDIR\mailsinbox.exe"
-  ${While} $R0 > 0
-    FindProcDLL::KillProc "$INSTDIR\mailsinbox.exe"
-    FindProcDLL::WaitProcEnd "$INSTDIR\mailsinbox.exe" -1
-    FindProcDLL::FindProc "$INSTDIR\mailsinbox.exe"
-  ${EndWhile}
-  ; See if there is old program
-  ReadRegStr $R0 HKLM "SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\MailAttente" "UninstallString"
-   ${If} $R0 == ""
-        Goto Done
-   ${EndIf}
-   MessageBox MB_YESNO "$(Remove_Old)" IDYES true IDNO false
-   true:
-      ExecWait $R0
-  false:
-  Done:
+  ${If} ${RunningX64}
+    SetRegView 64
+    StrCpy "$INSTDIR" "$PROGRAMFILES64\${prog_name}"
+  ${else}
+    StrCpy "$INSTDIR" "$PROGRAMFILES\${prog_name}"
+  ${endif}
+  StrCpy $old_uninstpath ""
 FunctionEnd
