@@ -1,6 +1,6 @@
 {******************************************************************************}
 { MailInBox main unit                                                          }
-{ bb - sdtp - september 2022                                                     }
+{ bb - sdtp - november 2022                                                     }
 { Check mails on pop3 and imap servers                                         }
 {******************************************************************************}
 
@@ -13,13 +13,17 @@ interface
 uses
   {$IFDEF WINDOWS}
   Win32Proc,
-  {$ENDIF} Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ExtCtrls,
+  {$ENDIF} LMessages, Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ExtCtrls,
   StdCtrls, Grids, ComCtrls, Buttons, Menus, IdPOP3, IdSSLOpenSSL, LCLIntf,
   IdExplicitTLSClientServerBase, IdMessage, IdIMAP4, accounts1, lazbbutils,
   lazbbinifiles, LazUTF8, settings1, lazbbautostart, lazbbaboutupdate, Impex1,
   mailclients1, uxtheme, Types, IdComponent, fptimer, RichMemo, variants,
   IdMessageCollection, UniqueInstance, log1, lazbbOsVersion, registry,
   dateutils, strutils, fpopenssl, openssl, opensslsockets;
+
+const
+  // Message post at the end of activation procedure, processed once the form is shown
+  WM_FORMSHOWN = WM_USER + 1;
 
 type
   TSaveMode = (None, Setting, All);           // Save nothing, only settings, settings and accounts
@@ -129,7 +133,6 @@ type
     SplitterV: TSplitter;
     SplitterH: TSplitter;
     GetMailTimer: TTimer;
-    TimerIconize: TTimer;
     TrayTimer: TTimer;
     TrayMail: TTrayIcon;
     UniqueInstance1: TUniqueInstance;
@@ -153,6 +156,7 @@ type
     procedure BtnEditAccClick(Sender: TObject);
     procedure BtnCloseClick(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
+    procedure FormWindowStateChange(Sender: TObject);
     procedure GetMailTimerTimer(Sender: TObject);
     procedure Id_client_Connected(Sender: TObject);
     procedure Id_client_Disconnected(Sender: TObject);
@@ -187,7 +191,6 @@ type
     procedure OnTimeTimer(Sender: TObject);
     procedure OnTrayTimer(Sender: TObject);
     procedure OnChkMailTimer(Sender: TObject);
-    procedure TimerIconizeTimer(Sender: TObject);
   private
     Initialized: boolean;
     OS, OSTarget: string;
@@ -268,7 +271,7 @@ type
     lastclick: int64;
     doubleClickMaxTime: int64;
     ChkVerInterval: Int64;
-    miniatstart: Boolean;
+    StartMini: Boolean;
     procedure OnclickTimer (sender: TObject);
     procedure Initialize;
     procedure LoadSettings(Filename: string);
@@ -303,6 +306,7 @@ type
     procedure LoadAccounts(filename: string);
     function SetError(E: Exception; ErrorStr: String; ErrorUID: Integer; ErrorCaption: String; var ErrorsStr: String): boolean;
     procedure BeforeClose;
+    procedure OnFormShown(var Msg: TLMessage); message WM_FORMSHOWN;
   public
 
     UserAppsDataPath: string;  //used by Impex1
@@ -339,6 +343,14 @@ implementation
 
 {$R *.lfm}
 
+// Procedure to answer post message at the end of activation procedure
+// so once form is shown
+
+procedure TFMailsInBox.OnFormShown(var Msg: TLMessage);
+begin
+  if StartMini then Application.minimize;
+  StartMini:= false;
+end;
 
 // Intercept minimize system system command to correct
 // wrong window placement on restore from tray
@@ -501,7 +513,8 @@ begin
   begin
     InitButtons;
     Initialize;
-    //CheckUpdate;
+    Application.ProcessMessages;
+    if StartMini then PostMessage(Handle, WM_FORMSHOWN, 0, 0) ;
     Application.QueueAsyncCall(@CheckUpdate, ChkVerInterval);       // async call to let icons loading
   end;
 end;
@@ -762,7 +775,6 @@ begin
   AccountsFileName:= MIBAppDataPath+'accounts.xml';
   FSettings.Settings.LangStr:= LangStr;
   ModLangue;
-  //   PnlToolbar.visible:= true;
   FSettings.Settings.ButtonBar:= true;
   // Check inifile with URLs, if not present, then use default
   IniFile:= TBbInifile.Create('mailsinbox.ini');
@@ -989,7 +1001,8 @@ begin
       PrevTop:= self.top;
       if Winstate = wsMinimized then
       begin
-        Application.Minimize;
+        //Application.Minimize;
+        StartMini:= true;
       end else self.WindowState := WinState;
     except
     end;
@@ -1012,13 +1025,11 @@ begin
     For i:= 0 to 4 do  sColumnswidth:= sColumnswidth+IntToHex(self.SGMails.Columns [i].Width, 4);
     if settings.StartMini then
     begin
-      // On newer windows versions, minimize at startup no longer works properly
+      // On lazarus 2.2.2 and over minimize at startup no longer works properly
       // Application.minimize let a minmized window on the desktop when called in activate event
-      // Set window to wsNormal ad uUse a timer to delay minimize
-      WindowState:=wsNormal;
-      miniatstart:= true;
-      TimerIconize.enabled:= true;
-    end;
+      // Send an user message at the end of activation procedure to minimize once the form is shown
+      StartMini:= true;
+     end;
     // Détermination de la langue (si pas dans settings, langue par défaut)
     if Settings.LangStr = '' then Settings.LangStr := LangStr;
     LangFile.ReadSections(LangNums);
@@ -1404,6 +1415,11 @@ begin
   if Assigned(slLastFires) then slLastFires.Free;
   if Assigned(slNextFires) then slNextFires.Free;
   if Assigned(DisplayMails) then DisplayMails.free;
+end;
+
+procedure TFMailsInBox.FormWindowStateChange(Sender: TObject);
+begin
+
 end;
 
 // Timer firing periodic mail checking
@@ -2021,15 +2037,6 @@ begin
     if ChkMailTimerTick > 5 then ChkMailTimerTick:=0;
   end;
 end;
-
-procedure TFMailsInBox.TimerIconizeTimer(Sender: TObject);
-begin
-  TimerIconize.Enabled:= false;
-  miniatstart:= false;
-  Application.Minimize;
-end;
-
-
 
 // Timer for time display (TFPTimer)
 

@@ -229,3 +229,7 @@ Version 1.0.2.2 - 29/10/2022
 - Corrected minimized startup on windows 10 22H2 : minimized window
   remains on the desktop, use a timer to get a proper behaviour
 - Installer rewritten : better older versions management
+
+Version 1.0.2.3 - 02/11/2022
+- Minimized startup is due to lazarus 2.2.2 and over. Post wm_user message at
+  the end of form activation procedure to minimize when the form is shown

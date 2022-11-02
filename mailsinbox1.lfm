@@ -11,6 +11,7 @@ object FMailsInBox: TFMailsInBox
   OnClose = FormClose
   OnCreate = FormCreate
   OnDestroy = FormDestroy
+  OnWindowStateChange = FormWindowStateChange
   Position = poDesktopCenter
   LCLVersion = '2.2.4.0'
   object PnlToolbar: TPanel
@@ -3600,12 +3601,5 @@ object FMailsInBox: TFMailsInBox
     )
     Left = 676
     Top = 256
-  end
-  object TimerIconize: TTimer
-    Enabled = False
-    Interval = 10
-    OnTimer = TimerIconizeTimer
-    Left = 353
-    Top = 309
   end
 end

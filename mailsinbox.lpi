@@ -23,8 +23,8 @@
       <UseVersionInfo Value="True"/>
       <MajorVersionNr Value="1"/>
       <RevisionNr Value="2"/>
-      <BuildNr Value="2"/>
-      <StringTable CompanyName="sdtp" FileDescription="Courriels en attente - Mails in Box" InternalName="mailsinbox" LegalCopyright="sdtp - bb" LegalTrademarks="sdtp - bb" OriginalFilename="mailsinbox" ProductName="Mails In Box - Courriels en attente" ProductVersion="1.0.2.2"/>
+      <BuildNr Value="3"/>
+      <StringTable CompanyName="sdtp" FileDescription="Courriels en attente - Mails in Box" InternalName="mailsinbox" LegalCopyright="sdtp - bb" LegalTrademarks="sdtp - bb" OriginalFilename="mailsinbox" ProductName="Mails In Box - Courriels en attente" ProductVersion="1.0.2.3"/>
     </VersionInfo>
     <BuildModes Count="1">
       <Item1 Name="Default" Default="True"/>
@@ -139,9 +139,6 @@
       </Options>
     </Linking>
     <Other>
-      <Verbosity>
-        <ShowAll Value="True"/>
-      </Verbosity>
       <CompilerMessages>
         <IgnoredMessages idx6058="True"/>
       </CompilerMessages>
