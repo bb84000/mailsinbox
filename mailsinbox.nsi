@@ -235,7 +235,16 @@ Section "install" ;No components page, name is not important
   File "${source_dir}\${prog_name}.lng"
   File "${source_dir}\${prog_name}.ini"
   File /r "${source_dir}\help"
-
+  ; delete old lng file
+  IfFileExists "$INSTDIR\${prog_name}.lng" 0 +2
+  Delete "$INSTDIR\${prog_name}.lng"
+  ; Install language files
+  CreateDirectory "$INSTDIR\lang"
+  SetOutPath "$INSTDIR\lang"
+  File "${source_dir}\lang\en.lng"
+  File "${source_dir}\lang\fr.lng"
+  ; restore install directory variable
+  SetOutPath "$INSTDIR"
   ; write out uninstaller
   WriteUninstaller "$INSTDIR\uninst.exe"
   
@@ -295,6 +304,7 @@ Section Uninstall
   Delete "$INSTDIR\OpenSSL License.txt"
   Delete "$INSTDIR\uninst.exe"
   RMDir /r "$INSTDIR\help"
+  RMDir /r "$INSTDIR\lang"
   ; remove shortcuts, if any.
   Delete  "$SMPROGRAMS\$(RemoveStr)\$(ProgramLnkStr)"
   Delete  "$SMPROGRAMS\$(RemoveStr)\$(UninstLnkStr)"

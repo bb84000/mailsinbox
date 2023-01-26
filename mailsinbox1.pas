@@ -1,6 +1,6 @@
 {******************************************************************************}
 { MailInBox main unit                                                          }
-{ bb - sdtp - november 2022                                                     }
+{ bb - sdtp - january 2023                                                     }
 { Check mails on pop3 and imap servers                                         }
 {******************************************************************************}
 
@@ -15,8 +15,8 @@ uses
   Win32Proc,
   {$ENDIF} LMessages, Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ExtCtrls,
   StdCtrls, Grids, ComCtrls, Buttons, Menus, IdPOP3, IdSSLOpenSSL, LCLIntf,
-  IdExplicitTLSClientServerBase, IdMessage, IdIMAP4, accounts1, lazbbutils,
-  lazbbinifiles, LazUTF8, settings1, lazbbautostart, lazbbaboutupdate, Impex1,
+  IdExplicitTLSClientServerBase, IdMessage, IdIMAP4, accounts1, lazbbutils, FileUtil,
+  lazbbinifiles, LazUTF8, settings1, lazbbautostart, lazbbaboutdlg, Impex1,
   mailclients1, uxtheme, Types, IdComponent, fptimer, RichMemo, variants,
   IdMessageCollection, UniqueInstance, log1, lazbbOsVersion, registry,
   dateutils, strutils, fpopenssl, openssl, opensslsockets;
@@ -198,7 +198,7 @@ type
     MIBAppDataPath: string;
     MIBExecPath: string;
     ProgName: string;
-    LangStr: string;
+    CurLangStr: string;
     LangFile: TBbIniFile;
     LangNums: TStringList;
     LangFound: boolean;
@@ -280,7 +280,8 @@ type
     procedure AccountsOnChange(Sender: TObject);
     function SaveConfig(Typ: TSaveMode): boolean;
     procedure PopulateAccountsList(notify: boolean);
-    procedure ModLangue;
+    procedure Translate(LngFile: TBbInifile);
+   // procedure ModLangue;
     procedure SetSmallBtns(small: TBtnSize);
     function GetPendingMail(index: integer): integer;
     procedure SetProtocolProperties(CurAcc: TAccount);
@@ -453,8 +454,8 @@ begin
   DisplayMails:= TMailsList.Create;
   // Some useful paths
   MIBExecPath:=ExtractFilePath(Application.ExeName);
-  // Chargement des chaînes de langue...
-  LangFile := TBbIniFile.Create(MIBExecPath + LowerCase(ProgName)+'.lng');
+  // Chargement du fichier de langue...
+  LangFile:= TBbIniFile.Create(ExtractFilePath(Application.ExeName) + 'lang'+PathDelim+'fr.lng');
   {$IFDEF CPU32}
      OSTarget := '32 bits';
   {$ENDIF}
@@ -463,9 +464,9 @@ begin
   {$ENDIF}
   {$IFDEF Linux}
     OS := 'Linux';
-    LangStr := GetEnvironmentVariable('LANG');
-    x := pos('.', LangStr);
-    LangStr := Copy(LangStr, 0, 2);
+    CurLangStr := GetEnvironmentVariable('LANG');
+    x := pos('.', CurLangStr);
+    CurLangStr := Copy(CurLangStr, 0, 2);
     wxbitsrun := 0;
     //OSTarget:= '';
     UserAppsDataPath := GetUserDir;
@@ -479,17 +480,17 @@ begin
       UserAppsDataPath := s                     // NT to XP
     else
     UserAppsDataPath := ExtractFilePath(ExcludeTrailingPathDelimiter(s)) + 'Roaming'; // Vista to W10
-    LazGetShortLanguageID(LangStr);
+    LazGetShortLanguageID(CurLangStr);
   {$ENDIF}
   version := GetVersionInfo.ProductVersion;
-  // Cannot call Modlang as components are not yet created, use default language
-  sOpenProgram:=LangFile.ReadString(LangStr,'OpenProgram','Ouverture de Courrier en attente');
+  // Cannot call Translate as components are not yet created, use default language
+  sOpenProgram:=LangFile.ReadString('main','OpenProgram','Ouverture de Courrier en attente');
   LogAddLine(-1, now, sOpenProgram+' - Version '+Version+ ' (' + OS + OSTarget + ')');
   LogAddLine(-1, now, OSVersion.VerDetail);
   MIBAppDataPath := UserAppsDataPath + PathDelim + ProgName + PathDelim;
   if not DirectoryExists(MIBAppDataPath) then
   begin
-    sCreatedDataFolder:=LangFile.ReadString(LangStr,'CreatedDataFolder','Dossier de données de Couriels en attente "%s" créé');
+    sCreatedDataFolder:=LangFile.ReadString(CurLangStr,'CreatedDataFolder','Dossier de données de Couriels en attente "%s" créé');
     CreateDir(MIBAppDataPath);
     LogAddLine(-1, now, Format(sCreatedDataFolder, [MIBAppDataPath]));
   end;
@@ -704,10 +705,13 @@ begin
    begin
     if VersionToInt(FSettings.Settings.LastVersion)>VersionToInt(version) then
        AboutBox.LUpdate.Caption := Format(AboutBox.sUpdateAvailable, [FSettings.Settings.LastVersion]) else
-       AboutBox.LUpdate.Caption:= AboutBox.sNoUpdateAvailable;
-       //AboutBox.LUpdate.Hint:= AboutBox.sLastUpdateSearch + ': ' + DateToStr(FSettings.Settings.LastUpdChk);
+       begin
+         AboutBox.LUpdate.Caption:= AboutBox.sNoUpdateAvailable;
+         // Already checked the same day
+        if Trunc(FSettings.Settings.LastUpdChk) = Trunc(now) then AboutBox.checked:= true;
+       end;
    end;
-   AboutBox.LUpdate.Hint:= AboutBox.sLastUpdateSearch + ': ' + DateToStr(FSettings.Settings.LastUpdChk);
+   AboutBox.Translate(LangFile);
 end;
 
 // Initialize accounts base
@@ -773,8 +777,9 @@ begin
   FAccounts.Accounts.AppName := LowerCase(ProgName);
   ConfigFileName:= MIBAppDataPath+'settings.xml';
   AccountsFileName:= MIBAppDataPath+'accounts.xml';
-  FSettings.Settings.LangStr:= LangStr;
-  ModLangue;
+  FSettings.Settings.LangStr:= CurLangStr;
+  LangFile:= TBbIniFile.Create(ExtractFilePath(Application.ExeName) + 'lang'+PathDelim+FSettings.Settings.LangStr+'.lng');
+  Translate(LangFile);
   FSettings.Settings.ButtonBar:= true;
   // Check inifile with URLs, if not present, then use default
   IniFile:= TBbInifile.Create('mailsinbox.ini');
@@ -786,7 +791,6 @@ begin
   LoadSettings(ConfigFileName);
   // In case of program's first use
   if length(FSettings.Settings.LastVersion)=0 then FSettings.Settings.LastVersion:= version;
-
   LoadAccounts(AccountsFileName);
   Application.Title:=Caption;
   if (Pos('64', OSVersion.Architecture)>0) and (OsTarget='32 bits') then
@@ -805,13 +809,12 @@ begin
   // Language dependent variables are updated in ModLangue procedure
   AboutBox.Width:= 400; // to have more place for the long product name
   AboutBox.Image1.Picture.LoadFromResourceName(HInstance, 'ABOUTIMG');
-  //AboutBox.LProductName.Caption := GetVersionInfo.FileDescription;
   AboutBox.LCopyright.Caption := GetVersionInfo.CompanyName + ' - ' + DateTimeToStr(CompileDateTime);
   AboutBox.LVersion.Caption := 'Version: ' + Version + ' (' + OS + OSTarget + ')';
   AboutBox.LUpdate.Hint := AboutBox.sLastUpdateSearch + ': ' + DateToStr(FSettings.Settings.LastUpdChk);
   AboutBox.Version:= Version;
   AboutBox.ProgName:= ProgName;
-
+  AboutBox.LastUpdate:= FSettings.Settings.LastUpdChk;
    // Load last log file
   tmplog:= TStringList.Create;
   if FileExists(LogFileName) then
@@ -1031,21 +1034,21 @@ begin
       StartMini:= true;
      end;
     // Détermination de la langue (si pas dans settings, langue par défaut)
-    if Settings.LangStr = '' then Settings.LangStr := LangStr;
-    LangFile.ReadSections(LangNums);
-    if LangNums.Count > 1 then
-    begin
-      CBLangue.Clear;;
-      for i := 0 to LangNums.Count - 1 do
+    if Settings.LangStr = '' then Settings.LangStr := CurLangStr;
+    try
+      FindAllFiles(LangNums, ExtractFilePath(Application.ExeName) + 'lang', '*.lng', true); //find all language files
+      if LangNums.count > 0 then
       begin
-        FSettings.CBLangue.Items.Add(LangFile.ReadString(LangNums.Strings[i], 'Language',
-          'Aucune'));
-        if LangNums.Strings[i] = Settings.LangStr then
+        for i:= 0 to LangNums.count-1 do
         begin
-          LangFound := True;
-          FSettings.CBLangue.ItemIndex:= i;
+          LangFile:= TBbInifile.Create(LangNums.Strings[i]);
+          LangNums.Strings[i]:= TrimFileExt(ExtractFileName(LangNums.Strings[i]));
+          FSettings.CBLangue.Items.Add(LangFile.ReadString('common', 'Language', 'Inconnu'));
+          if LangNums.Strings[i] = Settings.LangStr then LangFound := True;
         end;
       end;
+    except
+      LangFound := false;
     end;
     // Si la langue n'est pas traduite, alors on passe en Anglais
     if not LangFound then
@@ -1053,8 +1056,9 @@ begin
       Settings.LangStr := 'en';
     end;
   end;
-
-  Modlangue;
+  LangFile:= TBbIniFile.Create(ExtractFilePath(Application.ExeName) + 'lang'+PathDelim+FSettings.Settings.LangStr+'.lng');
+  Translate(LangFile);
+//  Modlangue;
   SettingsChanged := false;
 end;
 
@@ -1871,8 +1875,6 @@ begin
   MnuLaunchClient.Caption:= BtnLaunchClient.Hint;
 end;
 
-
-
 procedure TFMailsInBox.SGMailsBeforeSelection(Sender: TObject; aCol,
   aRow: Integer);
 begin
@@ -1941,9 +1943,6 @@ begin
           SGMails.Canvas.Brush.Color := clWindow;
           //SGMails.Canvas.FillRect (ARect.left+12, Arect.Top, Arect.Right, Arect.Bottom);
           //SGMails.Canvas.font.Color:= clDefault;  ;
-
-
-
         end;
         SGMails.Canvas.TextOut(ARect.Left+13,ARect.Top+3, SGMails.Cells[aCol, aRow]);
        end
@@ -2103,6 +2102,7 @@ begin
     end;
     ESoundFile.Text:= Settings.SoundFile;
     BtnPlaySound.Enabled:= not (length(ESoundFile.Text)=0);
+    CBLangue.ItemIndex := LangNums.IndexOf(Settings.LangStr);
     oldlng := CBLangue.ItemIndex;
     if ShowModal= mrOK then
     begin
@@ -2130,7 +2130,9 @@ begin
       begin
         if (CBLangue.ItemIndex<>oldlng) then
         begin
-          ModLangue;
+          LangFile:= TBbIniFile.Create(ExtractFilePath(Application.ExeName) + 'lang'+PathDelim+Settings.LangStr+'.lng');
+          self.Translate(LangFile);               // self is important !!! translate main form
+          //ModLangue;
           GetMailClientNames(false);
           Application.QueueAsyncCall(@CheckUpdate, ChkVerInterval);
         end;
@@ -2207,8 +2209,6 @@ begin
   end;
 
 end;
-
-
 
 procedure TFMailsInBox.BtnGetAllMailClick(Sender: TObject);
 var
@@ -2934,280 +2934,175 @@ end;
 // Load control captions and text variable translations
 // from mailsinbox.lng
 
-procedure TFMailsInBox.ModLangue;
+procedure TFMailsInBox.Translate(LngFile: TBbInifile);
 var
-  i: integer;
-  A: TStringArray;
+  prgName: String;
 begin
-  LangStr:=FSettings.Settings.LangStr;
-  with LangFile do
+  If Assigned(lngFile) then
+  With LngFile do
   begin
-    // OsVersion translation before other stuff
-    with OsVersion do
-    begin
-      ProdStrs.Strings[1]:= ReadString(LangStr,'Home','Famille'); ;
-      ProdStrs.Strings[2]:= ReadString(LangStr,'Professional','Entreprise');
-      ProdStrs.Strings[3]:= ReadString(LangStr,'Server','Serveur');
-      for i:= 0 to Win10Strs.count-1 do
-      begin
-        A:= Win10Strs.Strings[i].split('=');
-        Win10Strs.Strings[i]:= A[0]+'='+ReadString(LangStr,A[0],A[1]);
-      end;
-      for i:= 0 to Win11Strs.count-1 do
-      begin
-        A:= Win11Strs.Strings[i].split('=');
-        Win11Strs.Strings[i]:= A[0]+'='+ReadString(LangStr,A[0],A[1]);
-      end;
-    end;
-    // general strings
-    sRetConfBack:= ReadString(LangStr,'RetConfBack','Recharge la dernière configuration sauvegardée');
-    sCreNewConf:= ReadString(LangStr,'CreNewConf','Création d''une nouvelle configuration');
-    sLoadConf:= ReadString(LangStr,'LoadConf','Chargement de la configuration');
-    OKBtn:= ReadString(LangStr, 'OKBtn','OK');
-    YesBtn:=ReadString(LangStr,'YesBtn','Oui');
-    NoBtn:=ReadString(LangStr,'NoBtn','Non');
-    CancelBtn:=ReadString(LangStr,'CancelBtn','Annuler');
+    prgName:= ReadString('common', 'ProgName', 'Erreur');
+    if prgName<>ProgName then ShowMessage(ReadString('common', 'ProgErr',
+                         'Fichier de langue erroné. Réinstallez le programme'));
+    OsVersion.Translate(LngFile);
+
+     // general strings
+    sRetConfBack:= ReadString('main','RetConfBack','Recharge la dernière configuration sauvegardée');
+    sCreNewConf:= ReadString('main','CreNewConf','Création d''une nouvelle configuration');
+    sLoadConf:= ReadString('main','LoadConf','Chargement de la configuration');
+    OKBtn:= ReadString('main', 'OKBtn','OK');
+    YesBtn:=ReadString('main','YesBtn','Oui');
+    NoBtn:=ReadString('main','NoBtn','Non');
+    CancelBtn:=ReadString('main','CancelBtn','Annuler');
     //Main Form  & components captions
-    Caption:=ReadString(LangStr,'Caption','Courriels en attente');
-    BtnImport.Hint:=ReadString(LangStr,'BtnImport.Hint',BtnImport.Hint );
-    sBtnLogHint:=ReadString(LangStr,'BtnLogHint','Journal du compte %s');
-    BtnGetAllMail.Hint:=ReadString(LangStr,'BtnGetAllMail.Hint',BtnGetAllMail.Hint);
-    sBtnGetAccMailHint:=ReadString(LangStr,'BtnGetAccMailHint','Vérifier le compte %s');
-    BtnLaunchClient.Hint:=ReadString(LangStr,'BtnLaunchClient.Hint', BtnLaunchClient.Hint);
-    sBtnDeleteHint:=ReadString(LangStr,'BtnDeleteHint','Supprimer le compte %s');
-    BtnAddAcc.Hint:=ReadString(LangStr,'BtnAddAcc.Hint',BtnAddAcc.Hint);
-    sBtnEditAccHint:=ReadString(LangStr,'BtnEditAccHint','Modifier le compte %s');
-    BtnSettings.Hint:=ReadString(LangStr,'BtnSettings.Hint',BtnSettings.Hint);
-    BtnAbout.Hint:=ReadString(LangStr,'BtnAbout.Hint',BtnAbout.Hint);
-    BtnHelp.Hint:=ReadString(LangStr,'BtnHelp.Hint',BtnHelp.Hint);
-    BtnQuit.Hint:=ReadString(LangStr,'BtnQuit.Hint',BtnQuit.Hint);
-    SGMails.Columns[0].Title.Caption:=ReadString(LangStr,'SGMails.Columns_0.Title.Caption',SGMails.Columns[0].Title.Caption);
-    SGMails.Columns[1].Title.Caption:=ReadString(LangStr,'SGMails.Columns_1.Title.Caption',SGMails.Columns[1].Title.Caption);
-    SGMails.Columns[2].Title.Caption:=ReadString(LangStr,'SGMails.Columns_2.Title.Caption',SGMails.Columns[2].Title.Caption);
-    SGMails.Columns[3].Title.Caption:=ReadString(LangStr,'SGMails.Columns_3.Title.Caption',SGMails.Columns[3].Title.Caption);
-    SGMails.Columns[4].Title.Caption:=ReadString(LangStr,'SGMails.Columns_4.Title.Caption',SGMails.Columns[4].Title.Caption);
-    MnuDeleteMsg.Caption:=ReadString(LangStr,'MnuDeleteMsg.Caption',MnuDeleteMsg.Caption);
-    MnuAnswerMsg.Caption:=ReadString(LangStr,'MnuAnswerMsg.Caption',MnuAnswerMsg.Caption);
-    MnuInfos.Caption:=ReadString(LangStr,'MnuInfos.Caption',MnuInfos.Caption);
-    sEmailCaption:=ReadString(LangStr,'EmailCaption','Courriel: %s');
-    sLastCheckCaption:=ReadString(LangStr,'LastCheckCaption','Dernière vérification: %s');
-    sNextCheckCaption:=ReadString(LangStr,'NextCheckCaption','Prochaine vérification: %s');
-    sAccountImported:=ReadString(LangStr,'AccountImported','%d compte %s importé');
-    sAccountsImported:=ReadString(LangStr,'AccountsImported','%d comptes %s importés');
-    sMsgFound:=ReadString(LangStr,'MsgFound','%d message trouvé');
-    sMsgsFound:=ReadString(LangStr,'MsgsFound','%d messages trouvés');
-    sLStatusCaption:=ReadString(LangStr,'LStatusCaption','%s sur le compte %s le %');
-    sConnectToServer:=ReadString(LangStr,'ConnectToServer','%s : Connexion au serveur %s');
-    sConnectedToServer:=ReadString(LangStr,'ConnectedToServer','%s : Connecté au serveur %s');
-    sConnectErrorMsg:=ReadString(LangStr,'ConnectErrorMsg','Erreur de connexion : %s');
-    sHeaderErrorMsg:=ReadString(LangStr,'HeaderErrorMsg','Erreur d''obtention de l''entête : %s');
-    sDisconnectServer:=ReadString(LangStr,'DisconnectServer','%s : Déonnexion du serveur %s');
-    sDisconnectedServer:=ReadString(LangStr,'DisconnectedServer','%s : Déconnecté du serveur %s');
-    sAccountChanged:=ReadString(LangStr,'AccountChanged', 'Le compte %s a été modifié');
-    sAccountAdded:=ReadString(LangStr,'AccountAdded', 'Le compte %s a été ajouté');
-    sAccountDisabled:=ReadString(LangStr,'AccountDisabled','Compte %s désactivé');
-    sAccountEnabled:=ReadString(LangStr,'AccountEnabled','Compte %s activé');
-    sLoadingAccounts:=ReadString(LangStr,'LoadingAccounts','Chargement des comptes');
-    sCheckingAccMail:=ReadString(LangStr,'CheckingAccMail','Vérification du compte %s');
-    sCheckingAllMail:=ReadString(LangStr,'CheckingAllMail','Vérification de tous les comptes actifs');
-    sTrayHintNoMsg:=ReadString(LangStr,'TrayHintNoMsg','Aucun courriel en attente');
-    sTrayHintMsg:=ReadString(LangStr,'TrayHintMsg','%s : %u courriel %%s');
-    sTrayHintMsgs:=ReadString(LangStr,'TrayHintMsgs','%s : %u courriels %%s');
-    sTrayHintNewMsg:=ReadString(LangStr,'TrayHintNewMsg','(%u nouveau)');
-    sTrayHintNewMsgs:= ReadString(LangStr,'TrayHintNewMsgs','(%u nouveaux)');;
-    TrayMail.BalloonTitle:=ReadString(LangStr,'TrayMail.BalloonTitle',TrayMail.BalloonTitle);
-    sTrayBallHintMsg:=ReadString(LangStr,'TrayBallHintMsg','%s : %u nouveau courriel%s');
-    sTrayBallHintMsgs:=ReadString(LangStr,'TrayBallHintMsgs','%s : %u nouveaux courriels%s');
-    sNoShowCloseAlert:=ReadString(LangStr,'NoShowCloseAlert','Alerte de masquage de la fenêtre du programme déactivée');
-    sNoShowQuitAlert:=ReadString(LangStr,'NoShowQuitAlert','Alerte de fermeture du programme désactivée');
-    sNoQuitAlert:=ReadString(LangStr,'NoQuitAlert','Pour fermer le programme et ne plus vérifier l''arrivée '+
+    Caption:=ReadString('main','Caption','Courriels en attente');
+    BtnImport.Hint:=ReadString('main','BtnImport.Hint',BtnImport.Hint );
+    sBtnLogHint:=ReadString('main','BtnLogHint','Journal du compte %s');
+    BtnLog.Hint:= ReadString('main', 'BtnLog.Hint', BtnLog.Hint);
+    BtnGetAllMail.Hint:=ReadString('main','BtnGetAllMail.Hint',BtnGetAllMail.Hint);
+    sBtnGetAccMailHint:=ReadString('main','BtnGetAccMailHint','Vérifier le compte %s');
+    BtnLaunchClient.Hint:=ReadString('main','BtnLaunchClient.Hint', BtnLaunchClient.Hint);
+    sBtnDeleteHint:=ReadString('main','BtnDeleteHint','Supprimer le compte %s');
+    BtnAddAcc.Hint:=ReadString('main','BtnAddAcc.Hint',BtnAddAcc.Hint);
+    sBtnEditAccHint:=ReadString('main','BtnEditAccHint','Modifier le compte %s');
+    BtnSettings.Hint:=ReadString('main','BtnSettings.Hint',BtnSettings.Hint);
+    BtnAbout.Hint:=ReadString('main','BtnAbout.Hint',BtnAbout.Hint);
+    BtnHelp.Hint:=ReadString('main','BtnHelp.Hint',BtnHelp.Hint);
+    BtnQuit.Hint:=ReadString('main','BtnQuit.Hint',BtnQuit.Hint);
+    SGMails.Columns[0].Title.Caption:=ReadString('main','SGMails.Columns_0.Title.Caption',SGMails.Columns[0].Title.Caption);
+    SGMails.Columns[1].Title.Caption:=ReadString('main','SGMails.Columns_1.Title.Caption',SGMails.Columns[1].Title.Caption);
+    SGMails.Columns[2].Title.Caption:=ReadString('main','SGMails.Columns_2.Title.Caption',SGMails.Columns[2].Title.Caption);
+    SGMails.Columns[3].Title.Caption:=ReadString('main','SGMails.Columns_3.Title.Caption',SGMails.Columns[3].Title.Caption);
+    SGMails.Columns[4].Title.Caption:=ReadString('main','SGMails.Columns_4.Title.Caption',SGMails.Columns[4].Title.Caption);
+    MnuDeleteMsg.Caption:=ReadString('main','MnuDeleteMsg.Caption',MnuDeleteMsg.Caption);
+    MnuAnswerMsg.Caption:=ReadString('main','MnuAnswerMsg.Caption',MnuAnswerMsg.Caption);
+    MnuInfos.Caption:=ReadString('main','MnuInfos.Caption',MnuInfos.Caption);
+    sEmailCaption:=ReadString('main','EmailCaption','Courriel: %s');
+    sLastCheckCaption:=ReadString('main','LastCheckCaption','Dernière vérification: %s');
+    sNextCheckCaption:=ReadString('main','NextCheckCaption','Prochaine vérification: %s');
+    sAccountImported:=ReadString('main','AccountImported','%d compte %s importé');
+    sAccountsImported:=ReadString('main','AccountsImported','%d comptes %s importés');
+    sMsgFound:=ReadString('main','MsgFound','%d message trouvé');
+    sMsgsFound:=ReadString('main','MsgsFound','%d messages trouvés');
+    sLStatusCaption:=ReadString('main','LStatusCaption','%s sur le compte %s le %');
+    sConnectToServer:=ReadString('main','ConnectToServer','%s : Connexion au serveur %s');
+    sConnectedToServer:=ReadString('main','ConnectedToServer','%s : Connecté au serveur %s');
+    sConnectErrorMsg:=ReadString('main','ConnectErrorMsg','Erreur de connexion : %s');
+    sHeaderErrorMsg:=ReadString('main','HeaderErrorMsg','Erreur d''obtention de l''entête : %s');
+    sDisconnectServer:=ReadString('main','DisconnectServer','%s : Déonnexion du serveur %s');
+    sDisconnectedServer:=ReadString('main','DisconnectedServer','%s : Déconnecté du serveur %s');
+    sAccountChanged:=ReadString('main','AccountChanged', 'Le compte %s a été modifié');
+    sAccountAdded:=ReadString('main','AccountAdded', 'Le compte %s a été ajouté');
+    sAccountDisabled:=ReadString('main','AccountDisabled','Compte %s désactivé');
+    sAccountEnabled:=ReadString('main','AccountEnabled','Compte %s activé');
+    sLoadingAccounts:=ReadString('main','LoadingAccounts','Chargement des comptes');
+    sCheckingAccMail:=ReadString('main','CheckingAccMail','Vérification du compte %s');
+    sCheckingAllMail:=ReadString('main','CheckingAllMail','Vérification de tous les comptes actifs');
+    sTrayHintNoMsg:=ReadString('main','TrayHintNoMsg','Aucun courriel en attente');
+    sTrayHintMsg:=ReadString('main','TrayHintMsg','%s : %u courriel %%s');
+    sTrayHintMsgs:=ReadString('main','TrayHintMsgs','%s : %u courriels %%s');
+    sTrayHintNewMsg:=ReadString('main','TrayHintNewMsg','(%u nouveau)');
+    sTrayHintNewMsgs:= ReadString('main','TrayHintNewMsgs','(%u nouveaux)');;
+    TrayMail.BalloonTitle:=ReadString('main','TrayMail.BalloonTitle',TrayMail.BalloonTitle);
+    sTrayBallHintMsg:=ReadString('main','TrayBallHintMsg','%s : %u nouveau courriel%s');
+    sTrayBallHintMsgs:=ReadString('main','TrayBallHintMsgs','%s : %u nouveaux courriels%s');
+    sNoShowCloseAlert:=ReadString('main','NoShowCloseAlert','Alerte de masquage de la fenêtre du programme déactivée');
+    sNoShowQuitAlert:=ReadString('main','NoShowQuitAlert','Alerte de fermeture du programme désactivée');
+    sNoQuitAlert:=ReadString('main','NoQuitAlert','Pour fermer le programme et ne plus vérifier l''arrivée '+
                                      'de nouveaux courriels, double cliquer sur ce bouton. Pour que la vérification '+
                                      'se poursuive en tâche de fond, cliquez sur le bouton '+
                                      '"Masquer la fenêtre de Courrier en attente".');
-    sNoCloseAlert:=ReadString(LangStr,'NoCloseAlert','Le programme va se poursuivre en tâche de fond '+
+    sNoCloseAlert:=ReadString('main','NoCloseAlert','Le programme va se poursuivre en tâche de fond '+
                                      'pour vérifier l''arrivée de nouveaux courriels. Pour quitter le '+
                                      'programme, double cliquer sur le bouton "Quitter Courrier en attente".');
-    sCannotQuit:=ReadString(LangStr,'CannotQuit','Impossible de quitter pendant la vérification de courriels');
-    sClosingProg:=ReadString(LangStr,'ClosingProg','Fermeture de Courriels en attente');
-    sRestart:=ReadString(LangStr,'Restart','Redémarrage après arrêt forcé');
-    sSettingsChange:=ReadString(LangStr,'SettingsChange','Configuration modifiée');
-    sMsgDeleted:=ReadString(LangStr,'MsgDeleted','%s : Message %u supprimé');
-    sMsgNotDeleted:=ReadString(LangStr,'MsgNotDeleted','%s : Message %u non supprimé');
-    sMnuDelMsg:=ReadString(LangStr,'MnuDelMsg', 'Effacer le courriel "%s"');
-    sMnuAnswerMsg:=ReadString(LangStr,'MnuAnswerMsg','Répondre au courriel "%s"');
-    sAlertDelMmsg:=ReadString(LangStr,'AlertDelMmsg','Voulez-vous supprimer le courriel "%s" ?');
-    sAlertBoxCBNoShowAlert:=ReadString(LangStr,'AlertBoxCBNoShowAlert','Ne plus afficher cet avertissement');
-    sBytes:=ReadString(LangStr,'Bytes','octets');
-    sKBytes:=ReadString(LangStr,'KBytes','Ko');
-    SMBytes:=ReadString(LangStr,'MBytes','Mo');
-    sNeverChecked:=ReadString(LangStr,'NeverChecked','Pas encore vérifié');
-    sUse64bit:=ReadString(LangStr,'Use64bit','Utilisez la version 64 bits de ce programme');
-    sBtnLaunchClientDef:=ReadString(LangStr,'BtnLaunchClientDef', 'Lancer le client courrier');
-    sBtnLaunchClientCust:=ReadString(LangStr,'BtnLaunchClientCust', 'Lancer %s');
-    sDeleteAccount:=ReadString(LangStr,'DeleteAccount','Voulez-vous vraiment supprimer le compte %s ?');
-    sCannotGetNewVerList:=ReadString(LangStr,'CannotGetNewVerList','Liste des nouvelles versions indisponible');
-    sPlsSelectAcc:=ReadString(LangStr,'PlsSelectAcc','Sélectionnez un compte pour %s');
-    sToDisplayLog:=ReadString(LangStr,'ToDisplayLog','pour pouvoir afficher son journal');
-    sToDeleteAcc:=ReadString(LangStr,'ToDeleteAcc','pour pouvoir le supprimer');
-    sAccDeleted:=ReadString(LangStr,'AccDeleted','Le compte %s a été supprimé');
-    sToEditAcc:=ReadString(LangStr,'ToEditAcc','pour pouvoir le modifier');
-    sNewAccount:=ReadString(LangStr,'NewAccount','Nouveau compte');
-    sCreatedDataFolder:=ReadString(LangStr,'CreatedDataFolder','Dossier de données de Couriels en attente "%s" créé');
+    sCannotQuit:=ReadString('main','CannotQuit','Impossible de quitter pendant la vérification de courriels');
+    sClosingProg:=ReadString('main','ClosingProg','Fermeture de Courriels en attente');
+    sRestart:=ReadString('main','Restart','Redémarrage après arrêt forcé');
+    sSettingsChange:=ReadString('main','SettingsChange','Configuration modifiée');
+    sMsgDeleted:=ReadString('main','MsgDeleted','%s : Message %u supprimé');
+    sMsgNotDeleted:=ReadString('main','MsgNotDeleted','%s : Message %u non supprimé');
+    sMnuDelMsg:=ReadString('main','MnuDelMsg', 'Effacer le courriel "%s"');
+    sMnuAnswerMsg:=ReadString('main','MnuAnswerMsg','Répondre au courriel "%s"');
+    sAlertDelMmsg:=ReadString('main','AlertDelMmsg','Voulez-vous supprimer le courriel "%s" ?');
+    sAlertBoxCBNoShowAlert:=ReadString('main','AlertBoxCBNoShowAlert','Ne plus afficher cet avertissement');
+    sBytes:=ReadString('main','Bytes','octets');
+    sKBytes:=ReadString('main','KBytes','Ko');
+    SMBytes:=ReadString('main','MBytes','Mo');
+    sNeverChecked:=ReadString('main','NeverChecked','Pas encore vérifié');
+    sUse64bit:=ReadString('main','Use64bit','Utilisez la version 64 bits de ce programme');
+    sBtnLaunchClientDef:=ReadString('main','BtnLaunchClientDef', 'Lancer le client courrier');
+    sBtnLaunchClientCust:=ReadString('main','BtnLaunchClientCust', 'Lancer %s');
+    sDeleteAccount:=ReadString('main','DeleteAccount','Voulez-vous vraiment supprimer le compte %s ?');
+    sCannotGetNewVerList:=ReadString('main','CannotGetNewVerList','Liste des nouvelles versions indisponible');
+    sPlsSelectAcc:=ReadString('main','PlsSelectAcc','Sélectionnez un compte pour %s');
+    sToDisplayLog:=ReadString('main','ToDisplayLog','pour pouvoir afficher son journal');
+    sToDeleteAcc:=ReadString('main','ToDeleteAcc','pour pouvoir le supprimer');
+    sAccDeleted:=ReadString('main','AccDeleted','Le compte %s a été supprimé');
+    sToEditAcc:=ReadString('main','ToEditAcc','pour pouvoir le modifier');
+    sNewAccount:=ReadString('main','NewAccount','Nouveau compte');
+    sCreatedDataFolder:=ReadString('main','CreatedDataFolder','Dossier de données de Couriels en attente "%s" créé');
     // Main menu
-    MMnuFile.Caption:=ReadString(LangStr,'MMnuFile.Caption',MMnuFile.Caption);
-    MMnuMails.Caption:=ReadString(LangStr,'MMnuMails.Caption',MMnuMails.Caption);
-    MMnuDisplay.Caption:=ReadString(LangStr,'MMnuDisplay.Caption',MMnuDisplay.Caption);
-    MMnuDisplayMenu.Caption:=ReadString(LangStr,'MMnuDisplayMenu.Caption',MMnuDisplayMenu.Caption);
-    MMnuDisplayBar.Caption:=ReadString(LangStr,'MMnuDisplayBar.Caption',MMnuDisplayBar.Caption);
-    MMnuPrefs.Caption:=ReadString(LangStr,'MMnuPrefs.Caption', MMnuPrefs.Caption);
-    MMnuInfos.Caption:=ReadString(LangStr,'MMnuInfos.Caption',MMnuInfos.Caption);
+    MMnuFile.Caption:=ReadString('main','MMnuFile.Caption',MMnuFile.Caption);
+    MMnuMails.Caption:=ReadString('main','MMnuMails.Caption',MMnuMails.Caption);
+    MMnuDisplay.Caption:=ReadString('main','MMnuDisplay.Caption',MMnuDisplay.Caption);
+    MMnuDisplayMenu.Caption:=ReadString('main','MMnuDisplayMenu.Caption',MMnuDisplayMenu.Caption);
+    MMnuDisplayBar.Caption:=ReadString('main','MMnuDisplayBar.Caption',MMnuDisplayBar.Caption);
+    MMnuPrefs.Caption:=ReadString('main','MMnuPrefs.Caption', MMnuPrefs.Caption);
+    MMnuInfos.Caption:=ReadString('main','MMnuInfos.Caption',MMnuInfos.Caption);
+    HelpFile:= MIBExecPath+'help'+PathDelim+ReadString('main','HelpFile', 'mailsinbox.html');
 
     // About
-
-    AboutBox.sLastUpdateSearch:=ReadString(LangStr,'AboutBox.LastUpdateSearch','Dernière recherche de mise à jour');
-    AboutBox.sUpdateAvailable:=ReadString(LangStr,'AboutBox.UpdateAvailable','Nouvelle version %s disponible');
-    AboutBox.sNoUpdateAvailable:=ReadString(LangStr,'AboutBox.NoUpdateAvailable','Courriels en attente est à jour');
-    Aboutbox.Caption:=ReadString(LangStr,'Aboutbox.Caption','A propos de Courriels en attente');
-    AboutBox.LProductName.Caption:= caption;
-    AboutBox.LProgPage.Caption:= ReadString(LangStr,'AboutBox.LProgPage.Caption', AboutBox.LProgPage.Caption);
-    AboutBox.UrlProgSite:= ReadString(LangStr,'AboutBox.UrlProgSite','https://github.com/bb84000/mailsinbox/wiki/Accueil');
-    AboutBox.LWebSite.Caption:= ReadString(LangStr,'AboutBox.LWebSite.Caption', AboutBox.LWebSite.Caption);
-    AboutBox.LSourceCode.Caption:= ReadString(LangStr,'AboutBox.LSourceCode.Caption', AboutBox.LSourceCode.Caption);
+        // About box
     AboutBox.LVersion.Hint:= OSVersion.VerDetail;
-    if not AboutBox.checked then AboutBox.LUpdate.Caption:=ReadString(LangStr,'AboutBox.LUpdate.Caption',AboutBox.LUpdate.Caption) else
-    begin
-      if AboutBox.NewVersion then AboutBox.LUpdate.Caption:= Format(AboutBox.sUpdateAvailable, [AboutBox.LastVersion])
-      else AboutBox.LUpdate.Caption:= AboutBox.sNoUpdateAvailable;
-    end;
-    HelpFile:= MIBExecPath+'help'+PathDelim+ReadString(LangStr,'HelpFile', 'mailsinbox.html');
-    AboutBox.UrlProgSite:= HelpFile;
+    AboutBox.Translate(LngFile);
 
     // Alert
-    sUpdateAlertBox:=ReadString(LangStr,'UpdateAlertBox','Version actuelle: %sUne nouvelle version %s est disponible. Cliquer pour la télécharger');
-    sNoLongerChkUpdates:=ReadString(LangStr,'NoLongerChkUpdates','Ne plus rechercher les mises à jour');
+    sUpdateAlertBox:=ReadString('main','UpdateAlertBox','Version actuelle: %sUne nouvelle version %s est disponible. Cliquer pour la télécharger');
+    sNoLongerChkUpdates:=ReadString('main','NoLongerChkUpdates','Ne plus rechercher les mises à jour');
 
     //Accounts
-    FAccounts.BtnOk.Caption:=OKBtn;
-    FAccounts.BtnCancel.Caption:=CancelBtn;
-    FAccounts.LAccName.Caption:=ReadString(LangStr,'FAccounts.LAccName.Caption',FAccounts.LAccName.Caption);
-    FAccounts.LHost.Caption:=ReadString(LangStr,'FAccounts.LHost.Caption',FAccounts.LHost.Caption);
-    FAccounts.LProtocol.Caption:=ReadString(LangStr,'FAccounts.LProtocol.Caption', FAccounts.LProtocol.Caption);
-    FAccounts.CBProtocol.Items[0]:=ReadString(LangStr,'FAccounts.CBProtocol.Items_0',FAccounts.CBProtocol.Items[0]);
-    FAccounts.LUserName.Caption:=ReadString(LangStr,'FAccounts.LUserName.Caption',FAccounts.LUserName.Caption);
-    FAccounts.LPassword.Caption:=ReadString(LangStr,'FAccounts.LPassword.Caption',FAccounts.LPassword.Caption);
-    FAccounts.LEmail.Caption:=ReadString(LangStr,'FAccounts.LEmail.Caption',FAccounts.LEmail.Caption);
-    FAccounts.LColor.Caption:=ReadString(LangStr,'FAccounts.LColor.Caption',FAccounts.LColor.Caption);
-    FAccounts.LSoundFile.Caption:=ReadString(LangStr,'FAccounts.LSoundFile.Caption',FAccounts.LSoundFile.Caption);
-    FAccounts.LSSL.Caption:=ReadString(LangStr,'FAccounts.LSSL.Caption',FAccounts.LSSL.Caption);
-    FAccounts.CBSSL.Items[0]:=ReadString(LangStr,'FAccounts.CBSSL.Items_0',FAccounts.CBSSL.Items[0]);
-    FAccounts.CBSSL.Items[1]:=ReadString(LangStr,'FAccounts.CBSSL.Items_1',FAccounts.CBSSL.Items[1]);
-    FAccounts.CBSSL.Items[2]:=ReadString(LangStr,'FAccounts.CBSSL.Items_2',FAccounts.CBSSL.Items[2]);
-    FAccounts.LPort.Caption:=ReadString(LangStr,'FAccounts.LPort.Caption',FAccounts.LPort.Caption);
-    FAccounts.CBSecureAuth.Caption:=ReadString(LangStr,'FAccounts.CBSecureAuth.Caption',FAccounts.CBSecureAuth.Caption);
-    FAccounts.LInterval.Caption:=ReadString(LangStr,'FAccounts.LInterval.Caption',FAccounts.LInterval.Caption);
-    FAccounts.CBShowPass.Caption:=ReadString(LangStr,'FAccounts.CBShowPass.Caption',FAccounts.CBShowPass.Caption);
-    FAccounts.LReply.Caption:=ReadString(LangStr,'FAccounts.LReply.Caption',FAccounts.LReply.Caption);
-    FAccounts.CBEnabledAcc.Caption:=ReadString(LangStr,'FAccounts.CBEnabledAcc.Caption',FAccounts.CBEnabledAcc.Caption);
-    //FAccounts.BtnMailClient.Hint:=ReadString(LangStr,'FAccounts.BtnMailClient.Hint',FAccounts.BtnMailClient.Hint);
-    FAccounts.BtnPlaySound.Hint:=ReadString(LangStr,'FAccounts.BtnPlaySound.Hint',FAccounts.BtnPlaySound.Hint);
-    FAccounts.BtnSoundFile.Hint:=ReadString(LangStr,'FAccounts.BtnSoundFile.Hint',FAccounts.BtnSoundFile.Hint);
+    FAccounts.Translate(LngFile);
 
     //Settings
-    FSettings.BtnOK.Caption:=OKBtn;
-    FSettings.BtnCancel.Caption:=CancelBtn;
-    FSettings.Caption:=ReadString(LangStr,'FSettings.Caption',FSettings.Caption);
-    FSettings.GBSystem.Caption:=ReadString(LangStr,'FSettings.GBSystem.Caption',FSettings.GBSystem.Caption);
-    FSettings.CBStartup.Caption:=ReadString(LangStr,'FSettings.CBStartup.Caption',FSettings.CBStartup.Caption);
-    FSettings.CBStartMini.Caption:=ReadString(LangStr,'FSettings.CBStartMini.Caption',FSettings.CBStartMini.Caption);
-    FSettings.CBSavSizePos.Caption:=ReadString(LangStr,'FSettings.CBSavSizePos.Caption',FSettings.CBSavSizePos.Caption);
-    FSettings.CBMailClientMini.Caption:=ReadString(LangStr,'FSettings.CBMailClientMini.Caption',FSettings.CBMailClientMini.Caption);
-    FSettings.CBRestNewMsg.Caption:=ReadString(LangStr,'FSettings.CBRestNewMsg.Caption',FSettings.CBRestNewMsg.Caption);
-    FSettings.CBHideInTaskBar.Caption:=ReadString(LangStr,'FSettings.CBHideInTaskBar.Caption',FSettings.CBHideInTaskBar.Caption);
-    FSettings.CBSaveLogs.Caption:=ReadString(LangStr,'FSettings.CBSaveLogs.Caption',FSettings.CBSaveLogs.Caption);
-    FSettings.CBNoChkNewVer.Caption:=ReadString(LangStr,'FSettings.CBNoChkNewVer.Caption',FSettings.CBNoChkNewVer.Caption);
-    FSettings.CBStartupCheck.Caption:=ReadString(LangStr,'FSettings.CBStartupCheck.Caption',FSettings.CBStartupCheck.Caption);
-    FSettings.CBSmallBtns.Caption:=ReadString(LangStr,'FSettings.CBSmallBtns.Caption',FSettings.CBSmallBtns.Caption);
-    FSettings.CBNotifications.Caption:=ReadString(LangStr,'FSettings.CBNotifications.Caption',FSettings.CBNotifications.Caption);
-    FSettings.CBNoCloseAlert.Caption:=ReadString(LangStr,'FSettings.CBNoCloseAlert.Caption',FSettings.CBNoCloseAlert.Caption);
-    FSettings.CBNoQuitAlert.Caption:=ReadString(LangStr,'FSettings.CBNoQuitAlert.Caption',FSettings.CBNoQuitAlert.Caption);
-    FSettings.CBDisplayAllAccMsgs.Caption:=ReadString(LangStr,'FSettings.CBDisplayAllAccMsgs.Caption',FSettings.CBDisplayAllAccMsgs.Caption) ;
-    FSettings.LMailClient.Caption:=ReadString(LangStr,'FSettings.LMailClient.Caption',FSettings.LMailClient.Caption);
-    FSettings.BtnMailClient.Hint:=ReadString(LangStr,'FSettings.BtnMailClient.Hint',FSettings.BtnMailClient.Hint);
-    FSettings.LSoundFile.Caption:=FAccounts.LSoundFile.Caption;
-    FSettings.LLangue.Caption:=ReadString(LangStr,'FSettings.LLangue.Caption',FSettings.LLangue.Caption);
-    FSettings.BtnPlaySound.Hint:=ReadString(LangStr,'FSettings.BtnPlaySound.Hint',FSettings.BtnPlaySound.Hint);
-    FSettings.BtnSoundFile.Hint:=FAccounts.BtnSoundFile.Hint;
-    FSettings.CBUrl.Hint:=ReadString(LangStr,'FSettings.CBUrl.Hint',FSettings.CBUrl.Hint);
-    FSettings.GMailWeb:=ReadString(LangStr,'FSettings.GMailWeb','Site Web de GMail');
-    FSettings.OutlookWeb:=ReadString(LangStr,'FSettings.OutlookWeb','Site Web d''Outlook.com');
-    FSettings.Win10Mail:=ReadString(LangStr,'FSettings.Win10Mail','Application Courrier de Windows 10');
+    FSettings.Translate(LngFile);
     FSettings.Lstatus.Caption:= OSVersion.VerDetail;
 
     // Choose mail client
-    FMailClientChoose.BtnOK.Caption:=OKBtn;
-    FMailClientChoose.BtnCancel.Caption:=CancelBtn;
-    FMailClientChoose.Caption:=ReadString(LangStr,'FMailClientChoose.Caption',FMailClientChoose.Caption);
-    FMailClientChoose.LName.Caption:=ReadString(LangStr,'FMailClientChoose.LName.Caption',FMailClientChoose.LName.Caption);
-    FMailClientChoose.LCommand.Caption:=ReadString(LangStr,'FMailClientChoose.LCommand.Caption',FMailClientChoose.LCommand.Caption);
-    FMailClientChoose.CBUrl.Hint:=FSettings.CBUrl.Hint;
-    FMailClientChoose.BtnMailClient.Hint:=FSettings.BtnMailClient.Hint;
+    FMailClientChoose.Translate(LngFile);
 
     // Impex
-    FImpex.BtnOK.Caption:=OKBtn;
-    FImpex.BtnCancel.Caption:=CancelBtn;
-    FImpex.LAccTyp.Caption:=ReadString(LangStr,'FImpex.LAccTyp.Caption',FImpex.LAccTyp.Caption);
-    FImpex.Caption:=ReadString(LangStr,'FImpex.Caption',FImpex.Caption);
-    FImpex.LFilename.Caption:=ReadString(LangStr,'FImpex.LFilename.Caption',FImpex.LFilename.Caption);
-    Fimpex.MailattAccName:=ReadString(LangStr,'Fimpex.MailattAccName', 'Comptes MailAttente');
-    Fimpex.OutlAccName:=ReadString(LangStr,'Fimpex.OutlAccName', 'Comptes Outlook 2007-2010');
-    Fimpex.SGImpex.Columns[0].Title.Caption:=ReadString(LangStr,'Fimpex.SGImpex.Columns_0.Title.Caption',
-           Fimpex.SGImpex.Columns[0].Title.Caption) ;
-    Fimpex.SGImpex.Columns[1].Title.Caption:=ReadString(LangStr,'Fimpex.SGImpex.Columns_1.Title.Caption',
-           Fimpex.SGImpex.Columns[0].Title.Caption) ;
-    Fimpex.SGImpex.Cells[0,1]:=ReadString(LangStr,'Fimpex.SGImpex.Cells_0_1','Nom du compte');
-    Fimpex.SGImpex.Cells[0,2]:=ReadString(LangStr,'Fimpex.SGImpex.Cells_0_2','Serveur de courrier');
-    Fimpex.SGImpex.Cells[0,3]:=ReadString(LangStr,'Fimpex.SGImpex.Cells_0_3','Port');
-    Fimpex.SGImpex.Cells[0,4]:=ReadString(LangStr,'Fimpex.SGImpex.Cells_0_4','Protocole');
-    Fimpex.SGImpex.Cells[0,5]:=ReadString(LangStr,'Fimpex.SGImpex.Cells_0_5','Identifiant courriel');
-    Fimpex.SGImpex.Cells[0,6]:=ReadString(LangStr,'Fimpex.SGImpex.Cells_0_6','Mot de passe');
-    Fimpex.SGImpex.Cells[0,7]:=ReadString(LangStr,'Fimpex.SGImpex.Cells_0_7','Adresse courriel');
-    Fimpex.SGImpex.Cells[0,8]:=ReadString(LangStr,'Fimpex.SGImpex.Cells_0_8','Adresse de réponse');
-    Fimpex.spassNotAvail:=ReadString(LangStr,'Fimpex.spassNotAvail','Mot de passe non disponible');
-    Fimpex.ODImpex.Title:=ReadString(LangStr,'Fimpex.ODImpex.Title',Fimpex.ODImpex.Title);
-    FImpex.xmlFilter:=ReadString(LangStr,'FImpex.xmlFilter','Fichiers XML|*.xml|Tous les fichiers|*.*');
-    FImpex.jsFilter:=ReadString(LangStr,'FImpex.jsFilter','Fichiers Javascript|*.js|Tous les fichiers|*.*');
-    FImpex.sBtnAccFileHint:=ReadString(LangStr,'FImpex.sBtnAccFileHint',FImpex.BtnAccFile.Hint);
+    FImpex.Translate(LngFile);
+
+    // Logview
+    FLogView.Translate(LngFile);
 
     // Tray
-    MnuRestore.Caption:=ReadString(LangStr,'MnuRestore.Caption',MnuRestore.Caption);
-    MnuMaximize.Caption:=ReadString(LangStr,'MnuMaximize.Caption',MnuMaximize.Caption);
-    MnuIconize.Caption:=ReadString(LangStr,'MnuMinimize.Caption',MnuIconize.Caption);
+    MnuRestore.Caption:=ReadString('main','MnuRestore.Caption',MnuRestore.Caption);
+    MnuMaximize.Caption:=ReadString('main','MnuMaximize.Caption',MnuMaximize.Caption);
+    MnuIconize.Caption:=ReadString('main','MnuMinimize.Caption',MnuIconize.Caption);
     MnuGetAllMail.Caption:= BtnGetAllMail.Hint;
-    MnuQuit.Caption:= ReadString(LangStr,'MnuQuit.Caption',MnuQuit.Caption);
+    MnuQuit.Caption:= ReadString('main','MnuQuit.Caption',MnuQuit.Caption);
     MnuAbout.Caption:=BtnAbout.Hint;
 
-
-
-
     // HTTP Error messages
-    HttpErrMsgNames[0] := ReadString(LangStr,'SErrInvalidProtocol','Protocole "%s" invalide');
-    HttpErrMsgNames[1] := ReadString(LangStr,'SErrReadingSocket','Erreur de lecture des données à partir du socket');
-    HttpErrMsgNames[2] := ReadString(LangStr,'SErrInvalidProtocolVersion','Version de protocole invalide en réponse: %s');
-    HttpErrMsgNames[3] := ReadString(LangStr,'SErrInvalidStatusCode','Code de statut de réponse invalide: %s');
-    HttpErrMsgNames[4] := ReadString(LangStr,'SErrUnexpectedResponse','Code de statut de réponse non prévu: %s');
-    HttpErrMsgNames[5] := ReadString(LangStr,'SErrChunkTooBig','Bloc trop grand');
-    HttpErrMsgNames[6] := ReadString(LangStr,'SErrChunkLineEndMissing','Fin de ligne du bloc manquante');
-    HttpErrMsgNames[7] := ReadString(LangStr,'SErrMaxRedirectsReached','Nombre maximum de redirections atteint: %s');
+    HttpErrMsgNames[0] := ReadString('HttpErr','SErrInvalidProtocol','Protocole "%s" invalide');
+    HttpErrMsgNames[1] := ReadString('HttpErr','SErrReadingSocket','Erreur de lecture des données à partir du socket');
+    HttpErrMsgNames[2] := ReadString('HttpErr','SErrInvalidProtocolVersion','Version de protocole invalide en réponse: %s');
+    HttpErrMsgNames[3] := ReadString('HttpErr','SErrInvalidStatusCode','Code de statut de réponse invalide: %s');
+    HttpErrMsgNames[4] := ReadString('HttpErr','SErrUnexpectedResponse','Code de statut de réponse non prévu: %s');
+    HttpErrMsgNames[5] := ReadString('HttpErr','SErrChunkTooBig','Bloc trop grand');
+    HttpErrMsgNames[6] := ReadString('HttpErr','SErrChunkLineEndMissing','Fin de ligne du bloc manquante');
+    HttpErrMsgNames[7] := ReadString('HttpErr','SErrMaxRedirectsReached','Nombre maximum de redirections atteint: %s');
     // Socket error messages
-    HttpErrMsgNames[8] := ReadString(LangStr,'strHostNotFound','Résolution du nom d''hôte pour "%s" impossible.');
-    HttpErrMsgNames[9] := ReadString(LangStr,'strSocketCreationFailed','Echec de la création du socket: %s');
-    HttpErrMsgNames[10] := ReadString(LangStr,'strSocketBindFailed','Echec de liaison du socket: %s');
-    HttpErrMsgNames[11] := ReadString(LangStr,'strSocketListenFailed','Echec de l''écoute sur le port n° %s, erreur %s');
-    HttpErrMsgNames[12]:=ReadString(LangStr,'strSocketConnectFailed','Echec de la connexion à %s');
-    HttpErrMsgNames[13]:=ReadString(LangStr,'strSocketAcceptFailed','Connexion refusée d''un client sur le socket: %s, erreur %s');
-    HttpErrMsgNames[14]:=ReadString(LangStr,'strSocketAcceptWouldBlock','La connexion pourrait bloquer le socket: %s');
-    HttpErrMsgNames[15]:=ReadString(LangStr,'strSocketIOTimeOut','Impossible de fixer le timeout E/S à %s');
-    HttpErrMsgNames[16]:=ReadString(LangStr,'strErrNoStream','Flux du socket non assigné');
+    HttpErrMsgNames[8] := ReadString('HttpErr','strHostNotFound','Résolution du nom d''hôte pour "%s" impossible.');
+    HttpErrMsgNames[9] := ReadString('HttpErr','strSocketCreationFailed','Echec de la création du socket: %s');
+    HttpErrMsgNames[10] := ReadString('HttpErr','strSocketBindFailed','Echec de liaison du socket: %s');
+    HttpErrMsgNames[11] := ReadString('HttpErr','strSocketListenFailed','Echec de l''écoute sur le port n° %s, erreur %s');
+    HttpErrMsgNames[12]:=ReadString('HttpErr','strSocketConnectFailed','Echec de la connexion à %s');
+    HttpErrMsgNames[13]:=ReadString('HttpErr','strSocketAcceptFailed','Connexion refusée d''un client sur le socket: %s, erreur %s');
+    HttpErrMsgNames[14]:=ReadString('HttpErr','strSocketAcceptWouldBlock','La connexion pourrait bloquer le socket: %s');
+    HttpErrMsgNames[15]:=ReadString('HttpErr','strSocketIOTimeOut','Impossible de fixer le timeout E/S à %s');
+    HttpErrMsgNames[16]:=ReadString('HttpErr','strErrNoStream','Flux du socket non assigné');
 
   end;
 end;

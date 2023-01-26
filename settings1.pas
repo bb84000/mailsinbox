@@ -1,7 +1,7 @@
 {****************************************************************************** }
 { settings1 - Modify settings form and record                                   }
 { for mailsinbox application                                                    }
-{ bb - sdtp - february 2020                                                     }
+{ bb - sdtp - january 2023                                                     }
 {*******************************************************************************}
 
 unit settings1;
@@ -13,7 +13,7 @@ interface
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ExtCtrls, StdCtrls,
   Buttons, laz2_DOM, laz2_XMLRead, laz2_XMLWrite, lazbbutils, registry, mailclients1,
-  Types, accounts1;
+  Types, accounts1, lazbbinifiles;
 
 type
 
@@ -198,6 +198,7 @@ end;
     MailClients: Array of TmailClient;
     function GetDefaultMailCllient: string;
     procedure GetMailClientNames(frst: boolean);
+    procedure Translate(LngFile: TBbIniFile);
   end;
 
 var
@@ -890,6 +891,45 @@ begin
     MailClients[length(MailClients)-1].Command:=Settings.MailClient;
     MailClients[length(MailClients)-1].Url:=Settings.MailClientIsUrl;
     MailClients[length(MailClients)-1].Tag:=true;
+  end;
+end;
+
+procedure TFSettings.Translate(LngFile: TBbIniFile);
+var
+  DefaultCaption: String;
+begin
+  if assigned (Lngfile) then
+  with LngFile do
+  begin
+    BtnOK.Caption:= ReadString('Common', 'OKBtn', BtnOK.Caption);
+    BtnCancel.Caption:= ReadString('Common', 'CancelBtn', BtnCancel.Caption);
+    DefaultCaption:= ReadString('Common', 'DefaultCaption', '...');
+    Caption:=Format(ReadString('FSettings','Caption','Préférences de %s'), [DefaultCaption]);
+    GBSystem.Caption:=ReadString('FSettings', 'GBSystem.Caption', GBSystem.Caption);
+    CBStartup.Caption:=ReadString('FSettings', 'CBStartup.Caption', CBStartup.Caption);
+    CBStartMini.Caption:=ReadString('FSettings', 'CBStartMini.Caption', CBStartMini.Caption);
+    CBSavSizePos.Caption:=ReadString('FSettings', 'CBSavSizePos.Caption', CBSavSizePos.Caption);
+    CBMailClientMini.Caption:=ReadString('FSettings', 'CBMailClientMini.Caption', CBMailClientMini.Caption);
+    CBRestNewMsg.Caption:=ReadString('FSettings', 'CBRestNewMsg.Caption', CBRestNewMsg.Caption);
+    CBHideInTaskBar.Caption:=ReadString('FSettings', 'CBHideInTaskBar.Caption', CBHideInTaskBar.Caption);
+    CBSaveLogs.Caption:=ReadString('FSettings', 'CBSaveLogs.Caption', CBSaveLogs.Caption);
+    CBNoChkNewVer.Caption:=ReadString('FSettings', 'CBNoChkNewVer.Caption', CBNoChkNewVer.Caption);
+    CBStartupCheck.Caption:=ReadString('FSettings', 'CBStartupCheck.Caption',CBStartupCheck.Caption);
+    CBSmallBtns.Caption:=ReadString('FSettings', 'CBSmallBtns.Caption', CBSmallBtns.Caption);
+    CBNotifications.Caption:=ReadString('FSettings', 'CBNotifications.Caption', CBNotifications.Caption);
+    CBNoCloseAlert.Caption:=ReadString('FSettings', 'CBNoCloseAlert.Caption', CBNoCloseAlert.Caption);
+    CBNoQuitAlert.Caption:=ReadString('FSettings', 'CBNoQuitAlert.Caption', CBNoQuitAlert.Caption);
+    CBDisplayAllAccMsgs.Caption:=ReadString('FSettings', 'CBDisplayAllAccMsgs.Caption', CBDisplayAllAccMsgs.Caption) ;
+    LMailClient.Caption:=ReadString('FSettings', 'LMailClient.Caption', LMailClient.Caption);
+    BtnMailClient.Hint:=ReadString('FSettings', 'BtnMailClient.Hint', BtnMailClient.Hint);
+    LLangue.Caption:=ReadString('FSettings', 'LLangue.Caption', LLangue.Caption);
+    BtnPlaySound.Hint:=ReadString('FSettings', 'BtnPlaySound.Hint', BtnPlaySound.Hint);
+    LSoundFile.Caption:=ReadString('FSettings', 'LSoundFile.Caption', LSoundFile.Caption);
+    BtnSoundFile.Hint:=ReadString('FSEttingss', 'BtnSoundFile.Hint', BtnSoundFile.Hint);
+    CBUrl.Hint:=ReadString('FSettings', 'CBUrl.Hint', CBUrl.Hint);
+    GMailWeb:=ReadString('FSettings', 'GMailWeb','Site Web de GMail');
+    OutlookWeb:=ReadString('FSettings', 'OutlookWeb','Site Web d''Outlook.com');
+    Win10Mail:=ReadString('FSettings', 'Win10Mail','Application Courrier de Windows 10');
   end;
 end;
 

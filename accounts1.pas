@@ -1,7 +1,7 @@
 {******************************************************************************}
 { accounts1 unit                                                               }
 { Form and types for accounts management                                       }
-{ bb - sdtp - february 2020                                                     }
+{ bb - sdtp - january 2023                                                     }
 { key for imported passwords 14235                                             }
 { key for saved passwords 14236                                                }
 {******************************************************************************}
@@ -14,7 +14,7 @@ interface
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ExtCtrls, ComCtrls,
   StdCtrls, ColorBox, Spin, Buttons, laz2_DOM , laz2_XMLRead, laz2_XMLWrite,
-  lazbbutils;
+  lazbbutils, lazbbinifiles ;
 
 type
   TChampsCompare = (cdcNone, cdcName, cdcIndex, cdcUserName, cdcServer, cdcAccountUID, cdcMessageDate, cdcMessageNum, cdcMessageSize, cdcMessageUIDL,
@@ -187,6 +187,7 @@ type
 
   public
     Accounts: TAccountsList;
+    procedure Translate(LngFile: TBbIniFile);
   end;
 
 var
@@ -797,6 +798,43 @@ end;
 procedure TFAccounts.FormDestroy(Sender: TObject);
 begin
   if assigned (accounts) then accounts.Destroy;
+end;
+
+procedure TFAccounts.Translate(LngFile: TBbIniFile);
+var
+  DefaultCaption: String;
+begin
+  if assigned (Lngfile) then
+  with LngFile do
+  begin
+    BtnOK.Caption:= ReadString('Common', 'OKBtn', BtnOK.Caption);
+    BtnCancel.Caption:= ReadString('Common', 'CancelBtn', BtnCancel.Caption);
+    DefaultCaption:= ReadString('Common', 'DefaultCaption', '...');
+    Caption:=Format(ReadString('FSettings','Caption','Préférences de %s'), [DefaultCaption]);
+    LAccName.Caption:=ReadString('FAccounts', 'LAccName.Caption', LAccName.Caption);
+    LHost.Caption:=ReadString('FAccounts', 'LHost.Caption',LHost.Caption);
+    LProtocol.Caption:=ReadString('FAccounts', 'LProtocol.Caption', LProtocol.Caption);
+    CBProtocol.Items[0]:=ReadString('FAccounts', 'CBProtocol.Items_0', CBProtocol.Items[0]);
+    LUserName.Caption:=ReadString('FAccounts', 'LUserName.Caption', LUserName.Caption);
+    LPassword.Caption:=ReadString('FAccounts', 'LPassword.Caption', LPassword.Caption);
+    LEmail.Caption:=ReadString('FAccounts', 'LEmail.Caption', LEmail.Caption);
+    LColor.Caption:=ReadString('FAccounts', 'LColor.Caption', LColor.Caption);
+    LSoundFile.Caption:=ReadString('FAccounts', 'LSoundFile.Caption', LSoundFile.Caption);
+    LSSL.Caption:=ReadString('FAccounts', 'LSSL.Caption', LSSL.Caption);
+    CBSSL.Items[0]:=ReadString('FAccounts', 'CBSSL.Items_0', CBSSL.Items[0]);
+    CBSSL.Items[1]:=ReadString('FAccounts', 'CBSSL.Items_1', CBSSL.Items[1]);
+    CBSSL.Items[2]:=ReadString('FAccounts', 'CBSSL.Items_2', CBSSL.Items[2]);
+    LPort.Caption:=ReadString('FAccounts', 'LPort.Caption', LPort.Caption);
+    CBSecureAuth.Caption:=ReadString('FAccounts', 'CBSecureAuth.Caption', CBSecureAuth.Caption);
+    LInterval.Caption:=ReadString('FAccounts', 'LInterval.Caption', LInterval.Caption);
+    LMin.Caption:= ReadString('FAccounts', 'LMin.Caption', LMin.Caption);;
+    CBShowPass.Caption:=ReadString('FAccounts', 'CBShowPass.Caption', CBShowPass.Caption);
+    LReply.Caption:=ReadString('FAccounts', 'LReply.Caption', LReply.Caption);
+    CBEnabledAcc.Caption:=ReadString('FAccounts', 'CBEnabledAcc.Caption', CBEnabledAcc.Caption);
+    //BtnMailClient.Hint:=ReadString('FAccounts', 'BtnMailClient.Hint', BtnMailClient.Hint);
+    BtnPlaySound.Hint:=ReadString('FAccounts', 'BtnPlaySound.Hint', BtnPlaySound.Hint);
+    BtnSoundFile.Hint:=ReadString('FAccounts', 'BtnSoundFile.Hint', BtnSoundFile.Hint);
+  end;
 end;
 
 

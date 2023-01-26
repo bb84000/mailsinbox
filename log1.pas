@@ -1,7 +1,7 @@
 {*******************************************************************************}
 { log1 : Unit to display program log                                            }
 { for mailsinbox application                                                    }
-{ bb -sdtp - january 2020                                                       }
+{ bb -sdtp - january 2023                                                       }
 {*******************************************************************************}
 
 unit log1;
@@ -12,7 +12,7 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ExtCtrls, Buttons,
-  Menus, RichMemo, Clipbrd, lazutf8, lazbbutils;
+  Menus, RichMemo, Clipbrd, lazutf8, lazbbutils, lazbbinifiles;
 
 type
 
@@ -36,7 +36,7 @@ type
   private
 
   public
-
+    procedure Translate(LngFile: TBbIniFile);
   end;
 
 var
@@ -114,8 +114,18 @@ begin
   FMailsInBox.OnChangeBounds(sender);
 end;
 
+procedure TFLogView.Translate(LngFile: TBbIniFile);
+begin
+  if assigned (Lngfile) then
+  with LngFile do
+  begin
+    BtnOK.Caption:= ReadString('Common', 'OKBtn', BtnOK.Caption);
+    MnuCopySel.Caption:= ReadString('FLogView', 'MnuCopySel.Caption', MnuCopySel.Caption);
+    MnuCopyAll.Caption:= ReadString('FLogView', 'MnuCopyAll.Caption', MnuCopyAll.Caption);
+    MnuCopyLine.Caption:= ReadString('FLogView', 'MnuCopyLine.Caption', MnuCopyLine.Caption);
+  end;
 
-
+end;
 
 
 

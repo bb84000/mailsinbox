@@ -1,7 +1,7 @@
 {*******************************************************************************}
 { Impex1 unit - Import Outlook, Thunderbird and Mailattente mail accounts       }
 { for MailsInBox application                                                    }
-{ bb - sdtp - october 2021                                                      }
+{ bb - sdtp - january 2023                                                      }
 {*******************************************************************************}
 
 unit impex1;
@@ -58,6 +58,7 @@ type
     MailattAccName, OutlAccName, TBirdAccName: string;
     xmlFilter, jsFilter: string;
     sBtnAccFileHint: string;
+    procedure Translate(LngFile: TBbIniFile);
   end;
 
 var
@@ -518,7 +519,38 @@ begin
   if Assigned(sl) then sl.free;
   if Assigned(slServ) then slServ.free;
   if Assigned(slIds) then slIds.free;
+end;
 
+procedure TFImpex.Translate(LngFile: TBbIniFile);
+begin
+  if assigned (Lngfile) then
+  with LngFile do
+  begin
+    BtnOK.Caption:= ReadString('Common', 'OKBtn', BtnOK.Caption);
+    BtnCancel.Caption:= ReadString('Common', 'CancelBtn', BtnCancel.Caption);
+    LAccTyp.Caption:=ReadString('FImpex', 'LAccTyp.Caption', LAccTyp.Caption);
+    Caption:=ReadString('FImpex', 'Caption',Caption);
+    LFilename.Caption:=ReadString('FImpex', 'LFilename.Caption', LFilename.Caption);
+    MailattAccName:=ReadString('Fimpex', 'MailattAccName', 'Comptes MailAttente');
+    OutlAccName:=ReadString('Fimpex', 'OutlAccName', 'Comptes Outlook 2007-2010');
+    SGImpex.Columns[0].Title.Caption:=ReadString('Fimpex', 'SGImpex.Columns_0.Title.Caption',
+            SGImpex.Columns[0].Title.Caption) ;
+    SGImpex.Columns[1].Title.Caption:=ReadString('Fimpex', 'SGImpex.Columns_1.Title.Caption',
+            SGImpex.Columns[0].Title.Caption) ;
+    SGImpex.Cells[0,1]:=ReadString('Fimpex', 'SGImpex.Cells_0_1','Nom du compte');
+    SGImpex.Cells[0,2]:=ReadString('Fimpex', 'SGImpex.Cells_0_2','Serveur de courrier');
+    SGImpex.Cells[0,3]:=ReadString('Fimpex', 'SGImpex.Cells_0_3','Port');
+    SGImpex.Cells[0,4]:=ReadString('Fimpex', 'SGImpex.Cells_0_4','Protocole');
+    SGImpex.Cells[0,5]:=ReadString('Fimpex', 'SGImpex.Cells_0_5','Identifiant courriel');
+    SGImpex.Cells[0,6]:=ReadString('Fimpex', 'SGImpex.Cells_0_6','Mot de passe');
+    SGImpex.Cells[0,7]:=ReadString('Fimpex', 'SGImpex.Cells_0_7','Adresse courriel');
+    SGImpex.Cells[0,8]:=ReadString('Fimpex', 'SGImpex.Cells_0_8','Adresse de réponse');
+    spassNotAvail:=ReadString('Fimpex', 'spassNotAvail','Mot de passe non disponible');
+    ODImpex.Title:=ReadString('Fimpex', 'ODImpex.Title',ODImpex.Title);
+    xmlFilter:=ReadString('FImpex', 'xmlFilter','Fichiers XML|*.xml|Tous les fichiers|*.*');
+    jsFilter:=ReadString('FImpex', 'jsFilter','Fichiers Javascript|*.js|Tous les fichiers|*.*');
+    sBtnAccFileHint:=ReadString('FImpex', 'sBtnAccFileHint',BtnAccFile.Hint);
+  end;
 end;
 
 end.

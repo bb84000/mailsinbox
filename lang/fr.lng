@@ -1,0 +1,278 @@
+;Fichier de langue
+;Il est possibled e créer un fichier de langue en utilisant l'ID de langue comme nom (exemple it.lng)
+;Danois	[da], Néerlandais [nl], Finois [fi], Allemand [de], Grec [el], Hongrois [hu]
+;Islandais [is], Italien [it], Norvégien [no], Polonais [pl], Portugais [pt]
+;Russe [ru], Serbo Croate [sr], Slovaque [sk], Suedois [sv], Turc [tr]
+
+;ProgName doit correspondre à la variable du même nom dans le code de l'application
+
+;Sauvegardez votre fichier, il peut être remplacé ou effacé lors d'une msie à jour !
+;proposez votre traduction sur GitHub
+
+;Français
+
+[common]
+Language=Français
+ProgName=MailsInBox
+ProgErr=Fichier de langue erroné. Réinstallez le programme
+DefaultCaption=Courriels en attente
+OKBtn=OK
+YesBtn=Oui
+NoBtn=Non
+CancelBtn=Annuler
+
+[main]
+OpenProgram=Ouverture de Courrier en attente
+RetConfBack=Recharge la dernière configuration sauvegardée
+CreNewConf=Création d'une nouvelle configuration
+LoadConf=Chargement de la configuration
+CannotQuit=Impossible de quitter pendant la vérification de courriels
+Caption=Courriels en attente
+sClosingProg=Fermeture de Courriels en attente
+OKBtn=OK
+YesBtn=Oui
+NoBtn=Non
+CancelBtn=Annuler
+BtnImport.Hint=Importation de comptes
+sBtnLogHint=Journal du compte %s
+BtnLog.Hint=Journal du proggramme
+BtnGetAllMail.Hint=Vérifier tous les comptes
+BtnGetAccMailHint=Vérifier le compte %s
+BtnLaunchClient.Hint=Lancer le client courrier
+BtnLaunchClientDef=Lancer le client courrier
+BtnLaunchClientCust=Lancer %s
+BtnDeleteHint=Supprimer le compte %s
+BtnAddAcc.Hint=Ajouter un nouveau compte
+BtnEditAccHint=Modifier le compte %s
+BtnSettings.Hint=Options générales
+BtnAbout.Hint=A propos de Courrier en attente
+BtnHelp.Hint=Aide de Courrier en attente
+BtnQuit.Hint=Double-cliquer pour quitter Courrier en attente, cliquer une seule fois pour le réduire en icone
+SGMails.Columns_0.Title.Caption=De
+SGMails.Columns_1.Title.Caption=A
+SGMails.Columns_2.Title.Caption=Objet
+SGMails.Columns_3.Title.Caption=Date
+SGMails.Columns_4.Title.Caption=Taille
+MnuInfos.Caption=Informations
+MnuDeleteMsg.Caption=Supprime le courriel sélectionné
+MnuDelMsg=Supprimer le courriel "%s"
+MnuAnswerMsg.Caption=Répondre au courriel sélectionné
+MnuAnswerMsg=Répondre au courriel "%s"
+AlertDelMmsg=Voulez-vous supprimer le courriel "%s" ?
+AccountCaption=Compte : %s
+EmailCaption=Courriel : %s
+LastCheckCaption=Dernière vérification : %s
+NextCheckCaption=Prochaine vérification : %s
+AccountImported=%d compte %s importé
+AccountsImported=%d comptes %s importés
+MsgFound=%d courriel trouvé
+MsgsFound=%d courriels trouvés
+LStatusCaption=%s sur le compte %s le %s
+ConnectToServer=%s : Connexion au serveur %s
+ConnectedToServer=%s : Connecté au serveur %s
+ConnectErrorMsg=Erreur de connexion : %s
+HeaderErrorMsg=Erreur d'obtention de l'entête : %s
+DisconnectServer=%s : Déconnexion du serveur %s
+DisconnectedServer=%s : Déconnecté du serveur %s
+AccountChanged=Le compte %s a été modifié
+AccountAdded=Le compte %s a été ajouté
+AccountDisabled=Compte %s désactivé
+AccountEnabled=Compte %s activé
+LoadingAccounts=Chargement des comptes
+CheckingAccMail=Vérification du compte %s
+CheckingAllMail=Vérification de tous les comptes actifs
+TrayHintNoMsg=Aucun courriel en attente
+TrayMail.BalloonTitle=Nouveaux courriels en attente
+TrayBallHintMsg=%s : %u nouveau courriel%s
+TrayBallHintMsgs=%s : %u nouveaux courriels%s
+TrayHintMsg=%s : %u courriel %%s
+TrayHintMsgs=%s : %u courriels %%s
+TrayHintNewMsg=(dont %u nouveau)
+TrayHintNewMsgs=(dont %u nouveaux)
+NoShowCloseAlert=Alerte de masquage de la fenêtre du programme déactivée
+sNoShowQuitAlert=Alerte de fermeture du programme désactivée
+NoQuitAlert=Pour fermer le programme et ne plus vérifier l'arrivée de nouveaux courriels, double-cliquer sur ce bouton. Pour que la vérification se poursuive en tâche de fond, cliquez une fois sur ce bouton.
+NoCloseAlert=Le programme va se poursuivre en tâche de fond pour vérifier l'arrivée de nouveaux courriels. Pour quitter le programme, il faut double-cliquer sur le bouton "Quitter Courrier en attente".
+Restart=Redémarrage après arrêt forcé du système
+SettingsChange=Configuration modifiée
+MsgDeleted=%s : Message #%u supprimé
+MsgNotDeleted=%s : Message #%u non supprimé
+Bytes=octets
+KBytes=Ko
+MBytes=Mo
+NeverChecked=Pas encore vérifié
+Use64bit=Utilisez la version 64 bits de ce programme
+DeleteAccount=Voulez-vous vraiment supprimer le compte %s ?
+AccDeleted=Le compte %s a été supprimé
+CannotGetNewVerList=Liste des nouvelles versions indisponible
+NewAccount=Nouveau compte
+MMnuFile.Caption=Fichier
+MMnuMails.Caption=Couriels
+MMnuDisplay.Caption=Affichage
+MMnuDisplayMenu.Caption=Afficher le menu
+MMnuDisplayBar.Caption=Afficher la barre de boutons
+MMnuPrefs.Caption=Préférences
+MMnuInfos.Caption=Aide
+PlsSelectAcc=Sélectionnez un compte pour %s
+ToDisplayLog=pouvoir afficher son journal
+ToDeleteAcc=pouvoir le supprimer
+ToEditAcc=pouvoir le modifier
+CreatedDataFolder=Dossier de données de Couriels en attente "%s" créé.
+
+;Help
+HelpFile=mailsinbox.html
+
+;Alert
+AlertBoxCBNoShowAlert=Ne plus afficher cet avertissement
+UpdateAlertBox=Version actuelle: %sUne nouvelle version %s est disponible
+NoLongerChkUpdates=Ne plus rechercher de mise à jour
+
+; Tray
+MnuRestore.Caption=Restaurer
+MnuMaximize.Caption=Agrandir
+MnuMinimize.Caption=Réduire
+MnuQuit.Caption=Quitter Courriels en attente
+
+[OSVersion]
+;lazbbosver
+Home=Famille
+Professional=Entreprise
+Server=Serveur
+00000=Version inconnue
+10240=v 1507 "Juillet 2015"
+10586=v 1511 "Novembre 2015"
+14393=v 1607 "Juillet 2016 (Màj Anniversaire)"
+15063=v 1703 "Avril 2017 (Màj Createurs)"
+16299=v 1709 "Octobre 2017(Màj Fall Créateurs)"
+17134=v 1803 "Avril 2018"
+17763=v 1809 "Octobre 2018"
+18362=v 1903 "Mai 2019"
+18363=v 1909 "Novembre 2019"
+19041=v 2004 "Mai 2020"
+19042=v 20H2 "Octobre 2020"
+19043=v 21H1 "Mai 2021"
+19044=v 21H2 "Novembre 2021"
+19045=v 22H2 "Octobre 2022"
+22000=v 21H2 "Octobre 2021 Version initiale"
+22621=v 22H2 "Septembre 2022"
+
+[AboutBox]
+Caption=A propos de %s
+sLastUpdateSearch=Dernière recherche de mise à jour
+sUpdateAvailable=Nouvelle version %s disponible. Cliquer pour la télécharger
+sNoUpdateAvailable=Le Tuner radio Web est à jour.
+LUpdate.Caption=Recherche de mise à jour
+LProgPage.Caption=Page d'accueil du programme
+LWebSite.Caption=Page d'accueil du site Web
+LSourceCode.Caption=Page Web du code source
+UrlProgSite=/wiki/Accueil
+
+[FSettings]
+Caption=Préférences de Courriels en attente
+GBSystem.Caption=Système
+CBStartup.Caption=Lancer au démarrage du système
+CBStartMini.Caption=Démarrage minimisé
+CBSavSizePos.Caption=Sauvegarder taille et position de la fenêtre
+CBMailClientMini.Caption=Minimiser au lancement du client courrier
+CBRestNewMsg.Caption=Restaurer la fenêtre si nouveaux messages
+CBHideInTaskBar.Caption=Masquer l'icône dans la barre des tâches
+CBSaveLogs.Caption=Conserver le journal du compte
+CBNoChkNewVer.Caption.Caption=Ne pas rechercher de mise à jour
+CBStartupCheck.Caption=Vérifier le courrier au démarrage
+LLangue.Caption=Langue
+LMailClient.Caption=Client courriel
+BtnMailClient.Hint=Cliquer pour sélectionner un client courriel
+BtnPlaySound.Hint=Ecouter le son sélectionné
+LSoundFile.Caption=Fichier son
+BtnSoundFile.Hint=Cliquer pour sélectionner un fichier son
+CBSmallBtns.Caption=Petits boutons dans la barre de boutons
+CBNotifications.Caption=Activer les notifications
+CBUrl.Hint=Cocher s'il s'agit d'une adresse Web (Url)
+GMailWeb=Site Web de GMail
+OutlookWeb=Site Web d'Outlook.com
+Win10Mail=Application Courrier de Windows 10
+CBNoCloseAlert.Caption=Ne pas afficher l'alerte de masquage de la fenêtre
+CBNoQuitAlert.Caption=Ne pas afficher l'alerte d'arrêt du programme
+CBDisplayAllAccMsgs.Caption=Afficher les messages de tous les comptes
+
+[FAccounts]
+LAccName.Caption=Nom du compte
+LHost.Caption=Serveur de courrier
+LProtocol.Caption=Protocole
+CBProtocol.Items_0=Aucun
+LUserName.Caption=Identifiant courriel
+LPassword.Caption=Mot de passe
+LEmail.Caption=Adresse courriel
+LColor.Caption=Couleur
+LSound.Caption=Fichier son
+LSSL.Caption=Sécurité
+CBSSL.Items_0=Aucune
+CBSSL.Items_1=Implicite (Connexion TLS)
+CBSSL.Items_2=Explicit (Connexion STLS)
+LPort.Caption=Port
+CBSecureAuth.Caption=Authentification sécurisée
+LInterval.Caption=Intervalle
+LMin.Caption=minutes
+CBShowPass.Caption=Montre le mot de passe
+LReply.Caption=Adresse de réponse
+CBEnabledAcc.Caption=Compte actif
+LSoundFile.Caption=Fichier son
+BtnSoundFile.Hint=Cliquer pour sélectionner un fichier son
+
+
+[FMailClientChoose]
+Caption=Choisir un client courrier
+LName.Caption=Nom
+LCommand.Caption=Commande
+CBUrl.Hint=Cocher s'il s'agit d'une adresse Web (Url)
+BtnMailClient.Hint=Cliquer pour sélectionner un client courriel
+
+[FImpex]
+Caption=Importation de comptes
+LAccTyp.Caption=Type de compte
+LFilename.Caption=Nom du fichier
+MailattAccName=MailAttente
+OutlAccName=Outlook 2007-2013
+SGImpex.Columns_0.Title.Caption=Champ
+SGImpex.Columns_1.Title.Caption=Valeur
+SGImpex.Cells_0_1=Nom du compte
+SGImpex.Cells_0_2=Serveur de courrier
+SGImpex.Cells_0_3=Port
+SGImpex.Cells_0_4=Protocole
+SGImpex.Cells_0_5=Identifiant courriel
+SGImpex.Cells_0_6=Mot de passe
+SGImpex.Cells_0_7=Adresse courriel
+SGImpex.Cells_0_8=Adresse de réponse
+spassNotAvail=Mot de passe non disponible
+ODImpex.Title=Ouvrir un fichier existant
+xmlFilter=Fichiers XML|*.xml|Tous les fichiers|*.*
+jsFilter=Fichiers Javascript|*.js|Tous les fichiers|*.*
+sBtnAccFileHint=Cliquer pour ouvrir un fichier de configuration %s
+
+[HttpErr]
+;Http error messages
+SErrInvalidProtocol=Protocole "%s" invalide
+SErrReadingSocket=Erreur de lecture des données à partir du socket
+SErrInvalidProtocolVersion=Version de protocole invalide en réponse: %s
+SErrInvalidStatusCode=Code de statut de réponse invalide: %s
+SErrUnexpectedResponse=Code de statut de réponse non prévu: %s
+SErrChunkTooBig=Bloc trop grand
+SErrChunkLineEndMissing=Fin de ligne du bloc manquante
+SErrMaxRedirectsReached=Nombre maximum de redirections atteint: %s
+
+;Socket error messages
+strHostNotFound=Résolution du nom d'hôte pour "%s" impossible.
+strSocketCreationFailed=Echec de la création du socket: %s
+strSocketBindFailed=Echec de liaison du socket: %s
+strSocketListenFailed=Echec de l'écoute sur le port n° %s, erreur %s
+strSocketConnectFailed=Echec de la connexion à %s
+strSocketAcceptFailed=Connexion refusée d'un client sur le socket: %s, erreur %s
+strSocketAcceptWouldBlock=La connexion pourrait bloquer le socket: %s
+strSocketIOTimeOut=Impossible de fixer le timeout E/S à %s
+strErrNoStream=Flux du socket non assigné
+
+[FLogView]
+MnuCopySel.Caption=Copie le texte sélectionné
+MnuCopyAll.Caption=Copie le journal
+MnuCopyLine.Caption=Copie la ligne au curseur
+

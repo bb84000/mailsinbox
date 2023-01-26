@@ -1,7 +1,7 @@
 {*******************************************************************************}
 { mailclient : Unit to find mail client(s)                                      }
 { for mailsinbox application                                                    }
-{ bb -sdtp - january 2020                                                       }
+{ bb -sdtp - january 2023                                                       }
 {*******************************************************************************}
 
 unit mailclients1;
@@ -12,7 +12,7 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, Buttons, ExtCtrls,
-  StdCtrls, registry;
+  StdCtrls, registry, lazbbinifiles;
 
 type
   // Define the classes in this Unit at the very start for clarity
@@ -37,7 +37,7 @@ type
   private
 
   public
-
+    procedure Translate(LngFile: TBbIniFile);
   end;
 
 var
@@ -65,6 +65,21 @@ procedure TFMailClientChoose.BtnMailClientClick(Sender: TObject);
 begin
   if OD1.Execute then
   ECommand.text:= OD1.FileName;
+end;
+
+procedure TFMailClientChoose.Translate(LngFile: TBbIniFile);
+begin
+  if assigned (Lngfile) then
+  with LngFile do
+  begin
+    BtnOK.Caption:= ReadString('Common', 'OKBtn', BtnOK.Caption);
+    BtnCancel.Caption:= ReadString('Common', 'CancelBtn', BtnCancel.Caption);
+    Caption:=ReadString('FMailClientChoose', 'Caption', Caption);
+    LName.Caption:=ReadString('FMailClientChoose', 'LName.Caption', LName.Caption);
+    LCommand.Caption:=ReadString('FMailClientChoose', 'LCommand.Caption', LCommand.Caption);
+    CBUrl.Hint:=ReadString('FMailClientChoose', 'CBUrl.Hint', CBUrl.Hint);
+    BtnMailClient.Hint:=ReadString('FMailClientChoose', 'BtnMailClient.Hint', BtnMailClient.Hint);
+  end;
 end;
 
 end.

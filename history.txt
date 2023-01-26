@@ -233,3 +233,7 @@ Version 1.0.2.2 - 29/10/2022
 Version 1.0.2.3 - 02/11/2022
 - Minimized startup is due to lazarus 2.2.2 and over. Post wm_user message at
   the end of form activation procedure to minimize when the form is shown
+
+Version 1.0.3.0 - 26/01/2023
+- Self translation of application forms
+- Updated with new components
