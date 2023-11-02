@@ -237,3 +237,6 @@ Version 1.0.2.3 - 02/11/2022
 Version 1.0.3.0 - 26/01/2023
 - Self translation of application forms
 - Updated with new components
+
+Version 1.0.3.1 - 02/11/2023
+- Updated OS version for Windows 23H2

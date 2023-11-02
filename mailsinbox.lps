@@ -215,10 +215,9 @@
       </Unit23>
       <Unit24>
         <Filename Value="history.txt"/>
-        <IsVisibleTab Value="True"/>
         <EditorIndex Value="9"/>
-        <TopLine Value="206"/>
-        <CursorPos Y="240"/>
+        <TopLine Value="208"/>
+        <CursorPos X="38" Y="242"/>
         <UsageCount Value="100"/>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="None"/>
@@ -648,17 +647,18 @@
       <Unit82>
         <Filename Value="lang\fr.lng"/>
         <EditorIndex Value="7"/>
-        <TopLine Value="244"/>
-        <CursorPos Y="274"/>
+        <TopLine Value="140"/>
+        <CursorPos Y="160"/>
         <UsageCount Value="16"/>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="None"/>
       </Unit82>
       <Unit83>
         <Filename Value="lang\en.lng"/>
+        <IsVisibleTab Value="True"/>
         <EditorIndex Value="8"/>
-        <TopLine Value="240"/>
-        <CursorPos Y="274"/>
+        <TopLine Value="136"/>
+        <CursorPos X="35" Y="156"/>
         <UsageCount Value="16"/>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="None"/>
