@@ -36,13 +36,6 @@ type
     Enabled: Boolean;
   end;
 
-  { int64 or longint type for Application.QueueAsyncCall }
-  {$IFDEF CPU32}
-    iDays= LongInt;
-  {$ENDIF}
-  {$IFDEF CPU64}
-    iDays= Int64;
-  {$ENDIF}
 
   { TFMailsInBox }
   TFMailsInBox = class(TForm)
@@ -302,7 +295,7 @@ type
     function GetFire(CurAcc: Taccount; mode: TFireMode): TDateTime;
     procedure SetFire(Curacc: TAccount; datim: TDateTime; mode: TFireMode);
     procedure InitButtons;
-    procedure CheckUpdate(days: iDays);
+    procedure CheckUpdate(days: PtrInt);
     procedure SortMails(CurCol: integer);
     procedure LoadAccounts(filename: string);
     function SetError(E: Exception; ErrorStr: String; ErrorUID: Integer; ErrorCaption: String; var ErrorsStr: String): boolean;
@@ -647,7 +640,7 @@ end;
 
 //Dernière recherche il y a "days" jours ou plus ?
 
-procedure TFMailsInBox.CheckUpdate(days: iDays);
+procedure TFMailsInBox.CheckUpdate(days: PtrInt);
 var
   errmsg: string;
   sNewVer: string;
@@ -2932,7 +2925,7 @@ end;
 
 
 // Load control captions and text variable translations
-// from mailsinbox.lng
+
 
 procedure TFMailsInBox.Translate(LngFile: TBbInifile);
 var
@@ -2950,10 +2943,10 @@ begin
     sRetConfBack:= ReadString('main','RetConfBack','Recharge la dernière configuration sauvegardée');
     sCreNewConf:= ReadString('main','CreNewConf','Création d''une nouvelle configuration');
     sLoadConf:= ReadString('main','LoadConf','Chargement de la configuration');
-    OKBtn:= ReadString('main', 'OKBtn','OK');
-    YesBtn:=ReadString('main','YesBtn','Oui');
-    NoBtn:=ReadString('main','NoBtn','Non');
-    CancelBtn:=ReadString('main','CancelBtn','Annuler');
+    OKBtn:= ReadString('common', 'OKBtn','OK');
+    YesBtn:=ReadString('common','YesBtn','Oui');
+    NoBtn:=ReadString('common','NoBtn','Non');
+    CancelBtn:=ReadString('common','CancelBtn','Annuler');
     //Main Form  & components captions
     Caption:=ReadString('main','Caption','Courriels en attente');
     BtnImport.Hint:=ReadString('main','BtnImport.Hint',BtnImport.Hint );

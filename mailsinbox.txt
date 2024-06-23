@@ -1,5 +1,5 @@
 Mails In Box : Mail notifier application
-Version 1.0.3.1
+Version 1.0.4.0
 
 (Explication en Français à la fin de ce fichier)
 
@@ -7,6 +7,8 @@ OBJECT
 Check if there are mails on POP3 and IMAP mailboxes.
 
 INSTALLATION
+Download archive. After the download, unlock the zip file (rigth click on the file in File Explorer, 
+in the menu, left click on "Properties", check the "Unlock" case and click th "OK" button.
 Extract archive and run InstallMailInBox.exe, then follow instructions of the setup program.
 
 USAGE
@@ -37,7 +39,7 @@ mail client launched by the program.
 
 Sources (Windows and Linux) are available on https://github.com/bb84000/
 
-bb95 - sdtp - November 2021
+bb95 - sdtp - June 2024
 Web : http://www.sdtp.com
 
 
@@ -49,6 +51,8 @@ OBJET
 Vérifie la présence de courrier sur les boîtes de courriel POP3 et IMAP
 
 INSTALLATION
+Téléchargez l'archive. Après le téléchargement, débloquer le fichier zip (Clic droit sur le fichier dans l'Explorateur de fichiers, 
+dans le menu, clic gauche sur "Propriétés", cocher la case "Débloquer" puis cliquez sur le bouton "OK".
 Extraire l'archive et exécuter InstallMailsInBox.exe, puis suivre les instructions
 du programme d'installation.
 
@@ -80,6 +84,6 @@ indiquer le client courriel lancé par le programme.
 
 Sources (Windows et Linux) disponibles à https://github.com/bb84000/
 
-bb95 - sdtp - November 2021
+bb95 - sdtp - Juin 2024
 Web : http://www.sdtp.com
 

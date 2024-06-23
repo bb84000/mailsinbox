@@ -240,3 +240,7 @@ Version 1.0.3.0 - 26/01/2023
 
 Version 1.0.3.1 - 02/11/2023
 - Updated OS version for Windows 23H2
+
+Version 1.0.4.0 - 23/06/2024
+- Replaced iDays type wit PtrInt
+- Changed OSVersion code

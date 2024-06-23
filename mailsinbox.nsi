@@ -233,7 +233,7 @@ Section "install" ;No components page, name is not important
   File "${source_dir}\license.txt"
   File "${source_dir}\history.txt"
   File "${source_dir}\${prog_name}.txt"
-  File "${source_dir}\${prog_name}.lng"
+ ; File "${source_dir}\${prog_name}.lng"
   File "${source_dir}\${prog_name}.ini"
   File /r "${source_dir}\help"
   ; delete old lng file
