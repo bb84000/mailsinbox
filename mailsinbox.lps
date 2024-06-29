@@ -216,10 +216,9 @@
       </Unit23>
       <Unit24>
         <Filename Value="history.txt"/>
-        <IsVisibleTab Value="True"/>
         <EditorIndex Value="9"/>
-        <TopLine Value="212"/>
-        <CursorPos X="16" Y="244"/>
+        <TopLine Value="215"/>
+        <CursorPos X="19" Y="249"/>
         <UsageCount Value="100"/>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Text"/>
@@ -409,9 +408,9 @@
       </Unit48>
       <Unit49>
         <Filename Value="mailsinbox.txt"/>
+        <IsVisibleTab Value="True"/>
         <EditorIndex Value="10"/>
-        <TopLine Value="22"/>
-        <CursorPos Y="42"/>
+        <CursorPos X="16" Y="2"/>
         <UsageCount Value="82"/>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Text"/>
@@ -659,8 +658,8 @@
       <Unit83>
         <Filename Value="lang\en.lng"/>
         <EditorIndex Value="8"/>
-        <TopLine Value="11"/>
-        <CursorPos Y="29"/>
+        <TopLine Value="138"/>
+        <CursorPos X="3" Y="152"/>
         <UsageCount Value="16"/>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="None"/>
