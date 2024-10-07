@@ -247,3 +247,6 @@ Version 1.0.4.0 - 23/06/2024
 
 Version 1.0.4.1 - 29/06/2024
 - Changed erroneous lang uage line
+
+Version 1.0.4.2 - 07/10/2024
+- Updated for Windows 11 24H2

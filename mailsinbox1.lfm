@@ -13,7 +13,7 @@ object FMailsInBox: TFMailsInBox
   OnDestroy = FormDestroy
   OnWindowStateChange = FormWindowStateChange
   Position = poDesktopCenter
-  LCLVersion = '3.2.0.0'
+  LCLVersion = '3.6.0.0'
   object PnlToolbar: TPanel
     Left = 0
     Height = 42
@@ -3577,7 +3577,6 @@ object FMailsInBox: TFMailsInBox
       'Professional'
       'Server'
     )
-    
     Left = 676
     Top = 256
   end
