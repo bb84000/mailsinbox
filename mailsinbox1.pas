@@ -1,6 +1,6 @@
 {******************************************************************************}
 { MailInBox main unit                                                          }
-{ bb - sdtp - october 2024                                                     }
+{ bb - sdtp - november 2024                                                     }
 { Check mails on pop3 and imap servers                                         }
 {******************************************************************************}
 
@@ -1547,7 +1547,8 @@ begin
   if mode=fmLast then cnt:= FSettings.Settings.LastFires.count
   else cnt:= FSettings.Settings.NextFires.count;
   if cnt> 0 then
-  begin
+  //begin                    // catch div by zero exception ?
+  try
     for i:= 0 to cnt-1 do
     begin
       if mode=fmlast then s:= FSettings.Settings.LastFires.Strings[i]
@@ -1560,6 +1561,9 @@ begin
       end;
     end;
     if uidfnd then result:= UnixToDateTime(StrToInt64Def(A[1], 0));
+  //end;
+  Except
+
   end;
 end;
 

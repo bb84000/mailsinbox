@@ -250,3 +250,9 @@ Version 1.0.4.1 - 29/06/2024
 
 Version 1.0.4.2 - 07/10/2024
 - Updated for Windows 11 24H2
+
+Version 1.0.4.3 - 14/10/2024
+- Change in getfire function (catch divide by zero exception ?)
+
+Version 1.0.4.4 - 19/11/2024
+- Bug fix in lazbbosversion on windows 10
