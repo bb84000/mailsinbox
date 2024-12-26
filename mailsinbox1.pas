@@ -2046,13 +2046,14 @@ begin
   LNow.Caption:= s;
 end;
 
+// Catch exception to avaid divide by zero (test)
 procedure TFMailsInBox.OnTrayTimer(Sender: TObject);
-
 begin
   if not CheckingMail then
-  begin
+  try
     ILTray.GetBitmap(TrayTimerTick, TrayTimerBmp);
     TrayMail.Icon.Assign(TrayTimerbmp);
+  finally
     if TrayTimerTick < ILtray.count-1 then inc (TrayTimerTick, 1) else TrayTimerTick:= 0;
   end;
 end;
