@@ -260,3 +260,6 @@ Version 1.0.4.4 - 19/11/2024
 Version 1.0.4.5 - 25/12/2024
 - Change in trayicon timer (divide by zero again!)
 
+Version 1.0.4.6 - 29/01/2025
+- Divide by zero error solved
+

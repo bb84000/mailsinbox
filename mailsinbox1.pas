@@ -1,6 +1,6 @@
 {******************************************************************************}
 { MailInBox main unit                                                          }
-{ bb - sdtp - november 2024                                                     }
+{ bb - sdtp - january 2024                                                     }
 { Check mails on pop3 and imap servers                                         }
 {******************************************************************************}
 
@@ -1547,8 +1547,7 @@ begin
   if mode=fmLast then cnt:= FSettings.Settings.LastFires.count
   else cnt:= FSettings.Settings.NextFires.count;
   if cnt> 0 then
-  //begin                    // catch div by zero exception ?
-  try
+  begin
     for i:= 0 to cnt-1 do
     begin
       if mode=fmlast then s:= FSettings.Settings.LastFires.Strings[i]
@@ -1561,10 +1560,8 @@ begin
       end;
     end;
     if uidfnd then result:= UnixToDateTime(StrToInt64Def(A[1], 0));
-  //end;
-  Except
-
   end;
+
 end;
 
 procedure TFMailsInBox.UpdateInfos;
@@ -2046,14 +2043,18 @@ begin
   LNow.Caption:= s;
 end;
 
-// Catch exception to avaid divide by zero (test)
+// ProcessMessage to avoid divide by zero (17/01/2025)
+
 procedure TFMailsInBox.OnTrayTimer(Sender: TObject);
 begin
   if not CheckingMail then
-  try
-    ILTray.GetBitmap(TrayTimerTick, TrayTimerBmp);
-    TrayMail.Icon.Assign(TrayTimerbmp);
-  finally
+  begin
+    if TrayTimerTick < ILTray.Count then
+    begin
+      ILTray.GetBitmap(TrayTimerTick, TrayTimerBmp);
+      Application.ProcessMessages;
+      TrayMail.Icon.Assign(TrayTimerbmp);
+    end;
     if TrayTimerTick < ILtray.count-1 then inc (TrayTimerTick, 1) else TrayTimerTick:= 0;
   end;
 end;
@@ -2281,6 +2282,7 @@ begin
   begin
     ChkMailTimerTick:= 0;
     ChkMailTimer.StartTimer;
+    Application.ProcessMessages;
   end else
   begin
     ChkMailTimer.StopTimer;
