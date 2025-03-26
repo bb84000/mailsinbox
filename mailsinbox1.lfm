@@ -13,7 +13,7 @@ object FMailsInBox: TFMailsInBox
   OnDestroy = FormDestroy
   OnWindowStateChange = FormWindowStateChange
   Position = poDesktopCenter
-  LCLVersion = '3.6.0.0'
+  LCLVersion = '3.8.0.0'
   object PnlToolbar: TPanel
     Left = 0
     Height = 42
@@ -1911,6 +1911,7 @@ object FMailsInBox: TFMailsInBox
       }
       GroupIndex = 1
       NumGlyphs = 2
+      OnClick = BtnQuitClick
       OnMouseDown = BtnQuitMouseDown
     end
     object BtnHelp: TSpeedButton
@@ -2252,6 +2253,12 @@ object FMailsInBox: TFMailsInBox
       OnEnter = SGMailsEnter
       OnExit = SGMailsExit
       OnMouseDown = SGMailsMouseDown
+    end
+    object ProgressbarEx1: TProgressbarEx
+      Left = 170
+      Height = 4
+      Top = 320
+      Width = 3
     end
   end
   object TrayMail: TTrayIcon

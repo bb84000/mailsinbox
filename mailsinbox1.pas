@@ -1,6 +1,6 @@
 {******************************************************************************}
 { MailInBox main unit                                                          }
-{ bb - sdtp - january 2024                                                     }
+{ bb - sdtp - march 2025                                                     }
 { Check mails on pop3 and imap servers                                         }
 {******************************************************************************}
 
@@ -13,13 +13,14 @@ interface
 uses
   {$IFDEF WINDOWS}
   Win32Proc,
-  {$ENDIF} LMessages, Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ExtCtrls,
-  StdCtrls, Grids, ComCtrls, Buttons, Menus, IdPOP3, IdSSLOpenSSL, LCLIntf,
-  IdExplicitTLSClientServerBase, IdMessage, IdIMAP4, accounts1, lazbbutils, FileUtil,
-  lazbbinifiles, LazUTF8, settings1, lazbbautostart, lazbbaboutdlg, Impex1,
-  mailclients1, uxtheme, Types, IdComponent, fptimer, RichMemo, variants,
-  IdMessageCollection, UniqueInstance, log1, lazbbOsVersion, registry,
-  dateutils, strutils, fpopenssl, openssl, opensslsockets;
+  {$ENDIF} LMessages, Classes, SysUtils, Forms, Controls, Graphics, Dialogs,
+  ExtCtrls, StdCtrls, Grids, ComCtrls, Buttons, Menus, IdPOP3, IdSSLOpenSSL,
+  LCLIntf, IdExplicitTLSClientServerBase, IdMessage, IdIMAP4, accounts1,
+  lazbbutils, FileUtil, lazbbinifiles, LazUTF8, settings1, lazbbautostart,
+  lazbbaboutdlg, lazbbUpdateDlg, Impex1, mailclients1, uxtheme, Types, IdComponent, fptimer,
+  RichMemo, variants, IdMessageCollection, UniqueInstance, log1, ExProgressbar,
+  lazbbOsVersion, registry, dateutils, strutils, fpopenssl, openssl,
+  opensslsockets;
 
 const
   // Message post at the end of activation procedure, processed once the form is shown
@@ -121,6 +122,7 @@ type
     MnuMails: TPopupMenu;
     MnuTray: TPopupMenu;
     MnuButtonBar: TPopupMenu;
+    ProgressbarEx1: TProgressbarEx;
     RMInfos: TRichMemo;
     SGMails: TStringGrid;
     SplitterV: TSplitter;
@@ -496,7 +498,11 @@ end;
 function TFMailsInBox.LogAddLine(acc: integer; dat: TDateTime; evnt: string): integer;
 begin
   // values separated by '|'
- result:= SessionLog.Add(Inttostr(acc)+'|'+TimeDateToString(dat)+'|'+evnt);
+  try
+    result:= SessionLog.Add(Inttostr(acc)+'|'+TimeDateToString(dat)+'|'+evnt);
+  except
+    result:= SessionLog.Add('Exception error');
+  end;
 end;
 
 // Form activation only needed once
@@ -679,15 +685,22 @@ begin
      NewVer := VersionToInt(sNewVer);
      // Cannot get new version
      if NewVer < 0 then exit;
-     //CurVer := VersionToInt('0.1.0.0');     //Test version check
-     CurVer := VersionToInt(version);
+     CurVer := VersionToInt('0.1.0.0');     //Test version check
+     //CurVer := VersionToInt(version);
      if NewVer > CurVer then
      begin
        FSettings.Settings.LastVersion:= sNewVer;
        AboutBox.LUpdate.Caption := Format(AboutBox.sUpdateAvailable, [sNewVer]);
        LogAddLine(-1, now, AboutBox.LUpdate.Caption);
        AboutBox.NewVersion:= true;
-       AboutBox.ShowModal;
+       UpdateDlg.sNewVer:= version;
+       UpdateDlg.NewVersion:= true;
+       {$IFDEF WINDOWS}
+
+       if UpdateDlg.ShowModal = mryes then MnuQuitClick(nil);    // New version install experimental
+       {$ELSE}
+         AboutBox.ShowModal;
+       {$ENDIF}
      end else
      begin
        AboutBox.LUpdate.Caption:= AboutBox.sNoUpdateAvailable;
@@ -808,6 +821,11 @@ begin
   AboutBox.Version:= Version;
   AboutBox.ProgName:= ProgName;
   AboutBox.LastUpdate:= FSettings.Settings.LastUpdChk;
+  // Populate UpdateBox with proper variables
+  UpdateDlg.ProgName:= ProgName;
+  UpdateDlg.UrlInstall:= AboutBox.UrlSourceCode+'/raw/master/mailsinbox.zip';   // Installer url for the updater
+  UpdateDlg.ExeInstall:= 'InstallMailsInBox.exe';       // Installer executable
+  UpdateDlg.NewVersion:= false;
    // Load last log file
   tmplog:= TStringList.Create;
   if FileExists(LogFileName) then
@@ -1218,10 +1236,12 @@ Begin
   sLineEnd:='';
   totalNewMsgs:=0;
   AccBmp:= TBitmap.create;
+  Application.ProcessMessages;  //23/3/25
   LVAccounts.Clear;
   if Assigned(LVAccounts.SmallImages) then LVAccounts.SmallImages.Clear;
   ILTray.Clear;
   TrayPicture.LoadFromResourceName(HInstance, 'MAIL16');
+  Application.ProcessMessages;  //23/3/25
   ILTray.AddMasked(TrayPicture.Bitmap, $FF00FF); // Reset after each mail checking
   for i := 0 to FAccounts.Accounts.Count-1 do
   Try
@@ -1234,13 +1254,17 @@ Begin
     if CurAcc.Mails.count > 0 then
     begin
       DrawTheIcon(AccBmp, CurAcc.Mails.count, CurAcc.Color  );
+      Application.ProcessMessages;  //23/3/25
       DrawTheIcon(TrayPicture.Bitmap, CurAcc.Mails.count, CurAcc.Color  );
+      Application.ProcessMessages;  //23/3/25
       ILTray.AddMasked(TrayPicture.Bitmap, $FF00FF);  // modified icon
     end;
     if CurAcc.Error then
     begin
       DrawTheIcon(AccBmp, -1, CurAcc.Color);
+      Application.ProcessMessages;  //23/3/25
       DrawTheIcon(TrayPicture.Bitmap, -1, CurAcc.Color);
+      Application.ProcessMessages;  //23/3/25
       ILTray.AddMasked(TrayPicture.Bitmap, $FF00FF);  // modified icon
     end;
     LVAccounts.SmallImages.AddMasked(AccBmp,$FF00FF);
@@ -1620,7 +1644,8 @@ begin
   begin
     if index<0 then exit;
     CurAcc:= FAccounts.Accounts.GetItem(index);
-    for j:=0 to CurAcc.Mails.count-1 do DisplayMails.AddMail(CurAcc.Mails.GetItem(j));
+    if (CurAcc.Mails.count>0) then
+      for j:=0 to CurAcc.Mails.count-1 do DisplayMails.AddMail(CurAcc.Mails.GetItem(j));
   end else
   begin
     For i:=0 to FAccounts.Accounts.count-1 do
@@ -1921,7 +1946,7 @@ begin
          if DisplayMails.GetItem(aRow-1).MessageToDelete then bmppos:= 4;
          CropBitmap(MailPictures.Bitmap, bmp, bmppos );
          SGMails.Canvas.StretchDraw(R, bmp);
-         bmp.free;
+         if Assigned(Bmp) then Bmp.free;                                        // prevent access violation
          SGMails.Canvas.TextOut(ARect.Left+22,ARect.Top+3, SGMails.Cells[aCol, aRow]);
       end;
     1: begin
@@ -2228,10 +2253,12 @@ begin
     if CurAcc.Enabled then
     begin
       GetPendingMail(i);
+      Application.ProcessMessages;       //5/3/25
       if i=ndx then PopulateMailsList(i);
     end;
   end;
   MailChecking(false);
+  Application.ProcessMessages;          // 5/3/25
   PopulateAccountsList(true);
   LVAccounts.ItemIndex:=ndx;
   if visible then LVAccounts.SetFocus;
@@ -3051,10 +3078,12 @@ begin
     MMnuInfos.Caption:=ReadString('main','MMnuInfos.Caption',MMnuInfos.Caption);
     HelpFile:= MIBExecPath+'help'+PathDelim+ReadString('main','HelpFile', 'mailsinbox.html');
 
-    // About
-        // About box
+    // About box
     AboutBox.LVersion.Hint:= OSVersion.VerDetail;
     AboutBox.Translate(LngFile);
+
+    // UpdateDlg
+    UpdateDlg.Translate (LangFile);
 
     // Alert
     sUpdateAlertBox:=ReadString('main','UpdateAlertBox','Version actuelle: %sUne nouvelle version %s est disponible. Cliquer pour la télécharger');

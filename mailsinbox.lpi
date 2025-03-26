@@ -36,27 +36,33 @@
     <RunParams>
       <FormatVersion Value="2"/>
     </RunParams>
-    <RequiredPackages Count="6">
+    <RequiredPackages Count="8">
       <Item1>
-        <PackageName Value="lazbbcomponents"/>
+        <PackageName Value="ExCtrlsPkg_dsgn"/>
       </Item1>
       <Item2>
-        <PackageName Value="lhelpcontrolpkg"/>
+        <PackageName Value="ExCtrlsPkg"/>
       </Item2>
       <Item3>
-        <PackageName Value="uniqueinstance_package"/>
+        <PackageName Value="lazbbcomponents"/>
       </Item3>
       <Item4>
-        <PackageName Value="richmemopackage"/>
+        <PackageName Value="lhelpcontrolpkg"/>
       </Item4>
       <Item5>
-        <PackageName Value="indylaz"/>
+        <PackageName Value="uniqueinstance_package"/>
       </Item5>
       <Item6>
-        <PackageName Value="LCL"/>
+        <PackageName Value="richmemopackage"/>
       </Item6>
+      <Item7>
+        <PackageName Value="indylaz"/>
+      </Item7>
+      <Item8>
+        <PackageName Value="LCL"/>
+      </Item8>
     </RequiredPackages>
-    <Units Count="8">
+    <Units Count="9">
       <Unit0>
         <Filename Value="mailsinbox.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -107,6 +113,12 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
       </Unit7>
+      <Unit8>
+        <Filename Value="..\lazbbunits\lazbbupdatedlg.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="UpdateDlg"/>
+        <ResourceBaseClass Value="Form"/>
+      </Unit8>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
