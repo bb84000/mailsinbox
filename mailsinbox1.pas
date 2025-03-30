@@ -685,8 +685,8 @@ begin
      NewVer := VersionToInt(sNewVer);
      // Cannot get new version
      if NewVer < 0 then exit;
-     CurVer := VersionToInt('0.1.0.0');     //Test version check
-     //CurVer := VersionToInt(version);
+     //CurVer := VersionToInt('0.1.0.0');     //Test version check
+     CurVer := VersionToInt(version);
      if NewVer > CurVer then
      begin
        FSettings.Settings.LastVersion:= sNewVer;

@@ -266,4 +266,7 @@ Version 1.0.4.6 - 29/01/2025
 Version 1.0.5.0 - 26/03/2025
 - Added auto update module (Windows only)
 
+Version 1.0.5.1 - 30/04/2025
+- Test mode updater was not disabled. Fixed
+
 
