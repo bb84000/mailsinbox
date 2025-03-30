@@ -23,8 +23,8 @@
       <UseVersionInfo Value="True"/>
       <MajorVersionNr Value="1"/>
       <RevisionNr Value="5"/>
-      <BuildNr Value="2"/>
-      <StringTable CompanyName="sdtp" FileDescription="Courriels en attente - Mails in Box" InternalName="mailsinbox" LegalCopyright="sdtp - bb" LegalTrademarks="sdtp - bb" OriginalFilename="mailsinbox" ProductName="Mails In Box - Courriels en attente" ProductVersion="1.0.5.2"/>
+      <BuildNr Value="3"/>
+      <StringTable CompanyName="sdtp" FileDescription="Courriels en attente - Mails in Box" InternalName="mailsinbox" LegalCopyright="sdtp - bb" LegalTrademarks="sdtp - bb" OriginalFilename="mailsinbox" ProductName="Mails In Box - Courriels en attente" ProductVersion="1.0.5.3"/>
     </VersionInfo>
     <BuildModes Count="1">
       <Item1 Name="Default" Default="True"/>
@@ -117,6 +117,7 @@
         <Filename Value="..\lazbbunits\lazbbupdatedlg.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="UpdateDlg"/>
+        <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
       </Unit8>
     </Units>
@@ -133,8 +134,8 @@
       <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <CodeGeneration>
-      <TargetCPU Value="i386"/>
-      <TargetOS Value="win32"/>
+      <TargetCPU Value="x86_64"/>
+      <TargetOS Value="win64"/>
       <Optimizations>
         <OptimizationLevel Value="2"/>
       </Optimizations>

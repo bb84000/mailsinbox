@@ -19,8 +19,9 @@
         <ComponentName Value="FMailsInBox"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <TopLine Value="671"/>
-        <CursorPos Y="698"/>
+        <IsVisibleTab Value="True"/>
+        <TopLine Value="668"/>
+        <CursorPos X="8" Y="688"/>
         <UsageCount Value="200"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
@@ -72,9 +73,10 @@
       <Unit6>
         <Filename Value="mailsinbox.ini"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="-1"/>
-        <CursorPos X="64" Y="5"/>
+        <EditorIndex Value="8"/>
+        <CursorPos X="34" Y="9"/>
         <UsageCount Value="200"/>
+        <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Ini"/>
       </Unit6>
       <Unit7>
@@ -92,12 +94,14 @@
         <Filename Value="..\lazbbunits\lazbbupdatedlg.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="UpdateDlg"/>
+        <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <EditorIndex Value="7"/>
         <TopLine Value="43"/>
         <CursorPos Y="70"/>
         <UsageCount Value="21"/>
         <Loaded Value="True"/>
+        <LoadedDesigner Value="True"/>
       </Unit8>
       <Unit9>
         <Filename Value="..\lazbbunits\lazbbutils.txt"/>
@@ -224,8 +228,8 @@
       <Unit25>
         <Filename Value="history.txt"/>
         <EditorIndex Value="1"/>
-        <TopLine Value="240"/>
-        <CursorPos Y="274"/>
+        <TopLine Value="243"/>
+        <CursorPos Y="277"/>
         <UsageCount Value="100"/>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Text"/>
@@ -415,7 +419,6 @@
       </Unit49>
       <Unit50>
         <Filename Value="mailsinbox.txt"/>
-        <IsVisibleTab Value="True"/>
         <EditorIndex Value="2"/>
         <CursorPos X="16" Y="2"/>
         <UsageCount Value="82"/>
@@ -677,7 +680,7 @@
         <ComponentName Value="AboutDlg"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <EditorIndex Value="8"/>
+        <EditorIndex Value="9"/>
         <TopLine Value="27"/>
         <CursorPos X="27" Y="44"/>
         <UsageCount Value="16"/>
@@ -737,122 +740,123 @@
     <JumpHistory Count="30" HistoryIndex="29">
       <Position1>
         <Filename Value="mailsinbox1.pas"/>
-        <Caret Line="481" Column="13" TopLine="453"/>
+        <Caret Line="1125" Column="28" TopLine="1051"/>
       </Position1>
       <Position2>
         <Filename Value="mailsinbox1.pas"/>
-        <Caret Line="482" Column="13" TopLine="454"/>
+        <Caret Line="1851" Column="27" TopLine="1836"/>
       </Position2>
       <Position3>
         <Filename Value="mailsinbox1.pas"/>
-        <Caret Line="488" Column="15" TopLine="460"/>
+        <Caret Line="2793" Column="3" TopLine="746"/>
       </Position3>
       <Position4>
         <Filename Value="mailsinbox1.pas"/>
-        <Caret Line="1960" Column="55" TopLine="1950"/>
+        <Caret Line="300" Column="26" TopLine="285"/>
       </Position4>
       <Position5>
-        <Filename Value="..\lazbbunits\lazbbupdatedlg.pas"/>
-        <Caret Line="20" Column="3" TopLine="3"/>
+        <Filename Value="mailsinbox1.pas"/>
+        <Caret Line="518" Column="44" TopLine="490"/>
       </Position5>
       <Position6>
         <Filename Value="mailsinbox1.pas"/>
-        <Caret Line="1961" Column="55" TopLine="1951"/>
+        <Caret Line="700" Column="60" TopLine="692"/>
       </Position6>
       <Position7>
         <Filename Value="mailsinbox1.pas"/>
-        <Caret Line="21" Column="66"/>
+        <Caret Line="689" Column="6"/>
       </Position7>
       <Position8>
         <Filename Value="mailsinbox1.pas"/>
-        <Caret Line="125" TopLine="108"/>
+        <Caret Line="2161" Column="50" TopLine="2133"/>
       </Position8>
       <Position9>
-        <Filename Value="mailsinbox.lpr"/>
-        <Caret Line="23" Column="3"/>
+        <Filename Value="mailsinbox1.pas"/>
+        <Caret Line="300" Column="26" TopLine="285"/>
       </Position9>
       <Position10>
-        <Filename Value="mailsinbox1.lfm"/>
+        <Filename Value="mailsinbox1.pas"/>
+        <Caret Line="518" Column="44" TopLine="490"/>
       </Position10>
       <Position11>
         <Filename Value="mailsinbox1.pas"/>
-        <Caret Line="125" TopLine="108"/>
+        <Caret Line="696" Column="17" TopLine="671"/>
       </Position11>
       <Position12>
         <Filename Value="mailsinbox1.pas"/>
-        <Caret Line="127" TopLine="108"/>
+        <Caret Line="697" Column="17" TopLine="671"/>
       </Position12>
       <Position13>
         <Filename Value="mailsinbox1.pas"/>
-        <Caret Line="126" TopLine="108"/>
+        <Caret Line="700" Column="20" TopLine="672"/>
       </Position13>
       <Position14>
         <Filename Value="mailsinbox1.pas"/>
-        <Caret Line="20" Column="10"/>
+        <Caret Line="825" Column="12" TopLine="797"/>
       </Position14>
       <Position15>
         <Filename Value="mailsinbox1.pas"/>
-        <Caret Line="820" Column="48" TopLine="793"/>
+        <Caret Line="826" Column="12" TopLine="798"/>
       </Position15>
       <Position16>
         <Filename Value="mailsinbox1.pas"/>
-        <Caret Line="300" Column="26" TopLine="287"/>
+        <Caret Line="827" Column="12" TopLine="799"/>
       </Position16>
       <Position17>
         <Filename Value="mailsinbox1.pas"/>
-        <Caret Line="518" Column="44" TopLine="490"/>
+        <Caret Line="828" Column="12" TopLine="800"/>
       </Position17>
       <Position18>
         <Filename Value="mailsinbox1.pas"/>
-        <Caret Line="3084" Column="5" TopLine="3070"/>
+        <Caret Line="3085" Column="17" TopLine="3057"/>
       </Position18>
       <Position19>
         <Filename Value="mailsinbox1.pas"/>
-        <Caret Line="696" Column="8" TopLine="680"/>
+        <Caret Line="3086" Column="14" TopLine="3058"/>
       </Position19>
       <Position20>
         <Filename Value="mailsinbox1.pas"/>
-        <Caret Line="699" Column="25" TopLine="674"/>
+        <Caret Line="20" Column="32" TopLine="3"/>
       </Position20>
       <Position21>
         <Filename Value="mailsinbox1.pas"/>
-        <Caret Line="1125" Column="28" TopLine="1051"/>
+        <Caret Line="696" Column="17" TopLine="668"/>
       </Position21>
       <Position22>
         <Filename Value="mailsinbox1.pas"/>
-        <Caret Line="1851" Column="27" TopLine="1836"/>
+        <Caret Line="697" Column="17" TopLine="669"/>
       </Position22>
       <Position23>
         <Filename Value="mailsinbox1.pas"/>
-        <Caret Line="2793" Column="3" TopLine="746"/>
+        <Caret Line="796" Column="92" TopLine="777"/>
       </Position23>
       <Position24>
         <Filename Value="mailsinbox1.pas"/>
-        <Caret Line="300" Column="26" TopLine="285"/>
+        <Caret Line="827" Column="12" TopLine="799"/>
       </Position24>
       <Position25>
         <Filename Value="mailsinbox1.pas"/>
-        <Caret Line="518" Column="44" TopLine="490"/>
+        <Caret Line="828" Column="12" TopLine="800"/>
       </Position25>
       <Position26>
         <Filename Value="mailsinbox1.pas"/>
-        <Caret Line="700" Column="60" TopLine="692"/>
+        <Caret Line="829" Column="12" TopLine="801"/>
       </Position26>
       <Position27>
         <Filename Value="mailsinbox1.pas"/>
-        <Caret Line="689" Column="6"/>
+        <Caret Line="830" Column="12" TopLine="802"/>
       </Position27>
       <Position28>
         <Filename Value="mailsinbox1.pas"/>
-        <Caret Line="2161" Column="50" TopLine="2133"/>
+        <Caret Line="3087" Column="17" TopLine="3059"/>
       </Position28>
       <Position29>
         <Filename Value="mailsinbox1.pas"/>
-        <Caret Line="300" Column="26" TopLine="285"/>
+        <Caret Line="3088" Column="14" TopLine="3060"/>
       </Position29>
       <Position30>
         <Filename Value="mailsinbox1.pas"/>
-        <Caret Line="518" Column="44" TopLine="490"/>
+        <Caret Line="20" Column="32" TopLine="3"/>
       </Position30>
     </JumpHistory>
     <RunParams>

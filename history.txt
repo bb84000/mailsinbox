@@ -272,4 +272,6 @@ Version 1.0.5.1 - 30/04/2025
 Version 1.0.5.2 - 30/04/2025
 - Bug in version number in updater fixed
 
+Version 1.0.5.3 - 30/04/2025
+- All URL data in ini file
 
