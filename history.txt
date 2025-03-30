@@ -269,4 +269,7 @@ Version 1.0.5.0 - 26/03/2025
 Version 1.0.5.1 - 30/04/2025
 - Test mode updater was not disabled. Fixed
 
+Version 1.0.5.2 - 30/04/2025
+- Bug in version number in updater fixed
+
 

@@ -693,7 +693,7 @@ begin
        AboutBox.LUpdate.Caption := Format(AboutBox.sUpdateAvailable, [sNewVer]);
        LogAddLine(-1, now, AboutBox.LUpdate.Caption);
        AboutBox.NewVersion:= true;
-       UpdateDlg.sNewVer:= version;
+       UpdateDlg.sNewVer:= sNewVer;
        UpdateDlg.NewVersion:= true;
        {$IFDEF WINDOWS}
 
