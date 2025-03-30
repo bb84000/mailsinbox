@@ -825,8 +825,6 @@ begin
   AboutBox.LastUpdate:= FSettings.Settings.LastUpdChk;
   // Populate UpdateBox with proper variables
   UpdateDlg.ProgName:= ProgName;
-  UpdateDlg.UrlInstall:= AboutBox.UrlSourceCode+'/raw/master/mailsinbox.zip';   // Installer url for the updater
-  UpdateDlg.ExeInstall:= 'InstallMailsInBox.exe';       // Installer executable
   UpdateDlg.NewVersion:= false;
    // Load last log file
   tmplog:= TStringList.Create;

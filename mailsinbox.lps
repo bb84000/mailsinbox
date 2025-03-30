@@ -19,7 +19,6 @@
         <ComponentName Value="FMailsInBox"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <IsVisibleTab Value="True"/>
         <TopLine Value="668"/>
         <CursorPos X="8" Y="688"/>
         <UsageCount Value="200"/>
@@ -227,9 +226,10 @@
       </Unit24>
       <Unit25>
         <Filename Value="history.txt"/>
+        <IsVisibleTab Value="True"/>
         <EditorIndex Value="1"/>
-        <TopLine Value="243"/>
-        <CursorPos Y="277"/>
+        <TopLine Value="246"/>
+        <CursorPos Y="280"/>
         <UsageCount Value="100"/>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Text"/>
