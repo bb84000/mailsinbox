@@ -277,3 +277,6 @@ Version 1.0.5.3 - 30/04/2025
 
 Version 1.0.5.4 - 30/04/2025
 - Remove old update url
+
+Version 1.0.5.5 - 03/04/2025
+- AboutBox compatible with auto update

@@ -1,6 +1,6 @@
 {******************************************************************************}
 { MailInBox main unit                                                          }
-{ bb - sdtp - march 2025                                                     }
+{ bb - sdtp - april 2025                                                     }
 { Check mails on pop3 and imap servers                                         }
 {******************************************************************************}
 
@@ -18,7 +18,7 @@ uses
   LCLIntf, IdExplicitTLSClientServerBase, IdMessage, IdIMAP4, accounts1,
   lazbbutils, FileUtil, lazbbinifiles, LazUTF8, settings1, lazbbautostart,
   lazbbaboutdlg, lazbbUpdateDlg, Impex1, mailclients1, uxtheme, Types, IdComponent, fptimer,
-  RichMemo, variants, IdMessageCollection, UniqueInstance, log1, ExProgressbar,
+  RichMemo, variants, IdMessageCollection, UniqueInstance, log1,
   lazbbOsVersion, registry, dateutils, strutils, fpopenssl, openssl,
   opensslsockets;
 
@@ -122,7 +122,6 @@ type
     MnuMails: TPopupMenu;
     MnuTray: TPopupMenu;
     MnuButtonBar: TPopupMenu;
-    ProgressbarEx1: TProgressbarEx;
     RMInfos: TRichMemo;
     SGMails: TStringGrid;
     SplitterV: TSplitter;
@@ -710,14 +709,17 @@ begin
    end else
    begin
     if VersionToInt(FSettings.Settings.LastVersion)>VersionToInt(version) then
-       AboutBox.LUpdate.Caption := Format(AboutBox.sUpdateAvailable, [FSettings.Settings.LastVersion]) else
-       begin
-         AboutBox.LUpdate.Caption:= AboutBox.sNoUpdateAvailable;
-         // Already checked the same day
-        if Trunc(FSettings.Settings.LastUpdChk) = Trunc(now) then AboutBox.checked:= true;
-       end;
-   end;
-   AboutBox.Translate(LangFile);
+    begin
+       AboutBox.LUpdate.Caption := Format(AboutBox.sUpdateAvailable, [FSettings.Settings.LastVersion]);
+       AboutBox.NewVersion:= true;
+    end else
+    begin
+      AboutBox.LUpdate.Caption:= AboutBox.sNoUpdateAvailable;
+      // Already checked the same day
+      if Trunc(FSettings.Settings.LastUpdChk) = Trunc(now) then AboutBox.checked:= true;
+    end;
+  end;
+  // AboutBox.Translate(LangFile);
 end;
 
 // Initialize accounts base
@@ -789,7 +791,7 @@ begin
   FSettings.Settings.ButtonBar:= true;
   // Check inifile with URLs, if not present, then use default
   IniFile:= TBbInifile.Create('mailsinbox.ini');
-  AboutBox.ChkVerURL := IniFile.ReadString('urls', 'ChkVerURL','https://github.com/bb84000/mailsinbox/releases/latest');
+  AboutBox.ChkVerURL := IniFile.ReadString('urls', 'ChkVerURL','https://api.github.com/repos/bb84000/mailsinbox/releases/latest');
   AboutBox.UrlWebsite:= IniFile.ReadString('urls', 'UrlWebSite','https://www.sdtp.com');
   AboutBox.UrlSourceCode:= IniFile.ReadString('urls', 'UrlSourceCode','https://github.com/bb84000/mailsinbox');
   UpdateDlg.UrlInstall:= IniFile.ReadString('urls', 'UrlInstall', 'https://github.com/bb84000/mailsinbox/raw/refs/heads/master/mailsinbox.zip');
@@ -823,6 +825,8 @@ begin
   AboutBox.Version:= Version;
   AboutBox.ProgName:= ProgName;
   AboutBox.LastUpdate:= FSettings.Settings.LastUpdChk;
+  AboutBox.LastVersion:= FSettings.Settings.LastVersion;
+  AboutBox.autoUpdate:= true;
   // Populate UpdateBox with proper variables
   UpdateDlg.ProgName:= ProgName;
   UpdateDlg.NewVersion:= false;
@@ -2194,7 +2198,18 @@ begin
   AboutBox.LastUpdate:= FSettings.Settings.LastUpdChk;
   chked:= AboutBox.Checked;
   AboutBox.ErrorMessage:='';
-  AboutBox.ShowModal;
+  if AboutBox.ShowModal= mrLast then
+  begin
+    UpdateDlg.sNewVer:= AboutBox.LastVersion;
+    UpdateDlg.NewVersion:= true;
+    {$IFDEF WINDOWS}
+      if UpdateDlg.ShowModal = mryes then close;    // New version install experimental
+    {$ELSE}
+      OpenURL(AboutBox.UrlProgSite);
+    {$ENDIF}
+  end;
+  FSettings.Settings.LastVersion:= AboutBox.LastVersion ;
+
   // If we have checked update and got an error
   if length(AboutBox.ErrorMessage)>0 then
   begin

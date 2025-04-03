@@ -1911,7 +1911,7 @@ object FMailsInBox: TFMailsInBox
       }
       GroupIndex = 1
       NumGlyphs = 2
-      OnClick = BtnQuitClick
+      OnDblClick = BtnQuitDblClick
       OnMouseDown = BtnQuitMouseDown
     end
     object BtnHelp: TSpeedButton
@@ -2253,12 +2253,6 @@ object FMailsInBox: TFMailsInBox
       OnEnter = SGMailsEnter
       OnExit = SGMailsExit
       OnMouseDown = SGMailsMouseDown
-    end
-    object ProgressbarEx1: TProgressbarEx
-      Left = 170
-      Height = 4
-      Top = 320
-      Width = 3
     end
   end
   object TrayMail: TTrayIcon
