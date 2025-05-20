@@ -280,3 +280,11 @@ Version 1.0.5.4 - 30/04/2025
 
 Version 1.0.5.5 - 03/04/2025
 - AboutBox compatible with auto update
+
+Version 1.0.5.6 - 20/05/25
+- Some optimizations and unification with other apps
+- Change current language detection
+- Add error parameter to new version search in LazbbUpdateDlg unit
+- Use lazbb component for FPTimers instead runtime creation
+- Changed tray animation icon with imagelist
+

@@ -1,7 +1,6 @@
 // Icones (doivent être placées alphabétiquement après MAINICON
-
 TRAYICON  ICON "images\\trayicon.ico"
-0         ICON "images\\getmail0.ico"
+0         ICON "images\\getmail6.ico"
 1         ICON "images\\getmail1.ico"
 2         ICON "images\\getmail2.ico"
 3         ICON "images\\getmail3.ico"

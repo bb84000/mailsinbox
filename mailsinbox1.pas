@@ -1,8 +1,12 @@
-{******************************************************************************}
-{ MailInBox main unit                                                          }
-{ bb - sdtp - april 2025                                                     }
-{ Check mails on pop3 and imap servers                                         }
-{******************************************************************************}
+{*******************************************************************************
+ MailInBox main unit
+ bb - sdtp - april 2025
+ Check mails on pop3 and imap servers
+ 15/04/2025 : Use array of icons to animate tray icon
+              use lazbb component for FPTimer, chkmailTimer, timeTimer
+ 18/04/2025 : Reverse to imagelist for animated tray icon during check mail
+ 19/04/2025 : Revised select item event in account list
+ *******************************************************************************}
 
 unit mailsinbox1;
 
@@ -17,10 +21,10 @@ uses
   ExtCtrls, StdCtrls, Grids, ComCtrls, Buttons, Menus, IdPOP3, IdSSLOpenSSL,
   LCLIntf, IdExplicitTLSClientServerBase, IdMessage, IdIMAP4, accounts1,
   lazbbutils, FileUtil, lazbbinifiles, LazUTF8, settings1, lazbbautostart,
-  lazbbaboutdlg, lazbbUpdateDlg, Impex1, mailclients1, uxtheme, Types, IdComponent, fptimer,
-  RichMemo, variants, IdMessageCollection, UniqueInstance, log1,
-  lazbbOsVersion, registry, dateutils, strutils, fpopenssl, openssl,
-  opensslsockets;
+  lazbbaboutdlg, lazbbUpdateDlg, Impex1, mailclients1, uxtheme, Types,
+  IdComponent, fptimer, RichMemo, variants, IdMessageCollection, UniqueInstance,
+  log1, translations, lazbbOsVersion, lazbbcontrols, registry, dateutils,
+  strutils, fpopenssl, openssl, opensslsockets;
 
 const
   // Message post at the end of activation procedure, processed once the form is shown
@@ -37,9 +41,13 @@ type
     Enabled: Boolean;
   end;
 
-
   { TFMailsInBox }
   TFMailsInBox = class(TForm)
+    ILChkMail: TImageList;
+    Label1: TLabel;
+    clickTimer: TLFPTimer;        // Timer used to differentiate button's single and double click
+    ChkMailTimer: TLFPTimer;
+    TimeTimer: TLFPTimer;
     OsVersion: TbbOsVersion;
     BtnAbout: TSpeedButton;
     BtnHelp: TSpeedButton;
@@ -143,6 +151,8 @@ type
     procedure BtnQuitMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure BtnSettingsClick(Sender: TObject);
+    procedure ChkMailTimerStartTimer(Sender: TObject);
+    procedure OnclickTimer(Sender: TObject);
     procedure FormActivate(Sender: TObject);
     procedure DoChangeBounds(Sender: TObject);
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
@@ -211,8 +221,6 @@ type
     CheckingMail: boolean;
     SGHasFocus: boolean;
     sMsgFound, sMsgsFound: string;
-    ChkMailTimer: TFPTimer;
-    TimeTimer: TFPTimer;
     TrayTimerTick: integer;
     TrayTimerBmp: TBitmap;
     sLStatusCaption: String;
@@ -258,15 +266,14 @@ type
     sNewAccount: string;
     aMailsList: array of string;
     sCreatedDataFolder: String;
-    // Timer used to differentiate button's single and double click
-    clickTimer: TFPTimer;
+    ChkMailImgCount: Integer;
+
     doubleclick: Boolean;
     timespan: int64;
     lastclick: int64;
     doubleClickMaxTime: int64;
     ChkVerInterval: Int64;
     StartMini: Boolean;
-    procedure OnclickTimer (sender: TObject);
     procedure Initialize;
     procedure LoadSettings(Filename: string);
     procedure SettingsOnChange(Sender: TObject);
@@ -302,6 +309,7 @@ type
     function SetError(E: Exception; ErrorStr: String; ErrorUID: Integer; ErrorCaption: String; var ErrorsStr: String): boolean;
     procedure BeforeClose;
     procedure OnFormShown(var Msg: TLMessage); message WM_FORMSHOWN;
+    procedure InitAboutBox;
   public
 
     UserAppsDataPath: string;  //used by Impex1
@@ -363,7 +371,7 @@ end;
 
 // Intercept end session : save all pending settings and load the program
 // on next logon (Windows only for the moment. On linux, we use autostart
-// and we delete auttostrart on next startup
+// and we delete auttostart on next startup
 
 procedure TFMailsInBox.OnQueryendSession(var Cancel: Boolean);
 var
@@ -398,9 +406,11 @@ end;
 procedure TFMailsInBox.FormCreate(Sender: TObject);
 var
   s: string;
+//  i: Integer;
  {$IFDEF Linux}
     x: Integer;
- {$ENDIF}	
+ {$ENDIF}
+ tlid: TLanguageID;
 begin
   // Variables initialization
   CanClose:= false;
@@ -416,28 +426,17 @@ begin
   StatusFmtSets:= DefaultFormatSettings ;
   StatusFmtSets.ShortDateFormat:= DefaultFormatSettings.LongDateFormat;
   // Intercept minimize system command
-  Application.OnMinimize:=@OnAppMinimize;
+  Application.OnMinimize:= @OnAppMinimize;
   Application.OnQueryEndSession:= @OnQueryendSession;
   // Click timer to differentiate button single and double click
-  clickTimer:= TFPTimer.Create(self);
   clickTimer.Interval:= GetDoubleClickTime;
-  clickTimer.UseTimerThread:= false;   // important !!!
-  clickTimer.Enabled:= true;
-  clickTimer.OnTimer:= @OnclickTimer;
+  // set clickTimer.UseTimerThread:= false;   // important !!!
   doubleClickMaxTime:= GetDoubleClickTime;
   // Initialize check mail timer
-  ChkMailTimer:= TFPTimer.Create(self);
-  ChkMailTimer.Interval:= 100;
-  ChkMailTimer.UseTimerThread:= true;
-  ChkMailTimer.Enabled:= true;
-  ChkMailTimer.OnTimer:= @OnChkMailTimer;
+  // set ChkMailTimer.UseTimerThread:= true;
   ChkMailTimerTick:= 0;
   // Initialize time display timer
-  TimeTimer:= TFPTimer.Create(self);
-  TimeTimer.Interval:= 1000;
-  TimeTimer.UseTimerThread:= true;
-  TimeTimer.Enabled:= true;
-  TimeTimer.OnTimer:= @OnTimeTimer;
+  // set TimeTimer.UseTimerThread:= true;
   TimeTimer.StartTimer;
   TrayTimerTick:=0;
   TrayTimerBmp:= TBitmap.Create;
@@ -474,7 +473,9 @@ begin
       UserAppsDataPath := s                     // NT to XP
     else
     UserAppsDataPath := ExtractFilePath(ExcludeTrailingPathDelimiter(s)) + 'Roaming'; // Vista to W10
-    LazGetShortLanguageID(CurLangStr);
+    //LazGetShortLanguageID(CurLangStr);     //Deprecated
+    tlid:= GetLanguageID;
+    CurLangStr:= tlid.LanguageCode;
   {$ENDIF}
   version := GetVersionInfo.ProductVersion;
   // Cannot call Translate as components are not yet created, use default language
@@ -669,8 +670,9 @@ begin
      if (length(sNewVer)=0) and (length(errmsg)=0)then
      begin
        Application.ProcessMessages;
-       sNewVer:= AboutBox.ChkNewVersion;
-       errmsg:= AboutBox.ErrorMessage;
+       //sNewVer:= AboutBox.ChkNewVersion;
+       //errmsg:= AboutBox.ErrorMessage;
+       sNewVer:= UpdateDlg.ChkNewVersion(UpdateDlg.ChkVerUrl, errmsg) ;
      end;
      if length(sNewVer)=0 then
      begin
@@ -764,7 +766,7 @@ procedure TFMailsInBox.Initialize;
 var
   i: integer;
   defmailcli: string;
-  IniFile: TBbIniFile;
+ // IniFile: TBbIniFile;
   tmplog: TstringList;
   CurAcc: TAccount;
   curcol: integer;
@@ -778,6 +780,7 @@ begin
   // Tray icon
   TrayPicture:= Tpicture.Create;
   TrayPicture.LoadFromResourceName(HInstance, 'MAIL16');
+  ChkMailImgCount:= ILChkMail.Count;
   // General pictures
   LaunchPicture:= Tpicture.Create;
   // Now, main settings
@@ -789,16 +792,8 @@ begin
   LangFile:= TBbIniFile.Create(ExtractFilePath(Application.ExeName) + 'lang'+PathDelim+FSettings.Settings.LangStr+'.lng');
   Translate(LangFile);
   FSettings.Settings.ButtonBar:= true;
-  // Check inifile with URLs, if not present, then use default
-  IniFile:= TBbInifile.Create('mailsinbox.ini');
-  AboutBox.ChkVerURL := IniFile.ReadString('urls', 'ChkVerURL','https://api.github.com/repos/bb84000/mailsinbox/releases/latest');
-  AboutBox.UrlWebsite:= IniFile.ReadString('urls', 'UrlWebSite','https://www.sdtp.com');
-  AboutBox.UrlSourceCode:= IniFile.ReadString('urls', 'UrlSourceCode','https://github.com/bb84000/mailsinbox');
-  UpdateDlg.UrlInstall:= IniFile.ReadString('urls', 'UrlInstall', 'https://github.com/bb84000/mailsinbox/raw/refs/heads/master/mailsinbox.zip');
-  UpdateDlg.ExeInstall:= IniFile.ReadString('urls', 'ExeInstall', 'InstallMailsInBox.exe');
-  ChkVerInterval:= IniFile.ReadInt64('urls', 'ChkVerInterval', 3);
-  if Assigned(IniFile) then IniFile.free;
   LoadSettings(ConfigFileName);
+  InitAboutBox;
   // In case of program's first use
   if length(FSettings.Settings.LastVersion)=0 then FSettings.Settings.LastVersion:= version;
   LoadAccounts(AccountsFileName);
@@ -816,20 +811,7 @@ begin
      if not FSettings.Settings.Startup  then UnsetAutostart(ProgName);
   {$ENDIF}
 
-  // Language dependent variables are updated in ModLangue procedure
-  AboutBox.Width:= 400; // to have more place for the long product name
-  AboutBox.Image1.Picture.LoadFromResourceName(HInstance, 'ABOUTIMG');
-  AboutBox.LCopyright.Caption := GetVersionInfo.CompanyName + ' - ' + DateTimeToStr(CompileDateTime);
-  AboutBox.LVersion.Caption := 'Version: ' + Version + ' (' + OS + OSTarget + ')';
-  AboutBox.LUpdate.Hint := AboutBox.sLastUpdateSearch + ': ' + DateToStr(FSettings.Settings.LastUpdChk);
-  AboutBox.Version:= Version;
-  AboutBox.ProgName:= ProgName;
-  AboutBox.LastUpdate:= FSettings.Settings.LastUpdChk;
-  AboutBox.LastVersion:= FSettings.Settings.LastVersion;
-  AboutBox.autoUpdate:= true;
-  // Populate UpdateBox with proper variables
-  UpdateDlg.ProgName:= ProgName;
-  UpdateDlg.NewVersion:= false;
+
    // Load last log file
   tmplog:= TStringList.Create;
   if FileExists(LogFileName) then
@@ -897,6 +879,39 @@ begin
   end;
   SGMails.Columns[CurCol].Title.ImageIndex:= Ord(FSettings.Settings.MailSortDir)+1;
   Initialized:= true;
+end;
+
+procedure TFMailsInBox.InitAboutBox;
+var
+  IniFile: TBbIniFile;
+begin
+  // Check inifile with URLs, if not present, then use default
+  IniFile:= TBbInifile.Create('mailsinbox.ini');
+  AboutBox.ChkVerURL := IniFile.ReadString('urls', 'ChkVerURL','https://api.github.com/repos/bb84000/mailsinbox/releases/latest');
+  AboutBox.UrlWebsite:= IniFile.ReadString('urls', 'UrlWebSite','https://www.sdtp.com');
+  AboutBox.UrlProgSite:=  IniFile.ReadString('urls', 'UrlProgSite','https://github.com/bb84000/mailsinbox/wiki');
+  AboutBox.UrlSourceCode:= IniFile.ReadString('urls', 'UrlSourceCode','https://github.com/bb84000/mailsinbox');
+  UpdateDlg.ChkVerUrl:=  AboutBox.ChkVerURL;
+  UpdateDlg.UrlInstall:= IniFile.ReadString('urls', 'UrlInstall', 'https://github.com/bb84000/mailsinbox/raw/refs/heads/master/mailsinbox.zip');
+  UpdateDlg.ExeInstall:= IniFile.ReadString('urls', 'ExeInstall', 'InstallMailsInBox.exe');
+  ChkVerInterval:= IniFile.ReadInt64('urls', 'ChkVerInterval', 3);
+  if Assigned(IniFile) then IniFile.free;
+  // Language dependent variables are updated in ModLangue procedure
+  AboutBox.Width:= 400; // to have more place for the long product name
+  AboutBox.Image1.Picture.LoadFromResourceName(HInstance, 'ABOUTIMG');
+  AboutBox.LCopyright.Caption := GetVersionInfo.CompanyName + ' - ' + DateTimeToStr(CompileDateTime);
+  AboutBox.LVersion.Caption := 'Version: ' + Version + ' (' + OS + OSTarget + ')';
+  AboutBox.LUpdate.Hint := AboutBox.sLastUpdateSearch + ': ' + DateToStr(FSettings.Settings.LastUpdChk);
+  AboutBox.Version:= Version;
+  AboutBox.ProgName:= ProgName;
+  AboutBox.LastUpdate:= FSettings.Settings.LastUpdChk;
+  AboutBox.LastVersion:= FSettings.Settings.LastVersion;
+  AboutBox.autoUpdate:= true;
+  // Populate UpdateBox with proper variables
+  UpdateDlg.ProgName:= ProgName;
+  UpdateDlg.NewVersion:= false;
+  AboutBox.Translate(LangFile);
+  UpdateDlg.Translate(LangFile);
 end;
 
 // Change BtnQuit behaviour: one click if alert enabled,
@@ -1073,7 +1088,6 @@ begin
   end;
   LangFile:= TBbIniFile.Create(ExtractFilePath(Application.ExeName) + 'lang'+PathDelim+FSettings.Settings.LangStr+'.lng');
   Translate(LangFile);
-//  Modlangue;
   SettingsChanged := false;
 end;
 
@@ -1109,10 +1123,6 @@ begin
 end;
 
 procedure TFMailsInBox.FormClose(Sender: TObject; var CloseAction: TCloseAction);
-//var
-  //s: string;
-  //i: integer;
-  //curcolsw: string;
 begin
   if CanClose then
   begin
@@ -1431,7 +1441,7 @@ begin
   if Assigned(LangNums) then LangNums.free;
   if Assigned(LangFile) then LangFile.free;
   for i:=0 to length(BtnsArr)-1 do if Assigned(BtnsArr[i].Bmp) then BtnsArr[i].Bmp.free;
-  if Assigned(ChkMailTimer) then ChkMailTimer.Destroy;
+  //if Assigned(ChkMailTimer) then ChkMailTimer.Destroy;
   if Assigned(SessionLog) then SessionLog.free;
   if Assigned(AccountPictures) then AccountPictures.Free;
   if Assigned(TrayPicture) then TrayPicture.Free;
@@ -1498,20 +1508,25 @@ procedure TFMailsInBox.IdPOP3_1Status(ASender: TObject;
 begin
 end;
 
+// IAccount selection in account list
+// use Item and selected parameters
 
 procedure TFMailsInBox.LVAccountsSelectItem(Sender: TObject; Item: TListItem;
   Selected: Boolean);
 var
   AccName: string;
-  ndx: integer;
+ // ndx: integer;
 begin
-  ndx:= LVAccounts.ItemIndex;
-  if ndx >= 0 then
+  //ndx:= LVAccounts.ItemIndex;
+  //if ndx >= 0 then
+  if (Selected and (Item.index>=0))then
   begin
-    BtnGetAccMail.Enabled:= FAccounts.Accounts.GetItem(ndx).enabled;
+    //BtnGetAccMail.Enabled:= FAccounts.Accounts.GetItem(ndx).enabled;
+    BtnGetAccMail.Enabled:= FAccounts.Accounts.GetItem(Item.Index).enabled;
     MnuGetAccMail.Enabled:= BtnGetAccMail.Enabled;
     LVAccounts.PopupMenu:= MnuAccount;
-    AccName:= FAccounts.Accounts.GetItem(ndx).Name;
+    //AccName:= FAccounts.Accounts.GetItem(ndx).Name;      // assigned to Item.Caption
+    AccName:= Item.Caption;
     BtnAccountLog.Hint:= Format(sBtnLogHint, [AccName]);
     MnuAccountLog.Caption:= BtnAccountLog.Hint;
     BtnGetAccMail.Hint:= Format(sBtnGetAccMailHint, [AccName]);
@@ -1522,7 +1537,8 @@ begin
     MnuEditAcc.Caption:= BtnEditAcc.Hint;
     UpdateInfos;
   end else LVAccounts.PopupMenu:= nil;
-  PopulateMailsList(ndx);
+  //PopulateMailsList(ndx);
+  PopulateMailsList(Item.Index);
 end;
 
 procedure TFMailsInBox.MMnuClick(Sender: TObject);
@@ -2052,11 +2068,14 @@ end;
 
 procedure TFMailsInBox.OnChkMailTimer(Sender: TObject);
 begin
+  if ChkMailImgCount=0 then exit;
   if CheckingMail then
-  begin;
-    TrayMail.Icon.LoadFromResourceID(HINSTANCE, ChkMailTimerTick);
-    inc (ChkMailTimerTick);
-    if ChkMailTimerTick > 5 then ChkMailTimerTick:=0;
+  try
+    if ChkMailTimerTick < ChkMailImgCount then ILChkMail.GetIcon(ChkMailTimerTick, TrayMail.Icon);               //18/4/2025
+    //TrayMail.Icon.Assign(ChkMailIcons[ChkMailTimerTick]);           //15/4/2025
+  finally
+    if ChkMailTimerTick < ChkMailImgCount-1 then inc(ChkMailTimerTick)
+    else ChkMailTimerTick:=0;
   end;
 end;
 
@@ -2183,6 +2202,20 @@ begin
       end;
     end;
   end;
+end;
+
+procedure TFMailsInBox.ChkMailTimerStartTimer(Sender: TObject);
+begin
+
+end;
+
+procedure TFMailsInBox.OnclickTimer(Sender: TObject);
+begin
+    // Clear double click watcher and timer
+  doubleClick:= false;
+  clickTimer.StopTimer;
+  // Single click action
+  BtnQuitClick(Sender);
 end;
 
 
@@ -2728,8 +2761,6 @@ begin
   if FSettings.Settings.MailClientMini then MnuIconizeClick(Sender);
 end;
 
-
-
 // Log display, all system log or only CurAcc log
 
 procedure TFMailsInBox.BtnLogClick(Sender: TObject);
@@ -2855,15 +2886,6 @@ begin
   doubleClick:= true;
 end;
 
-procedure TFMailsInBox.OnclickTimer (sender: TObject);
-begin
-  // Clear double click watcher and timer
-  doubleClick:= false;
-  clickTimer.StopTimer;
-  // Single click action
-  BtnQuitClick(Sender);
-end;
-
 // Disable controls during mail check to avoid conflicts
 // Display hourglass cursor
 
@@ -2987,7 +3009,6 @@ begin
     if prgName<>ProgName then ShowMessage(ReadString('common', 'ProgErr',
                          'Fichier de langue erroné. Réinstallez le programme'));
     OsVersion.Translate(LngFile);
-
      // general strings
     sRetConfBack:= ReadString('main','RetConfBack','Recharge la dernière configuration sauvegardée');
     sCreNewConf:= ReadString('main','CreNewConf','Création d''une nouvelle configuration');
