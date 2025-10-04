@@ -6,14 +6,14 @@ object FMailsInBox: TFMailsInBox
   Caption = 'FMailsInBox'
   ClientHeight = 476
   ClientWidth = 944
+  Position = poDesktopCenter
+  LCLVersion = '4.2.0.0'
   OnActivate = FormActivate
   OnChangeBounds = DoChangeBounds
   OnClose = FormClose
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnWindowStateChange = FormWindowStateChange
-  Position = poDesktopCenter
-  LCLVersion = '3.8.0.0'
   object PnlToolbar: TPanel
     Left = 0
     Height = 42
@@ -2125,8 +2125,8 @@ object FMailsInBox: TFMailsInBox
       Top = 240
       Width = 214
       Align = alTop
-      OnMoved = DoChangeBounds
       ResizeAnchor = akTop
+      OnMoved = DoChangeBounds
     end
     object PnlAccounts: TPanel
       Left = 2
@@ -2976,6 +2976,7 @@ object FMailsInBox: TFMailsInBox
     Top = 80
   end
   object IdPOP3_1: TIdPOP3
+    IOHandler = TaurusTLSIOHandlerSocket1
     OnDisconnected = Id_client_Disconnected
     OnConnected = Id_client_Connected
     SASLMechanisms = <>
@@ -3601,7 +3602,6 @@ object FMailsInBox: TFMailsInBox
     Interval = 125
     UseTimerThread = True
     OnTimer = OnChkMailTimer
-    OnStartTimer = ChkMailTimerStartTimer
     Left = 672
     Top = 80
   end
@@ -3871,5 +3871,16 @@ object FMailsInBox: TFMailsInBox
       FF35AC8CBCB5A9CD0D5B03BAAA92AE8629CEE0004D5699662AF2F32960FF5F41
       5DC976D2E4C963DA7FFF5F08D63178
     }
+  end
+  object TaurusTLSIOHandlerSocket1: TTaurusTLSIOHandlerSocket
+    Destination = ':143'
+    MaxLineAction = maException
+    Port = 143
+    DefaultPort = 0
+    SSLOptions.Mode = sslmUnassigned
+    SSLOptions.VerifyMode = []
+    SSLOptions.VerifyDepth = 0
+    Left = 173
+    Top = 144
   end
 end

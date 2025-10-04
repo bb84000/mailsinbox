@@ -23,8 +23,8 @@ uses
   lazbbutils, FileUtil, lazbbinifiles, LazUTF8, settings1, lazbbautostart,
   lazbbaboutdlg, lazbbUpdateDlg, Impex1, mailclients1, uxtheme, Types,
   IdComponent, fptimer, RichMemo, variants, IdMessageCollection, UniqueInstance,
-  log1, translations, lazbbOsVersion, lazbbcontrols, registry, dateutils,
-  strutils, fpopenssl, openssl, opensslsockets;
+  TaurusTLS, log1, translations, lazbbOsVersion, lazbbcontrols, registry,
+  dateutils, strutils, fpopenssl, openssl, opensslsockets;
 
 const
   // Message post at the end of activation procedure, processed once the form is shown
@@ -47,6 +47,7 @@ type
     Label1: TLabel;
     clickTimer: TLFPTimer;        // Timer used to differentiate button's single and double click
     ChkMailTimer: TLFPTimer;
+    TaurusTLSIOHandlerSocket1: TTaurusTLSIOHandlerSocket;
     TimeTimer: TLFPTimer;
     OsVersion: TbbOsVersion;
     BtnAbout: TSpeedButton;
@@ -151,7 +152,6 @@ type
     procedure BtnQuitMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure BtnSettingsClick(Sender: TObject);
-    procedure ChkMailTimerStartTimer(Sender: TObject);
     procedure OnclickTimer(Sender: TObject);
     procedure FormActivate(Sender: TObject);
     procedure DoChangeBounds(Sender: TObject);
@@ -2065,18 +2065,31 @@ begin
 end;
 
 // Animate tray icon during checking mail  (TFPTimer)
+// Set ChkMailTimerTick to zero in mail checking procedure
+// Use mod operator to get the proper image in list
 
 procedure TFMailsInBox.OnChkMailTimer(Sender: TObject);
+var
+  i: Integer;
 begin
-  if ChkMailImgCount=0 then exit;
+  if (ChkMailImgCount * ILChkMail.Count) =0 then exit;
+  i:= ChkMailTimerTick mod ILChkMail.Count;                    //21/06/2025
   if CheckingMail then
   try
-    if ChkMailTimerTick < ChkMailImgCount then ILChkMail.GetIcon(ChkMailTimerTick, TrayMail.Icon);               //18/4/2025
-    //TrayMail.Icon.Assign(ChkMailIcons[ChkMailTimerTick]);           //15/4/2025
+    ILChkMail.GetIcon(i, TrayMail.Icon);
+    Application.ProcessMessages;
   finally
-    if ChkMailTimerTick < ChkMailImgCount-1 then inc(ChkMailTimerTick)
-    else ChkMailTimerTick:=0;
+    inc(ChkMailTimerTick);
   end;
+  {if CheckingMail then
+  try
+    if ChkMailTimerTick in [0..ChkMailImgCount-1] then ILChkMail.GetIcon(ChkMailTimerTick, TrayMail.Icon);  //21/05/2025
+    Application.ProcessMessages;              //19/06/2025
+  finally
+    if ChkMailTimerTick in [0..ChkMailImgCount-2] then inc(ChkMailTimerTick)  //19/06/2025
+    else ChkMailTimerTick:=0;
+  end; }
+
 end;
 
 // Timer for time display (TFPTimer)
@@ -2096,14 +2109,15 @@ end;
 procedure TFMailsInBox.OnTrayTimer(Sender: TObject);
 begin
   if not CheckingMail then
-  begin
-    if TrayTimerTick < ILTray.Count then
+  try                                                             //19/06/2025
+    if TrayTimerTick in [0..ILTray.Count-1] then
     begin
       ILTray.GetBitmap(TrayTimerTick, TrayTimerBmp);
       Application.ProcessMessages;
       TrayMail.Icon.Assign(TrayTimerbmp);
     end;
-    if TrayTimerTick < ILtray.count-1 then inc (TrayTimerTick, 1) else TrayTimerTick:= 0;
+  finally
+    if TrayTimerTick in [0..ILtray.count-2] then inc (TrayTimerTick, 1) else TrayTimerTick:= 0;
   end;
 end;
 
@@ -2204,10 +2218,9 @@ begin
   end;
 end;
 
-procedure TFMailsInBox.ChkMailTimerStartTimer(Sender: TObject);
-begin
 
-end;
+
+
 
 procedure TFMailsInBox.OnclickTimer(Sender: TObject);
 begin
@@ -2539,7 +2552,8 @@ begin
       begin
         try
           if CurAcc.SSL>0 then
-            IdPop3_1.IOHandler := TIdSSLIOHandlerSocketOpenSSL.Create(idPop3_1);
+          IdPop3_1.IOHandler := TaurusTLSIOHandlerSocket1 ;         // Replaced with TaurusTLS ti=o use new OpenSSL version
+           //TIdSSLIOHandlerSocketOpenSSL.Create(idPop3_1);
            IdPop3_1.UseTLS := TIdUseTLS(CurAcc.SSL);
            //IdPOP3_1.ConnectTimeout:=;
            IdPOP3_1.Connect;
@@ -2556,7 +2570,8 @@ begin
       begin
         AMailBoxList:= TStringList.create;
         try
-          if CurAcc.SSL>0 then IdIMAP4_1.IOHandler := TIdSSLIOHandlerSocketOpenSSL.Create(IdIMAP4_1);
+          if CurAcc.SSL>0 then  IdIMAP4_1.IOHandler := TaurusTLSIOHandlerSocket1 ;
+          //IdIMAP4_1.IOHandler := TIdSSLIOHandlerSocketOpenSSL.Create(IdIMAP4_1);
           IdIMAP4_1.UseTLS := TIdUseTLS(CurAcc.SSL);
           if IdIMAP4_1.Connect then
           IdIMAP4_1.ListSubscribedMailBoxes(AMailBoxList);
