@@ -3873,9 +3873,9 @@ object FMailsInBox: TFMailsInBox
     }
   end
   object TaurusTLSIOHandlerSocket1: TTaurusTLSIOHandlerSocket
-    Destination = ':143'
+    Destination = ':110'
     MaxLineAction = maException
-    Port = 143
+    Port = 110
     DefaultPort = 0
     SSLOptions.Mode = sslmUnassigned
     SSLOptions.VerifyMode = []

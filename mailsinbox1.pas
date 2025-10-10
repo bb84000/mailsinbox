@@ -24,7 +24,7 @@ uses
   lazbbaboutdlg, lazbbUpdateDlg, Impex1, mailclients1, uxtheme, Types,
   IdComponent, fptimer, RichMemo, variants, IdMessageCollection, UniqueInstance,
   TaurusTLS, log1, translations, lazbbOsVersion, lazbbcontrols, registry,
-  dateutils, strutils, fpopenssl, openssl, opensslsockets;
+  dateutils, strutils {, fpopenssl, openssl, opensslsockets};
 
 const
   // Message post at the end of activation procedure, processed once the form is shown
@@ -677,7 +677,7 @@ begin
      if length(sNewVer)=0 then
      begin
        if length(errmsg)=0 then alertmsg:= sCannotGetNewVerList
-       else alertmsg:= TranslateHttpErrorMsg(errmsg, HttpErrMsgNames);
+       else alertmsg:= errmsg ; //TranslateHttpErrorMsg(errmsg, HttpErrMsgNames);
        if AlertDlg(Caption,  alertmsg, [OKBtn, CancelBtn, sNoLongerChkUpdates],
                     true, mtError, alertpos)= mrYesToAll then FSettings.Settings.NoChkNewVer:= true;
        LogAddLine(-1, now, alertmsg);
@@ -3164,6 +3164,7 @@ begin
     MnuQuit.Caption:= ReadString('main','MnuQuit.Caption',MnuQuit.Caption);
     MnuAbout.Caption:=BtnAbout.Hint;
 
+    // No longer valid. Error codes are not yet translated  (version 1.0.6.2)
     // HTTP Error messages
     HttpErrMsgNames[0] := ReadString('HttpErr','SErrInvalidProtocol','Protocole "%s" invalide');
     HttpErrMsgNames[1] := ReadString('HttpErr','SErrReadingSocket','Erreur de lecture des données à partir du socket');

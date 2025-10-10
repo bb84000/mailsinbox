@@ -23,7 +23,8 @@
       <UseVersionInfo Value="True"/>
       <MajorVersionNr Value="1"/>
       <RevisionNr Value="6"/>
-      <StringTable CompanyName="sdtp" FileDescription="Courriels en attente - Mails in Box" InternalName="mailsinbox" LegalCopyright="sdtp - bb" LegalTrademarks="sdtp - bb" OriginalFilename="mailsinbox" ProductName="Mails In Box - Courriels en attente" ProductVersion="1.0.6.0"/>
+      <BuildNr Value="2"/>
+      <StringTable CompanyName="sdtp" FileDescription="Courriels en attente - Mails in Box" InternalName="mailsinbox" LegalCopyright="sdtp - bb" LegalTrademarks="sdtp - bb" OriginalFilename="mailsinbox" ProductName="Mails In Box - Courriels en attente" ProductVersion="1.0.6.2"/>
     </VersionInfo>
     <BuildModes Count="1">
       <Item1 Name="Default" Default="True"/>
@@ -139,8 +140,8 @@
       <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <CodeGeneration>
-      <TargetCPU Value="i386"/>
-      <TargetOS Value="win32"/>
+      <TargetCPU Value="x86_64"/>
+      <TargetOS Value="win64"/>
       <Optimizations>
         <OptimizationLevel Value="2"/>
       </Optimizations>
