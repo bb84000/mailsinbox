@@ -249,6 +249,12 @@ xmlFilter=Fichiers XML|*.xml|Tous les fichiers|*.*
 jsFilter=Fichiers Javascript|*.js|Tous les fichiers|*.*
 sBtnAccFileHint=Cliquer pour ouvrir un fichier de configuration %s
 
+[idHttpErr]
+idSSLLibraryNotFound=Impossible de charger la bibibliothèque SSL
+IdUnknownProtocol=Protocole inconnu
+IdHostNotFound=Hôte non trouvé
+IdUnknownError=Erreur inconnue: %s
+
 [HttpErr]
 ;Http error messages
 SErrInvalidProtocol=Protocole "%s" invalide

@@ -1,10 +1,10 @@
-This software is provided 'as-is', without any express or implied warranty.  In no event will the author or the editor be held liable for any damages arising from the use of this software.
+This software is provided ‘as is’ without any express or implied warranty. The author and/or publisher shall not be held liable for any errors, damage or loss of revenue resulting from the use of this software.
 
-User uses the program at him/her own risks. Please make a backup of files you want modifiy.
+The user employs the programme at their own risk. Please back up any files you wish to modify.
 
 USER LICENCE
 
-This software can be used fee of charge for a non commercial use.
+This software can be used free of charge for a non commercial use.
 
 Software source is available at : https://github.com/bb84000/mailsinbox
 

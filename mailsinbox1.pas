@@ -262,6 +262,7 @@ type
     sAccDeleted: String;
     DisplayMails: TMailsList;
     HttpErrMsgNames: array [0..16] of string;
+    idHttpErrMsgNames: array [0..16] of string;
     sCannotGetNewVerList: string;
     sNewAccount: string;
     aMailsList: array of string;
@@ -657,6 +658,7 @@ begin
   //Dernière recherche il y a plus de 'days' jours ?
   errmsg := '';
   alertmsg:= '';
+
   if not visible then alertpos:= poDesktopCenter
   else alertpos:= poMainFormCenter;
   if (Trunc(Now)>Trunc(FSettings.Settings.LastUpdChk)+days) and (not FSettings.Settings.NoChkNewVer) then
@@ -677,7 +679,7 @@ begin
      if length(sNewVer)=0 then
      begin
        if length(errmsg)=0 then alertmsg:= sCannotGetNewVerList
-       else alertmsg:= errmsg ; //TranslateHttpErrorMsg(errmsg, HttpErrMsgNames);
+       else alertmsg:= TranslateidHttpErrorMsg(errmsg, idHttpErrMsgNames);
        if AlertDlg(Caption,  alertmsg, [OKBtn, CancelBtn, sNoLongerChkUpdates],
                     true, mtError, alertpos)= mrYesToAll then FSettings.Settings.NoChkNewVer:= true;
        LogAddLine(-1, now, alertmsg);
@@ -2259,7 +2261,7 @@ begin
   // If we have checked update and got an error
   if length(AboutBox.ErrorMessage)>0 then
   begin
-    alertmsg := TranslateHttpErrorMsg(AboutBox.ErrorMessage, HttpErrMsgNames);
+    alertmsg := TranslateidHttpErrorMsg(AboutBox.ErrorMessage, idHttpErrMsgNames);
     if AlertDlg(Caption,  alertmsg, [OKBtn, CancelBtn, sNoLongerChkUpdates],
                     true, mtError)= mrYesToAll then FSettings.Settings.NoChkNewVer:= true;
     LogAddLine(-1, now, alertmsg);
@@ -3163,6 +3165,12 @@ begin
     MnuGetAllMail.Caption:= BtnGetAllMail.Hint;
     MnuQuit.Caption:= ReadString('main','MnuQuit.Caption',MnuQuit.Caption);
     MnuAbout.Caption:=BtnAbout.Hint;
+
+    // indy Error messages
+    idHttpErrMsgNames[0]:= ReadString('idHttpErr','idSSLLibraryNotFound','Bibliothèque SSL introuvable');
+    idHttpErrMsgNames[1]:= ReadString('idHttpErr','IdUnknownProtocol', 'Protocole inconnu');
+    idHttpErrMsgNames[2]:= ReadString('idHttpErr','IdHostNotFound', 'Hôte non trouvé');
+    idHttpErrMsgNames[3]:= ReadString('idHttpErr','IdUnknownError', 'Erreur inconnue: %s');
 
     // No longer valid. Error codes are not yet translated  (version 1.0.6.2)
     // HTTP Error messages

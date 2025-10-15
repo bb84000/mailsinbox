@@ -244,6 +244,12 @@ xmlFilter=XML files|*.xml|All files|*.*
 jsFilter=Javascript files|*.js|All files|*.*
 sBtnAccFileHint=Clicl to open a %s settings file
 
+[idHttpErr]
+idSSLLibraryNotFound=Could not load SSL library
+IdUnknownProtocol=Unknown Protocol
+IdHostNotFound=Host not found
+IdUnknownError=Unknown error: %s
+
 [HttpErr]
 ;Http error messages
 SErrInvalidProtocol=Invalid protocol "%s"
