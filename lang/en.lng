@@ -248,6 +248,7 @@ sBtnAccFileHint=Clicl to open a %s settings file
 idSSLLibraryNotFound=Could not load SSL library
 IdUnknownProtocol=Unknown Protocol
 IdHostNotFound=Host not found
+idHTTP302=Page moved temporarily (302)
 IdUnknownError=Unknown error: %s
 
 [HttpErr]

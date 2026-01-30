@@ -253,6 +253,7 @@ sBtnAccFileHint=Cliquer pour ouvrir un fichier de configuration %s
 idSSLLibraryNotFound=Impossible de charger la bibibliothèque SSL
 IdUnknownProtocol=Protocole inconnu
 IdHostNotFound=Hôte non trouvé
+idHTTP302=Page redirigée provisoirement (302)
 IdUnknownError=Erreur inconnue: %s
 
 [HttpErr]

@@ -1,11 +1,13 @@
 {*******************************************************************************
  MailInBox main unit
- bb - sdtp - april 2025
+ bb - sdtp - december 2025
  Check mails on pop3 and imap servers
  15/04/2025 : Use array of icons to animate tray icon
               use lazbb component for FPTimer, chkmailTimer, timeTimer
  18/04/2025 : Reverse to imagelist for animated tray icon during check mail
  19/04/2025 : Revised select item event in account list
+ 08/12/2025 : Removed extra blank line in tray hint
+ 30/01/2026 : Replaced some exception check with validity check
  *******************************************************************************}
 
 unit mailsinbox1;
@@ -1256,9 +1258,11 @@ Begin
   LVAccounts.Clear;
   if Assigned(LVAccounts.SmallImages) then LVAccounts.SmallImages.Clear;
   ILTray.Clear;
+  Application.ProcessMessages ;   //11/01/2026
   TrayPicture.LoadFromResourceName(HInstance, 'MAIL16');
   Application.ProcessMessages;  //23/3/25
   ILTray.AddMasked(TrayPicture.Bitmap, $FF00FF); // Reset after each mail checking
+  Application.ProcessMessages;  // 05/11/25
   for i := 0 to FAccounts.Accounts.Count-1 do
   Try
     NewMsgsCnt:=0;
@@ -1274,6 +1278,7 @@ Begin
       DrawTheIcon(TrayPicture.Bitmap, CurAcc.Mails.count, CurAcc.Color  );
       Application.ProcessMessages;  //23/3/25
       ILTray.AddMasked(TrayPicture.Bitmap, $FF00FF);  // modified icon
+      Application.ProcessMessages;  //05/11/25
     end;
     if CurAcc.Error then
     begin
@@ -1282,6 +1287,7 @@ Begin
       DrawTheIcon(TrayPicture.Bitmap, -1, CurAcc.Color);
       Application.ProcessMessages;  //23/3/25
       ILTray.AddMasked(TrayPicture.Bitmap, $FF00FF);  // modified icon
+      Application.ProcessMessages;  //05/11/25
     end;
     LVAccounts.SmallImages.AddMasked(AccBmp,$FF00FF);
     ListItem.ImageIndex := i;
@@ -1317,12 +1323,16 @@ Begin
         TrayMail.BalloonHint:= TrayMail.BalloonHint+Format(sTrayBallHint, [CurAcc.Name,NewMsgsCnt,sLIneEnd]);
         sTmpHint:=Format(sTmpHint, [Format(sTrayNewHint, [NewMsgsCnt])])
       end else sTmpHint:= Format(sTmpHint, ['']);
-     TrayMail.Hint:=TrayMail.Hint+sTmpHint+#10;
+      TrayMail.Hint:=TrayMail.Hint+sTmpHint+#10;
     end;
   Except
-    // Error in process
+    ShowMessage('Error in process');         //11/01/2026
   end;
-  if TrayMail.Hint='' then TrayMail.Hint:= sTrayHintNoMsg;
+  if TrayMail.Hint='' then TrayMail.Hint:= sTrayHintNoMsg else       // remove last #10
+  begin;
+    if RPos(#10,TrayMail.Hint)= length(TrayMail.Hint) then
+    TrayMail.Hint:= Copy (TrayMail.Hint, 1, length(TrayMail.Hint)-1)     ;
+  end;
   LVAccounts.ItemIndex:= 0;
   if Assigned(AccBmp) then AccBmp.free;
   if FSettings.Settings.RestNewMsg and not visible then MnuRestoreClick(self);
@@ -1593,7 +1603,7 @@ begin
   if mode=fmLast then cnt:= FSettings.Settings.LastFires.count
   else cnt:= FSettings.Settings.NextFires.count;
   if cnt> 0 then
-  begin
+  try
     for i:= 0 to cnt-1 do
     begin
       if mode=fmlast then s:= FSettings.Settings.LastFires.Strings[i]
@@ -1606,9 +1616,12 @@ begin
       end;
     end;
     if uidfnd then result:= UnixToDateTime(StrToInt64Def(A[1], 0));
+  except
+    ShowMessage('Error GetFire');          //11/01/2026
   end;
-
 end;
+
+// replaced exception with range validity check of accounts index (23/1/2026)
 
 procedure TFMailsInBox.UpdateInfos;
 var
@@ -1620,8 +1633,14 @@ var
   dt:TDateTime;
 begin
   ndx:= LVAccounts.ItemIndex;
-  if ndx >= 0 then
+  if (ndx >= 0) then
   begin
+    if ndx > FAccounts.Accounts.Count-1  then
+    begin
+      ShowMessage('UpdateInfos error');
+      LogAddLine(-1, now, 'UpdateInfos error');
+      exit;
+    end;
     CurAcc:= FAccounts.Accounts.GetItem(ndx);
     msgs:= CurAcc.Mails.Count;
     dt:= GetFire(CurAcc, fmLast);
@@ -1635,8 +1654,7 @@ begin
     if CurAcc.Enabled then
     begin
       if CurAcc.error then RMInfos.Lines.Add(CurAcc.ErrorStr);
-
-      if msgs>1 then msgsfnd:= Format(sMsgsFound, [msgs])
+       if msgs>1 then msgsfnd:= Format(sMsgsFound, [msgs])
       else msgsfnd:= Format(sMsgFound, [msgs]);
       RMInfos.Lines.Add(msgsfnd);
       LStatus.Caption:= Format(sLStatusCaption, [msgsfnd, CurAcc.Name, slastfire]);
@@ -1661,10 +1679,10 @@ begin
   else oldUIDL:= '';
   SGMails.RowCount:=1;
   DisplayMails.Reset;
-  // If we display only selected accout messages
+  // If we display only selected account messages
   if not FSettings.Settings.DisplayAllAccMsgs then
   begin
-    if index<0 then exit;
+    if (index<0) or (index > FAccounts.Accounts.Count-1) then exit;        //23/01/2026
     CurAcc:= FAccounts.Accounts.GetItem(index);
     if (CurAcc.Mails.count>0) then
       for j:=0 to CurAcc.Mails.count-1 do DisplayMails.AddMail(CurAcc.Mails.GetItem(j));
@@ -1685,21 +1703,25 @@ begin
   DisplayMails.SortDirection:= FSettings.Settings.MailSortDir;
   // array of mails uidl to retreive later previous selected mail
   SetLength(aMailsList, DisplayMails.count);
-  j:= DisplayMails.count+1;
-  SGMails.RowCount:= j;
+  //j:= DisplayMails.count+1;
+  SGMails.RowCount:= DisplayMails.count+1;   //j;  (23/01/2026)
   for i:=0 to DisplayMails.Count-1 do
   begin
     SGMails.Cells[0,i+1]:= DisplayMails.GetItem(i).MessageFrom;
     SGMails.Cells[1,i+1]:= DisplayMails.GetItem(i).AccountName;
     SGMails.Cells[2,i+1]:= DisplayMails.GetItem(i).MessageSubject;
-    SGMails.Cells[3,i+1]:= TimeDateToString(DisplayMails.GetItem(i).MessageDate);
+    SGMails.Cells[3,i+1]:= DateTimeTostr(DisplayMails.GetItem(i).MessageDate);
     aMailsList[i]:= DisplayMails.GetItem(i).MessageUIDL;
     // Change unit with size value
     siz:= DisplayMails.GetItem(i).MessageSize;
-    if siz<20480 then s:= InttoStr(siz)+' '+sBytes;
-    if (siz>=20480) and (siz<100480) then s:= Format('%.1n '+sKBytes, [siz/1048]);
-    if (siz>=100480) and (siz<1048576) then s:= Format('%u '+sKBytes, [siz div 1048]);
-    if siz>=1048576  then s:= Format('%.1n '+SMBytes, [siz/1048576]);
+    s:= '';                       // 11/01/2026 changed format routine
+    Case siz of
+      0..20479: s:= InttoStr(siz)+' '+sBytes;
+      20480..100479: s:= Format('%.1n '+sKBytes, [siz/1048]);
+      100480..1048575: s:= Format('%u '+sKBytes, [siz div 1048]);
+    else
+      s:= Format('%.1n '+SMBytes, [siz/1048576]);
+    end;
     SGMails.Cells[4,i+1]:= s;
     // retrieve old selected message if still here to select it again
     if DisplayMails.GetItem(i).MessageUIDL= oldUIDL then SGMails.row:= i+1;
@@ -1962,6 +1984,7 @@ begin
          R.Right:=R.Left+18;
          R.Bottom:=R.Top+16;
          Bmp:= Tbitmap.Create;
+         Application.ProcessMessages; //05/11/25
          if DisplayMails.GetItem(aRow-1).MessageNew then bmppos:= 1;
          if Pos ('multipart', DisplayMails.GetItem(aRow-1).MessageContentType) >0 then
            bmppos:= bmppos+2;
@@ -2609,6 +2632,7 @@ begin
   sUIDL:='';
   slUIDL:= TStringList.Create;
   mail:= Default(Tmail);
+  siz:= 0;
   Case Curacc.Protocol of
     ptcPOP3:
       begin
@@ -3170,7 +3194,8 @@ begin
     idHttpErrMsgNames[0]:= ReadString('idHttpErr','idSSLLibraryNotFound','Bibliothèque SSL introuvable');
     idHttpErrMsgNames[1]:= ReadString('idHttpErr','IdUnknownProtocol', 'Protocole inconnu');
     idHttpErrMsgNames[2]:= ReadString('idHttpErr','IdHostNotFound', 'Hôte non trouvé');
-    idHttpErrMsgNames[3]:= ReadString('idHttpErr','IdUnknownError', 'Erreur inconnue: %s');
+    idHttpErrMsgNames[3]:= ReadString('idHttpErr','idHTTP302','Page redirigée provisoirement (302)');
+    idHttpErrMsgNames[10]:= ReadString('idHttpErr','IdUnknownError', 'Erreur inconnue: %s');
 
     // No longer valid. Error codes are not yet translated  (version 1.0.6.2)
     // HTTP Error messages

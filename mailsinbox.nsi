@@ -5,7 +5,7 @@
 ; 25/10/2022 Replaced onInit with a custom page to check running app and previous versions
 ; 05/10/2025 Channged with OpenSSL version 1.3 - always install in applilcation folder
 ;------------------------------------------------------------------------------------------
-!define FileVersion "1.0.0.2"
+!define FileVersion "1.0.0.3"
 
  Unicode true
 
@@ -215,6 +215,7 @@ Section "install" ;No components page, name is not important
   ; delete non used files
   Delete "$INSTDIR\${prog_name}win$exe_to_del"
   ; Install other files
+  File "${lazarus_dir}\openssl\OpenSSL3 License.txt"
   File "${source_dir}\licensf.txt"
   File "${source_dir}\license.txt"
   File "${source_dir}\history.txt"
@@ -291,6 +292,7 @@ Section Uninstall
   Delete "$INSTDIR\licensf.txt"
   Delete "$INSTDIR\license.txt"
   Delete "$INSTDIR\OpenSSL License.txt"
+  Delete "$INSTDIR\OpenSSL3 License.txt"
   Delete "$INSTDIR\uninst.exe"
   RMDir /r "$INSTDIR\help"
   RMDir /r "$INSTDIR\lang"

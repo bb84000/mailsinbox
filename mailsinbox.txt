@@ -1,5 +1,5 @@
 Mails In Box : Mail notifier application
-Version 1.0.6.2
+Version 1.0.6.6
 
 (Explication en Français à la fin de ce fichier)
 

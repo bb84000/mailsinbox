@@ -304,3 +304,12 @@ Version 1.0.6.2 - 10/10/2025
 Version 1.0.6.3 - 15/10/2025
 - Http error messages now translated and properly displayed.
 
+Version 1.0.6.4 - 05/11/2025
+- Some adjuwtments
+
+Version 1.0.6.5 - 08/12/2025
+- Removed extra blank line in tray hint
+
+Version 1.0.6.6 - 30/01/2026
+- Replaced some exception check with validity check
+
