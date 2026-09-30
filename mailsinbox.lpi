@@ -23,8 +23,8 @@
       <UseVersionInfo Value="True"/>
       <MajorVersionNr Value="1"/>
       <RevisionNr Value="6"/>
-      <BuildNr Value="6"/>
-      <StringTable CompanyName="sdtp" FileDescription="Courriels en attente - Mails in Box" InternalName="mailsinbox" LegalCopyright="sdtp - bb" LegalTrademarks="sdtp - bb" OriginalFilename="mailsinbox" ProductName="Mails In Box - Courriels en attente" ProductVersion="1.0.6.6"/>
+      <BuildNr Value="7"/>
+      <StringTable CompanyName="sdtp" FileDescription="Courriels en attente - Mails in Box" InternalName="mailsinbox" LegalCopyright="sdtp - bb" LegalTrademarks="sdtp - bb" OriginalFilename="mailsinbox" ProductName="Mails In Box - Courriels en attente" ProductVersion="1.0.6.7"/>
     </VersionInfo>
     <BuildModes Count="1">
       <Item1 Name="Default" Default="True"/>
@@ -36,37 +36,43 @@
     <RunParams>
       <FormatVersion Value="2"/>
     </RunParams>
-    <RequiredPackages Count="10">
+    <RequiredPackages Count="12">
       <Item1>
-        <PackageName Value="TaurusTLSRT"/>
+        <PackageName Value="IndySecOpenSSL"/>
       </Item1>
       <Item2>
-        <PackageName Value="TaurusTLSLDsgn"/>
+        <PackageName Value="indylaz_openssl"/>
       </Item2>
       <Item3>
-        <PackageName Value="ExCtrlsPkg_dsgn"/>
+        <PackageName Value="TaurusTLSRT"/>
       </Item3>
       <Item4>
-        <PackageName Value="ExCtrlsPkg"/>
+        <PackageName Value="TaurusTLSLDsgn"/>
       </Item4>
       <Item5>
-        <PackageName Value="lazbbcomponents"/>
+        <PackageName Value="ExCtrlsPkg_dsgn"/>
       </Item5>
       <Item6>
-        <PackageName Value="lhelpcontrolpkg"/>
+        <PackageName Value="ExCtrlsPkg"/>
       </Item6>
       <Item7>
-        <PackageName Value="uniqueinstance_package"/>
+        <PackageName Value="lazbbcomponents"/>
       </Item7>
       <Item8>
-        <PackageName Value="richmemopackage"/>
+        <PackageName Value="lhelpcontrolpkg"/>
       </Item8>
       <Item9>
-        <PackageName Value="indylaz"/>
+        <PackageName Value="uniqueinstance_package"/>
       </Item9>
       <Item10>
-        <PackageName Value="LCL"/>
+        <PackageName Value="richmemopackage"/>
       </Item10>
+      <Item11>
+        <PackageName Value="indylaz"/>
+      </Item11>
+      <Item12>
+        <PackageName Value="LCL"/>
+      </Item12>
     </RequiredPackages>
     <Units Count="9">
       <Unit0>

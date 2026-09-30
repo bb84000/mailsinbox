@@ -25,8 +25,8 @@ uses
   lazbbutils, FileUtil, lazbbinifiles, LazUTF8, settings1, lazbbautostart,
   lazbbaboutdlg, lazbbUpdateDlg, Impex1, mailclients1, uxtheme, Types,
   IdComponent, fptimer, RichMemo, variants, IdMessageCollection, UniqueInstance,
-  TaurusTLS, log1, translations, lazbbOsVersion, lazbbcontrols, registry,
-  dateutils, strutils {, fpopenssl, openssl, opensslsockets};
+   TaurusTLS, log1, translations, lazbbOsVersion, lazbbcontrols,
+  registry, dateutils, strutils {, fpopenssl, openssl, opensslsockets};
 
 const
   // Message post at the end of activation procedure, processed once the form is shown

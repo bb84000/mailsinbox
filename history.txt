@@ -313,3 +313,6 @@ Version 1.0.6.5 - 08/12/2025
 Version 1.0.6.6 - 30/01/2026
 - Replaced some exception check with validity check
 
+Version 1.0.6.7 - 30/09/2026
+- Updated lazbbosversion for W11 26H2
+
